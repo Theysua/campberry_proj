@@ -1,0 +1,28 @@
+import { Link } from 'react-router-dom'
+import logo from '../assets/logo.svg'
+
+export default function Footer() {
+  return (
+    <footer className="bg-[#011936] py-12 px-6 mt-auto">
+      <div className="container flex flex-col md:flex-row justify-between gap-10">
+        <div className="flex flex-col gap-4">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="h-9 w-auto bg-white px-3 py-1.5 rounded-lg shadow-sm">
+              <img src={logo} alt="Campberry" className="h-full w-auto object-contain" style={{ minWidth: '120px' }} />
+            </div>
+          </Link>
+          <div className="text-sm text-white/70 leading-relaxed font-medium">
+            <strong className="text-white">About:</strong> <Link to="/mission" className="hover:text-[#ff751f]">Our Promises</Link>, <span className="hover:text-[#ff751f] cursor-pointer">Our Community</span><br/>
+            <strong className="text-white">Legal:</strong> <span className="hover:text-[#ff751f] cursor-pointer">Terms of Service</span>, <span className="hover:text-[#ff751f] cursor-pointer">Privacy Policy</span>
+          </div>
+        </div>
+        
+        <div className="text-sm text-white/70 md:text-right leading-relaxed flex flex-col gap-2 font-medium">
+          <div><strong className="text-white">Socials:</strong> <span className="hover:text-[#ff751f] cursor-pointer">TikTok</span>, <span className="hover:text-[#ff751f] cursor-pointer">Instagram</span>, <span className="hover:text-[#ff751f] cursor-pointer">LinkedIn</span></div>
+          <div><strong className="text-white">Contact:</strong> <span className="hover:text-[#ff751f] cursor-pointer">Contact Us</span></div>
+          <div className="text-white/40 mt-4 text-xs font-bold tracking-widest uppercase">© Campberry 2026</div>
+        </div>
+      </div>
+    </footer>
+  )
+}

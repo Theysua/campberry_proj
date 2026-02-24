@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snowday Wireframes</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0f0; color: #333; }
+
+  /* --- NAV --- */
+  .tab-nav { position: sticky; top: 0; z-index: 100; background: #1a1a2e; display: flex; gap: 0; overflow-x: auto; }
+  .tab-btn { padding: 14px 22px; background: none; border: none; color: #aaa; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: all .2s; }
+  .tab-btn:hover { color: #fff; background: rgba(255,255,255,.05); }
+  .tab-btn.active { color: #60a5fa; border-bottom-color: #60a5fa; }
+
+  /* --- WIREFRAME CANVAS --- */
+  .page { display: none; padding: 30px; }
+  .page.active { display: block; }
+  .frame { background: #fff; border: 2px solid #d0d0d0; border-radius: 8px; max-width: 1100px; margin: 0 auto 30px; overflow: hidden; }
+  .frame-title { background: #e8e8e8; padding: 8px 16px; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #d0d0d0; }
+
+  /* --- WIREFRAME ELEMENTS --- */
+  .wf { padding: 20px; }
+  .wf-row { display: flex; gap: 16px; align-items: flex-start; }
+  .wf-col { flex: 1; }
+  .wf-box { background: #f5f5f5; border: 1.5px dashed #bbb; border-radius: 6px; padding: 12px; margin-bottom: 12px; text-align: center; color: #888; font-size: 12px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+  .wf-box.solid { border-style: solid; background: #e9ecef; }
+  .wf-box.blue { background: #dbeafe; border-color: #93c5fd; color: #2563eb; }
+  .wf-box.dark { background: #1e3a5f; border-color: #1e3a5f; color: #fff; }
+  .wf-box.light-blue { background: #eff6ff; border-color: #bfdbfe; }
+  .wf-box.green { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+  .wf-box.red { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  .wf-box.orange { background: #ffedd5; border-color: #fdba74; color: #9a3412; }
+  .wf-label { font-size: 10px; color: #999; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .wf-heading { font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 8px; }
+  .wf-subheading { font-size: 13px; color: #666; margin-bottom: 12px; }
+  .wf-text { font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 8px; }
+  .wf-divider { border-top: 1.5px dashed #ddd; margin: 16px 0; }
+  .wf-pill { display: inline-block; background: #dbeafe; color: #2563eb; font-size: 11px; padding: 3px 10px; border-radius: 12px; margin: 2px 4px 2px 0; }
+  .wf-btn { display: inline-block; background: #2563eb; color: #fff; font-size: 12px; padding: 8px 20px; border-radius: 6px; }
+  .wf-btn.outline { background: #fff; color: #2563eb; border: 1.5px solid #2563eb; }
+  .wf-btn.sm { padding: 4px 12px; font-size: 11px; }
+  .wf-icon { width: 36px; height: 36px; background: #e5e7eb; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: #666; flex-shrink: 0; }
+  .wf-icon.sq { border-radius: 8px; width: 48px; height: 48px; }
+  .wf-icon.lg { width: 64px; height: 64px; font-size: 18px; }
+  .wf-grid { display: grid; gap: 12px; }
+  .wf-grid.c2 { grid-template-columns: 1fr 1fr; }
+  .wf-grid.c3 { grid-template-columns: 1fr 1fr 1fr; }
+  .wf-grid.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .wf-grid.c6 { grid-template-columns: repeat(6, 1fr); }
+  .wf-card { background: #fff; border: 1.5px solid #e0e0e0; border-radius: 8px; padding: 14px; }
+  .wf-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .wf-badge { display: inline-block; background: #2563eb; color: #fff; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .wf-badge.green { background: #10b981; }
+  .wf-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+  .wf-scroll > * { flex-shrink: 0; }
+  .annotation { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 4px; padding: 6px 10px; font-size: 10px; color: #92400e; margin-bottom: 12px; }
+  .section-gap { height: 20px; }
+
+  /* header/footer wireframe */
+  .wf-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1.5px solid #e0e0e0; }
+  .wf-header-left { display: flex; align-items: center; gap: 8px; }
+  .wf-header-nav { display: flex; gap: 24px; }
+  .wf-header-nav span { font-size: 12px; color: #666; }
+  .wf-footer { background: #eff6ff; padding: 20px; display: flex; justify-content: space-between; border-top: 1.5px solid #e0e0e0; }
+  .wf-footer-col { font-size: 11px; color: #666; line-height: 2; }
+  .wf-footer-col strong { color: #333; }
+</style>
+</head>
+<body>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showPage('home')">1. Homepage</button>
+  <button class="tab-btn" onclick="showPage('search')">2. Search Results</button>
+  <button class="tab-btn" onclick="showPage('detail')">3. Program Detail</button>
+  <button class="tab-btn" onclick="showPage('lists')">4. Lists Overview</button>
+  <button class="tab-btn" onclick="showPage('listdetail')">5. List Detail</button>
+  <button class="tab-btn" onclick="showPage('auth')">6. Auth (Login/Signup)</button>
+  <button class="tab-btn" onclick="showPage('mission')">7. Mission</button>
+  <button class="tab-btn" onclick="showPage('components')">8. Shared Components</button>
+</div>
+
+<!-- ==================== PAGE 1: HOMEPAGE ==================== -->
+<div class="page active" id="page-home">
+
+  <div class="frame">
+    <div class="frame-title">Page 1 — Homepage ( / )</div>
+    <div class="wf">
+
+      <!-- Header -->
+      <div class="wf-header">
+        <div class="wf-header-left">
+          <div class="wf-icon" style="width:28px;height:28px;font-size:16px;">❄</div>
+          <span style="font-weight:700;font-size:14px;">Snowday</span>
+          <span class="wf-badge" style="background:#60a5fa;font-size:8px;">beta</span>
+        </div>
+        <div class="wf-header-nav">
+          <span>🔍 Find</span>
+          <span>📋 Lists</span>
+          <span>📌 My Lists</span>
+        </div>
+        <div class="wf-btn sm">Sign In</div>
+      </div>
+
+      <!-- S1: Hero -->
+      <div class="annotation">Section 1: Hero — light-blue gradient background (#D6E8FA → #E8F0FE)</div>
+      <div class="wf-box light-blue" style="min-height:180px;flex-direction:column;gap:10px;">
+        <div style="font-size:28px;font-weight:700;color:#1e3a5f;">Extracurriculars & Enrichment</div>
+        <div style="font-size:14px;color:#666;">Top Opportunities Curated by College Experts</div>
+        <div style="display:flex;gap:0;margin-top:10px;width:500px;max-width:100%;">
+          <div style="flex:1;background:#fff;border:1.5px solid #ccc;border-radius:8px 0 0 8px;padding:10px 14px;font-size:12px;color:#aaa;text-align:left;">🔍 Search by interest, name...</div>
+          <div class="wf-btn" style="border-radius:0 8px 8px 0;padding:10px 20px;">Search</div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- S2: Top Searches -->
+      <div class="annotation">Section 2: Top Searches — 18 clickable category tags, horizontal scroll</div>
+      <div class="wf-heading">❄ Top Searches</div>
+      <div class="wf-scroll" style="margin-top:8px;">
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>🔍</div><div style="font-size:11px;">Browse All</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>⛵</div><div style="font-size:11px;">Summer</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>🏫</div><div style="font-size:11px;">School Year</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>🏆</div><div style="font-size:11px;">Competition</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>🆓</div><div style="font-size:11px;">Free</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>⚙️</div><div style="font-size:11px;">Engineering</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>👑</div><div style="font-size:11px;">Leadership</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>💻</div><div style="font-size:11px;">Coding</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>✏️</div><div style="font-size:11px;">Writing</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>🔬</div><div style="font-size:11px;">STEM</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>💼</div><div style="font-size:11px;">Business</div></div>
+        <div class="wf-box solid" style="width:100px;min-height:70px;flex-direction:column;gap:4px;"><div>🌿</div><div style="font-size:11px;">Sustainability</div></div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- S3: Featured Lists -->
+      <div class="annotation">Section 3: Featured Lists — horizontal carousel with arrow controls</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="wf-heading">⭐ Featured Lists</div>
+        <span style="font-size:12px;color:#2563eb;">See All Lists →</span>
+      </div>
+      <div class="wf-scroll" style="margin-top:8px;">
+        <div class="wf-card" style="width:260px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">School Counseling Group's Favorite Programs</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon" style="width:28px;height:28px;">👤</div>
+            <div><div style="font-size:11px;color:#333;">Author Name</div><div style="font-size:10px;color:#999;">Admissions Consultants</div></div>
+          </div>
+        </div>
+        <div class="wf-card" style="width:260px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Top STEM Programs for Rising Juniors</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon" style="width:28px;height:28px;">👤</div>
+            <div><div style="font-size:11px;color:#333;">Author Name</div><div style="font-size:10px;color:#999;">Education Expert</div></div>
+          </div>
+        </div>
+        <div class="wf-card" style="width:260px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Best Free Summer Programs 2026</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon" style="width:28px;height:28px;">👤</div>
+            <div><div style="font-size:11px;color:#333;">Author Name</div><div style="font-size:10px;color:#999;">College Counselor</div></div>
+          </div>
+        </div>
+        <div class="wf-box" style="width:260px;min-height:100px;">← → Arrow Controls</div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- S4: Ratings -->
+      <div class="annotation">Section 4: Snowday Ratings introduction</div>
+      <div class="wf-heading">Snowday Ratings <span class="wf-badge green">New</span></div>
+      <div class="wf-subheading">Find the best opportunities — ranked for quality and cost.</div>
+      <div class="wf-grid c2" style="margin-top:8px;">
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;">Experts' Choice <span class="wf-badge green">New</span></div>
+          <div class="wf-text">Recommended by Education Experts</div>
+          <div style="display:flex;gap:8px;margin:8px 0;">
+            <div class="wf-badge">MOST</div>
+            <div class="wf-badge" style="background:#60a5fa;">HIGHLY</div>
+          </div>
+          <div class="wf-btn sm">Learn More</div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;">Financial Accessibility <span class="wf-badge green">New</span></div>
+          <div class="wf-text">Find Programs That Fit Your Budget</div>
+          <div style="display:flex;gap:6px;margin:8px 0;">
+            <span class="wf-pill">A+</span><span class="wf-pill">A</span><span class="wf-pill">A-</span><span class="wf-pill">B+</span><span class="wf-pill">B-</span><span class="wf-pill">C+</span>
+          </div>
+          <div class="wf-btn sm">Learn More</div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- S5: Trust -->
+      <div class="annotation">Section 5: Trust Promises — 3 equal-width cards</div>
+      <div class="wf-text" style="font-weight:600;color:#333;">Trust matters</div>
+      <div class="wf-heading">These are our promises to you:</div>
+      <div class="wf-grid c3" style="margin-top:8px;">
+        <div class="wf-box blue" style="flex-direction:column;min-height:80px;gap:6px;"><div>🔒</div><div style="font-size:12px;font-weight:600;">100% Data Privacy</div><div style="font-size:10px;">Your info belongs to you, always.</div></div>
+        <div class="wf-box blue" style="flex-direction:column;min-height:80px;gap:6px;"><div>⚖️</div><div style="font-size:12px;font-weight:600;">Unbiased Algorithms</div><div style="font-size:10px;">Students first, not marketing budgets.</div></div>
+        <div class="wf-box blue" style="flex-direction:column;min-height:80px;gap:6px;"><div>🆓</div><div style="font-size:12px;font-weight:600;">Free, Forever</div><div style="font-size:10px;">Access without barriers.</div></div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- S6: Stats -->
+      <div class="annotation">Section 6: Statistics — two-column layout</div>
+      <div class="wf-grid c2">
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Search 2,100+ Opportunities</div>
+          <div class="wf-text">✓ New: 200+ competitions<br>✓ 700+ school year programs<br>✓ 1,200+ top summer programs</div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Save Time and Don't Miss Out</div>
+          <div class="wf-text">✓ Search powered by AI<br>✓ Filter by location, date, cost, and more<br>✓ Watch program videos</div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- S7+S8: Community + CTA -->
+      <div class="annotation">Section 7-8: Community intro + Participation CTAs</div>
+      <div class="wf-box dark" style="min-height:80px;flex-direction:column;gap:8px;">
+        <div style="font-size:16px;font-weight:600;">Snowday is built by teens and educators, for teens and educators.</div>
+        <div class="wf-btn sm" style="background:#fff;color:#1e3a5f;">Meet the Community</div>
+      </div>
+      <div class="wf-grid c3" style="margin-top:12px;">
+        <div class="wf-box solid" style="min-height:60px;">📝 Create a List</div>
+        <div class="wf-box solid" style="min-height:60px;">⭐ Leave a Review</div>
+        <div class="wf-box solid" style="min-height:60px;">🚩 Flag Incorrect Info</div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- Footer -->
+      <div class="wf-footer">
+        <div class="wf-footer-col"><strong>❄ Snowday</strong><br>About: Our Promises | Our Community<br>Legal: Terms of Service | Privacy Policy</div>
+        <div class="wf-footer-col" style="text-align:right;">Social: IG | TikTok | LinkedIn<br>Contact Us<br>© Snowday 2026</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: SEARCH RESULTS ==================== -->
+<div class="page" id="page-search">
+  <div class="frame">
+    <div class="frame-title">Page 2 — Search Results ( /search/results )</div>
+    <div class="wf">
+
+      <!-- Header (compact) -->
+      <div class="wf-header">
+        <div class="wf-header-left">
+          <div class="wf-icon" style="width:28px;height:28px;font-size:16px;">❄</div>
+          <span style="font-weight:700;font-size:14px;">Snowday</span>
+        </div>
+        <div class="wf-header-nav"><span>🔍 Find</span><span>📋 Lists</span><span>📌 My Lists</span></div>
+        <div class="wf-btn sm">Sign In</div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="annotation">Full-width search bar with back arrow</div>
+      <div style="display:flex;gap:8px;align-items:center;padding:8px 0;">
+        <div class="wf-box solid" style="width:36px;min-height:36px;">←</div>
+        <div style="flex:1;display:flex;">
+          <div style="flex:1;background:#f5f5f5;border:1.5px solid #ccc;border-radius:6px 0 0 6px;padding:8px 12px;font-size:12px;color:#aaa;">🔍 Search by interest, name...</div>
+          <div class="wf-btn" style="border-radius:0 6px 6px 0;padding:8px 16px;">🔍</div>
+        </div>
+      </div>
+
+      <!-- Two-column layout -->
+      <div class="wf-row" style="align-items:flex-start;gap:20px;">
+
+        <!-- LEFT: Filter Panel -->
+        <div style="width:280px;flex-shrink:0;">
+          <div class="annotation">Left: Filter Panel (~280px)</div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:14px;font-weight:700;">Filters (N)</div>
+            <span style="font-size:11px;color:#2563eb;">Reset Filters</span>
+          </div>
+
+          <!-- Quick Filters -->
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Experts' Choice</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <div class="wf-box blue" style="min-height:28px;flex:1;font-size:10px;">MOST</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:10px;">HIGHLY</div>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Type</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:10px;">Program</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:10px;">Competition</div>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Location</div>
+            <div class="wf-box" style="min-height:28px;font-size:10px;">📍 Use current location</div>
+            <div class="wf-box" style="min-height:28px;font-size:10px;margin-top:4px;">City, State, or Zip</div>
+            <div class="wf-box" style="min-height:28px;font-size:10px;margin-top:4px;">Radius: [Select ▼]</div>
+            <div style="display:flex;gap:6px;margin-top:4px;font-size:10px;color:#666;">
+              <span>☑ Include Online</span>
+              <span>☐ Online Only</span>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Season</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:10px;">⛵ Summer</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:10px;">🍂 Fall</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:10px;">🌸 Spring</div>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Current Grade</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:11px;font-weight:600;">9</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:11px;font-weight:600;">10</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:11px;font-weight:600;">11</div>
+              <div class="wf-box" style="min-height:28px;flex:1;font-size:11px;font-weight:600;">12</div>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Interests</div>
+            <div class="wf-box" style="min-height:28px;font-size:10px;">Add more interests to filter on...</div>
+            <div style="margin-top:4px;">
+              <span class="wf-pill">STEM ✕</span>
+              <span class="wf-pill">Research ✕</span>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:8px;">
+            <div class="wf-label">Financial Accessibility</div>
+            <div style="font-size:10px;color:#666;line-height:1.8;margin-top:4px;">
+              ☐ A+ — Free + (stipend)<br>
+              ☐ A — Free<br>
+              ☐ A- — Very low cost<br>
+              ☐ B+ — Low cost with aid<br>
+              ☐ B- — Average cost<br>
+              ☐ C+ — High cost
+            </div>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <span style="font-size:10px;color:#2563eb;">Select All</span>
+              <span style="font-size:10px;color:#999;">Clear All</span>
+            </div>
+          </div>
+
+          <div class="wf-box" style="min-height:32px;font-size:10px;">▶ Advanced Criteria (collapsed)</div>
+          <div class="wf-box" style="min-height:32px;font-size:10px;margin-top:4px;">▶ Only For... (collapsed)</div>
+          <div class="wf-box" style="min-height:32px;font-size:10px;margin-top:4px;">▶ Filter Out... (collapsed)</div>
+        </div>
+
+        <!-- RIGHT: Results -->
+        <div style="flex:1;">
+          <div class="annotation">Right: Results list with sort & pagination</div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:12px;color:#666;">1-100 of 2100+ results</span>
+            <div class="wf-box solid" style="min-height:28px;width:120px;font-size:10px;">Sort: Relevancy ▼</div>
+          </div>
+
+          <!-- Program Card x3 -->
+          <div class="wf-card" style="margin-bottom:10px;">
+            <div style="display:flex;gap:12px;">
+              <div class="wf-icon sq lg">Logo</div>
+              <div style="flex:1;">
+                <div style="font-size:10px;color:#999;">Score: 1.00</div>
+                <div style="font-size:14px;font-weight:600;color:#1e3a5f;">Clark Scholars Program</div>
+                <div style="font-size:11px;color:#666;">Texas Tech University</div>
+                <div style="margin:4px 0;"><span class="wf-pill">Research</span><span class="wf-pill">STEM</span><span class="wf-pill">Science</span></div>
+                <div style="font-size:11px;color:#666;">📅 Summer: Jun 17 - Aug 2</div>
+                <div style="font-size:11px;color:#666;">📍 Lubbock, TX</div>
+                <div style="font-size:11px;color:#dc2626;">⏰ Deadline: in 1 day</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">↗</div>
+                <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">⇔</div>
+                <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">+</div>
+                <div class="wf-badge">MOST</div>
+                <div style="font-size:10px;color:#666;">☆ Save</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf-card" style="margin-bottom:10px;">
+            <div style="display:flex;gap:12px;">
+              <div class="wf-icon sq lg">Logo</div>
+              <div style="flex:1;">
+                <div style="font-size:10px;color:#999;">Score: 1.00</div>
+                <div style="font-size:14px;font-weight:600;color:#1e3a5f;">MIT PRIMES</div>
+                <div style="font-size:11px;color:#666;">Massachusetts Institute of Technology</div>
+                <div style="margin:4px 0;"><span class="wf-pill">Math</span><span class="wf-pill">Research</span></div>
+                <div style="font-size:11px;color:#666;">📅 School Year: Sep - May</div>
+                <div style="font-size:11px;color:#666;">📍 Cambridge, MA + Online</div>
+                <div style="font-size:11px;color:#999;">⏰ Deadline: on Dec 1, 2026</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">↗</div>
+                <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">⇔</div>
+                <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">+</div>
+                <div class="wf-badge" style="background:#60a5fa;">HIGHLY</div>
+                <div style="font-size:10px;color:#666;">☆ Save</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA Banner -->
+          <div class="wf-box orange" style="min-height:50px;flex-direction:column;gap:6px;">
+            <div style="font-size:12px;font-weight:600;">Contact Our Experts For Free Program Recommendations</div>
+            <div class="wf-btn sm">Ask Snowday</div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <div class="wf-card" style="margin-bottom:10px;">
+              <div style="display:flex;gap:12px;">
+                <div class="wf-icon sq lg">Logo</div>
+                <div style="flex:1;">
+                  <div style="font-size:14px;font-weight:600;color:#1e3a5f;">Program Name Placeholder</div>
+                  <div style="font-size:11px;color:#666;">Organization Name</div>
+                  <div style="margin:4px 0;"><span class="wf-pill">Tag</span><span class="wf-pill">Tag</span></div>
+                  <div style="font-size:11px;color:#666;">📅 Season: Date Range</div>
+                  <div style="font-size:11px;color:#666;">📍 Location</div>
+                  <div style="font-size:11px;color:#dc2626;">⏰ Deadline: passed</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">↗</div>
+                  <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">⇔</div>
+                  <div class="wf-icon" style="width:24px;height:24px;font-size:10px;">+</div>
+                  <div style="font-size:10px;color:#666;">☆ Save</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="annotation">Pagination — 100 per page</div>
+          <div style="display:flex;gap:4px;justify-content:center;margin-top:12px;">
+            <div class="wf-box blue" style="width:32px;min-height:32px;font-size:11px;font-weight:700;">1</div>
+            <div class="wf-box" style="width:32px;min-height:32px;font-size:11px;">2</div>
+            <div class="wf-box" style="width:32px;min-height:32px;font-size:11px;">3</div>
+            <div class="wf-box" style="width:32px;min-height:32px;font-size:11px;">...</div>
+            <div class="wf-box" style="width:32px;min-height:32px;font-size:11px;">22</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: PROGRAM DETAIL ==================== -->
+<div class="page" id="page-detail">
+  <div class="frame">
+    <div class="frame-title">Page 3 — Program Detail ( /learning-opportunities/{uuid}/{slug} )</div>
+    <div class="wf" style="max-width:800px;margin:0 auto;">
+
+      <!-- Top bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="wf-box solid" style="width:60px;min-height:32px;font-size:11px;">← Back</div>
+        <div style="display:flex;gap:8px;">
+          <div class="wf-box solid" style="width:60px;min-height:32px;font-size:10px;">↗ Share</div>
+          <div class="wf-box blue" style="width:60px;min-height:32px;font-size:10px;">☆ Save</div>
+        </div>
+      </div>
+
+      <!-- Video Hero -->
+      <div class="annotation">Video/Image Carousel — ~400px height, YouTube embed</div>
+      <div class="wf-row" style="gap:12px;">
+        <div class="wf-box" style="flex:3;min-height:260px;flex-direction:column;gap:8px;">
+          <div style="font-size:40px;">▶</div>
+          <div style="font-size:12px;">YouTube Video Embed</div>
+          <div style="display:flex;gap:4px;margin-top:8px;">
+            <div style="width:8px;height:8px;background:#2563eb;border-radius:50%;"></div>
+            <div style="width:8px;height:8px;background:#ccc;border-radius:50%;"></div>
+            <div style="width:8px;height:8px;background:#ccc;border-radius:50%;"></div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div class="wf-box" style="min-height:70px;font-size:10px;">Thumbnail 1<br>▶ Play</div>
+          <div class="wf-box" style="min-height:70px;font-size:10px;">Thumbnail 2<br>▶ Play</div>
+          <div class="wf-badge" style="align-self:center;padding:6px 12px;">MOST RECOMMENDED</div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- Program Info -->
+      <div class="annotation">Program basic info section</div>
+      <div style="display:flex;gap:14px;align-items:flex-start;">
+        <div class="wf-icon sq lg">Logo</div>
+        <div>
+          <div style="font-size:20px;font-weight:700;color:#1e3a5f;">Clark Scholars Program</div>
+          <div style="font-size:13px;color:#2563eb;margin:2px 0;">Texas Tech University</div>
+          <div style="margin:6px 0;"><span class="wf-pill">Research</span><span class="wf-pill">STEM</span><span class="wf-pill">Science</span></div>
+          <div class="wf-text">🏷 Program &nbsp; 📅 Summer: Jun 17 - Aug 2 &nbsp; 📍 Lubbock, TX</div>
+          <div class="wf-text">⏰ <span style="color:#dc2626;">Deadline: in 1 day</span> &nbsp; 💰 <span style="color:#2563eb;">View Costs</span></div>
+        </div>
+      </div>
+
+      <div class="wf-divider"></div>
+
+      <!-- About -->
+      <div class="wf-heading" style="font-size:15px;">About</div>
+      <div class="wf-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</div>
+      <span style="font-size:11px;color:#2563eb;">View more ▼</span>
+
+      <div class="wf-divider"></div>
+
+      <!-- Accordions -->
+      <div class="annotation">3 collapsible Accordion sections</div>
+      <div class="wf-card" style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;">Sessions</span>
+          <span style="color:#999;">▼</span>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#666;">
+          Session 1: Jun 17 - Jul 5, 2026<br>
+          Session 2: Jul 7 - Aug 2, 2026
+        </div>
+      </div>
+      <div class="wf-card" style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;">Applications</span>
+          <span style="color:#999;">▶</span>
+        </div>
+      </div>
+      <div class="wf-card" style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:600;">Eligibility</span>
+          <span style="color:#999;">▶</span>
+        </div>
+      </div>
+
+      <div class="wf-divider"></div>
+
+      <!-- External link -->
+      <div class="wf-btn" style="display:inline-flex;align-items:center;gap:6px;">🌐 View Website</div>
+
+      <div class="wf-divider"></div>
+
+      <!-- Ratings -->
+      <div class="annotation">Ratings section</div>
+      <div class="wf-heading" style="font-size:15px;">Ratings</div>
+      <div class="wf-row" style="gap:20px;margin-top:8px;">
+        <div>
+          <div class="wf-label">Highly Selective</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <div class="wf-box blue" style="min-height:28px;width:50px;font-size:10px;">Yes</div>
+            <div class="wf-box" style="min-height:28px;width:50px;font-size:10px;">No</div>
+          </div>
+        </div>
+        <div>
+          <div class="wf-label">Financial Accessibility</div>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <div class="wf-box blue" style="min-height:28px;width:36px;font-size:10px;">A+</div>
+            <div class="wf-box" style="min-height:28px;width:36px;font-size:10px;">A</div>
+            <div class="wf-box" style="min-height:28px;width:36px;font-size:10px;">B+</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4: LISTS OVERVIEW ==================== -->
+<div class="page" id="page-lists">
+  <div class="frame">
+    <div class="frame-title">Page 4 — Lists Overview ( /lists )</div>
+    <div class="wf">
+      <div class="wf-header">
+        <div class="wf-header-left">
+          <div class="wf-icon" style="width:28px;height:28px;font-size:16px;">❄</div>
+          <span style="font-weight:700;font-size:14px;">Snowday</span>
+        </div>
+        <div class="wf-header-nav"><span>🔍 Find</span><span>📋 Lists</span><span>📌 My Lists</span></div>
+        <div class="wf-btn sm">Sign In</div>
+      </div>
+
+      <div class="wf-heading" style="margin:16px 0 12px;">Featured Lists</div>
+
+      <div class="annotation">Responsive grid: 3-col desktop, 2-col tablet, 1-col mobile</div>
+      <div class="wf-grid c3">
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">School Counseling Group's Favorite Programs</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon">👤</div>
+            <div><div style="font-size:11px;font-weight:500;">Author Name</div><div style="font-size:10px;color:#999;">Admissions Consultants</div></div>
+          </div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Top STEM Programs for Rising Juniors</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon">👤</div>
+            <div><div style="font-size:11px;font-weight:500;">Author Name</div><div style="font-size:10px;color:#999;">Education Expert</div></div>
+          </div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Best Free Summer Programs 2026</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon">👤</div>
+            <div><div style="font-size:11px;font-weight:500;">Author Name</div><div style="font-size:10px;color:#999;">College Counselor</div></div>
+          </div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Wharton Pre-College Programs</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon">👤</div>
+            <div><div style="font-size:11px;font-weight:500;">Author Name</div><div style="font-size:10px;color:#999;">Consultant</div></div>
+          </div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Leadership Programs for High Schoolers</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon">👤</div>
+            <div><div style="font-size:11px;font-weight:500;">Author Name</div><div style="font-size:10px;color:#999;">Educator</div></div>
+          </div>
+        </div>
+        <div class="wf-card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Community Service Opportunities</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="wf-icon">👤</div>
+            <div><div style="font-size:11px;font-weight:500;">Author Name</div><div style="font-size:10px;color:#999;">Advisor</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 5: LIST DETAIL ==================== -->
+<div class="page" id="page-listdetail">
+  <div class="frame">
+    <div class="frame-title">Page 5 — List Detail ( /lists/{uuid}/{slug} )</div>
+    <div class="wf" style="max-width:800px;margin:0 auto;">
+
+      <!-- Top bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="wf-box solid" style="width:60px;min-height:32px;font-size:11px;">← Back</div>
+        <div style="display:flex;gap:8px;">
+          <div class="wf-box solid" style="width:60px;min-height:32px;font-size:10px;">↗ Share</div>
+          <div class="wf-box blue" style="width:80px;min-height:32px;font-size:10px;">Save List</div>
+        </div>
+      </div>
+
+      <!-- List Info -->
+      <div class="annotation">List metadata + description</div>
+      <div style="font-size:22px;font-weight:700;color:#1e3a5f;margin-bottom:6px;">School Counseling Group's Favorite Programs</div>
+      <div style="font-size:12px;color:#666;margin-bottom:4px;">From <span style="color:#2563eb;">Author Name</span></div>
+      <div style="font-size:11px;color:#999;margin-bottom:12px;">Updated Dec 22, 2025</div>
+      <div style="font-size:11px;color:#2563eb;margin-bottom:12px;">🔗 Learn More About the Method</div>
+      <div class="wf-text">Multi-paragraph description of the list. The author explains their selection criteria, methodology, and why these programs are recommended...</div>
+
+      <div class="wf-divider"></div>
+
+      <!-- Items -->
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">21 opportunities</div>
+
+      <!-- Card with author commentary -->
+      <div class="wf-card" style="margin-bottom:12px;">
+        <div style="display:flex;gap:12px;">
+          <div class="wf-icon sq lg">Logo</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:#1e3a5f;">Clark Scholars Program</div>
+            <div style="font-size:11px;color:#666;">Texas Tech University</div>
+            <div style="margin:4px 0;"><span class="wf-pill">Research</span><span class="wf-pill">STEM</span></div>
+            <div style="font-size:11px;color:#666;">📅 Summer: Jun 17 - Aug 2 &nbsp; 📍 Lubbock, TX</div>
+          </div>
+        </div>
+        <!-- Author Commentary (unique to list detail) -->
+        <div style="background:#f5f5f5;border-radius:6px;padding:10px;margin-top:10px;">
+          <div class="wf-label">Author's Commentary</div>
+          <div style="font-size:11px;color:#555;line-height:1.6;">"This is one of the most prestigious research programs for high schoolers. Students work directly with faculty on original research..."</div>
+          <span style="font-size:10px;color:#2563eb;">View more ▼</span>
+        </div>
+      </div>
+
+      <!-- Text paragraph (interspersed) -->
+      <div class="annotation">Text-only paragraph inserted by list author (unique feature)</div>
+      <div style="background:#fffbeb;border:1px dashed #fbbf24;border-radius:6px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:12px;color:#666;line-height:1.6;">The following programs are all part of the Wharton ecosystem. Each offers a different focus area and timeline...</div>
+      </div>
+
+      <!-- Another card -->
+      <div class="wf-card" style="margin-bottom:12px;">
+        <div style="display:flex;gap:12px;">
+          <div class="wf-icon sq lg">Logo</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:#1e3a5f;">Wharton Pre-Baccalaureate Program</div>
+            <div style="font-size:11px;color:#666;">University of Pennsylvania</div>
+            <div style="margin:4px 0;"><span class="wf-pill">Business</span><span class="wf-pill">Leadership</span></div>
+            <div style="font-size:11px;color:#666;">📅 Summer: Jul 1 - Aug 10 &nbsp; 📍 Philadelphia, PA</div>
+          </div>
+        </div>
+        <div style="background:#f5f5f5;border-radius:6px;padding:10px;margin-top:10px;">
+          <div class="wf-label">Author's Commentary</div>
+          <div style="font-size:11px;color:#555;line-height:1.6;">"An excellent introduction to business and economics for motivated students..."</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 6: AUTH ==================== -->
+<div class="page" id="page-auth">
+  <div class="frame">
+    <div class="frame-title">Page 6 — Authentication ( /auth )</div>
+    <div class="wf">
+      <div class="annotation">Two variants shown side by side: Sign In (left) and Sign Up (right)</div>
+      <div class="wf-grid c2" style="gap:30px;">
+
+        <!-- Sign In -->
+        <div class="wf-card" style="background:#eff6ff;padding:30px;">
+          <div style="text-align:center;">
+            <div class="wf-heading">Sign In</div>
+            <div style="font-size:12px;color:#666;margin-bottom:16px;">Not registered yet? <span style="color:#2563eb;font-weight:600;">Sign Up</span></div>
+            <div class="wf-divider"></div>
+            <div class="wf-box solid" style="min-height:40px;margin-top:12px;">
+              <span style="font-size:12px;">🔵 Continue with Google</span>
+            </div>
+            <div style="font-size:11px;color:#999;margin:12px 0;">— or —</div>
+            <div class="wf-box" style="min-height:36px;font-size:11px;text-align:left;justify-content:flex-start;padding-left:12px;">Email address</div>
+            <div class="wf-box" style="min-height:36px;font-size:11px;margin-top:8px;text-align:left;justify-content:flex-start;padding-left:12px;">Password</div>
+            <div style="text-align:right;margin:8px 0;"><span style="font-size:11px;color:#2563eb;">Forgot password?</span></div>
+            <div class="wf-btn" style="width:100%;text-align:center;margin-top:8px;">SIGN IN</div>
+          </div>
+        </div>
+
+        <!-- Sign Up -->
+        <div class="wf-card" style="background:#eff6ff;padding:30px;">
+          <div style="text-align:center;">
+            <div class="wf-heading">Sign Up</div>
+            <div style="font-size:12px;color:#666;margin-bottom:16px;">Already have an account? <span style="color:#2563eb;font-weight:600;">Sign In</span></div>
+            <div class="wf-divider"></div>
+            <div class="wf-box solid" style="min-height:40px;margin-top:12px;">
+              <span style="font-size:12px;">🔵 Continue with Google</span>
+            </div>
+            <div style="font-size:11px;color:#999;margin:12px 0;">— or —</div>
+            <div class="wf-box" style="min-height:36px;font-size:11px;text-align:left;justify-content:flex-start;padding-left:12px;">Email address</div>
+            <div class="wf-box" style="min-height:36px;font-size:11px;margin-top:8px;text-align:left;justify-content:flex-start;padding-left:12px;">Password</div>
+            <div class="wf-btn" style="width:100%;text-align:center;margin-top:16px;">SIGN UP</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+      <div class="annotation">Auth redirect variant: when accessing protected page while logged out</div>
+      <div class="wf-card" style="background:#eff6ff;padding:20px;max-width:400px;margin:0 auto;text-align:center;">
+        <div class="wf-heading" style="font-size:16px;">Sign In To See Your Lists</div>
+        <div class="wf-text">URL: /auth?redirectToPath=/account/lists</div>
+        <div class="wf-text">After login → redirect back to /account/lists</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 7: MISSION ==================== -->
+<div class="page" id="page-mission">
+  <div class="frame">
+    <div class="frame-title">Page 7 — Mission ( /mission )</div>
+    <div class="wf">
+
+      <!-- Hero -->
+      <div class="annotation">Section 1: Navy Hero with mission statement</div>
+      <div class="wf-box dark" style="min-height:120px;font-size:16px;font-weight:600;padding:30px;line-height:1.6;">
+        Our mission is to make the education sector radically more open and navigable for all.
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- Promises -->
+      <div class="annotation">Section 2-3: Our Promises with detailed checklists</div>
+      <div class="wf-heading">Our Promises to students & families...</div>
+      <div class="wf-grid c3" style="margin-top:12px;">
+        <div class="wf-card" style="background:#eff6ff;">
+          <div style="text-align:center;margin-bottom:8px;font-size:24px;">🔒</div>
+          <div style="font-size:13px;font-weight:600;text-align:center;margin-bottom:8px;">100% Data Privacy</div>
+          <div style="font-size:10px;color:#666;line-height:1.8;">
+            ✓ Your personal info belongs to you<br>
+            ✓ We never sell your data<br>
+            ✓ Full transparency on data usage
+          </div>
+        </div>
+        <div class="wf-card" style="background:#eff6ff;">
+          <div style="text-align:center;margin-bottom:8px;font-size:24px;">⚖️</div>
+          <div style="font-size:13px;font-weight:600;text-align:center;margin-bottom:8px;">Unbiased Algorithm</div>
+          <div style="font-size:10px;color:#666;line-height:1.8;">
+            ✓ Students come first<br>
+            ✓ No pay-to-rank<br>
+            ✓ Transparent methodology
+          </div>
+        </div>
+        <div class="wf-card" style="background:#eff6ff;">
+          <div style="text-align:center;margin-bottom:8px;font-size:24px;">🆓</div>
+          <div style="font-size:13px;font-weight:600;text-align:center;margin-bottom:8px;">Free, Forever</div>
+          <div style="font-size:10px;color:#666;line-height:1.8;">
+            ✓ No paywalls<br>
+            ✓ No premium tiers<br>
+            ✓ Access for everyone
+          </div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- Community -->
+      <div class="annotation">Section 4: Our Community — Educators & Students grids</div>
+      <div class="wf-heading">Our Community</div>
+      <div class="wf-subheading">Educators</div>
+      <div class="wf-grid c4" style="margin-bottom:16px;">
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Institution</div></div>
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Institution</div></div>
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Institution</div></div>
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Institution</div></div>
+      </div>
+      <div class="wf-subheading">Students</div>
+      <div class="wf-grid c4">
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Role</div></div>
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Role</div></div>
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Role</div></div>
+        <div class="wf-box" style="min-height:80px;flex-direction:column;gap:4px;"><div class="wf-icon">👤</div><div style="font-size:10px;">Name</div><div style="font-size:9px;color:#999;">Role</div></div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- CTA -->
+      <div class="wf-box dark" style="min-height:80px;flex-direction:column;gap:8px;">
+        <div style="font-size:14px;font-weight:600;">Join the community to help build this shared and free resource.</div>
+        <div class="wf-btn sm" style="background:#fff;color:#1e3a5f;">Get Involved</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 8: SHARED COMPONENTS ==================== -->
+<div class="page" id="page-components">
+  <div class="frame">
+    <div class="frame-title">Shared Components Reference</div>
+    <div class="wf">
+
+      <div class="annotation">Component 1: Global Header — appears on all pages</div>
+      <div class="wf-header" style="margin-bottom:16px;">
+        <div class="wf-header-left">
+          <div class="wf-icon" style="width:28px;height:28px;font-size:16px;">❄</div>
+          <span style="font-weight:700;font-size:14px;">Snowday</span>
+          <span class="wf-badge" style="background:#60a5fa;font-size:8px;">beta</span>
+        </div>
+        <div class="wf-header-nav">
+          <span>🔍 Find</span>
+          <span>📋 Lists</span>
+          <span>📌 My Lists</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="wf-btn sm">Sign In</div>
+          <span style="font-size:10px;color:#999;">or</span>
+          <div class="wf-icon" style="width:32px;height:32px;">👤</div>
+          <span style="font-size:10px;color:#999;">(logged in)</span>
+        </div>
+      </div>
+
+      <div class="annotation">Component 2: Global Footer</div>
+      <div class="wf-footer" style="margin-bottom:16px;">
+        <div class="wf-footer-col"><strong>❄ Snowday</strong><br>About: Our Promises | Our Community<br>Legal: Terms of Service | Privacy Policy</div>
+        <div class="wf-footer-col" style="text-align:right;">Social: IG | TikTok | LinkedIn<br>Contact Us<br>© Snowday 2026</div>
+      </div>
+
+      <div class="annotation">Component 3: Program Card (reused in Search, List Detail, My Lists)</div>
+      <div class="wf-card" style="max-width:700px;margin-bottom:16px;">
+        <div style="display:flex;gap:12px;">
+          <div class="wf-icon sq lg">Logo<br><span style="font-size:8px;">60×60</span></div>
+          <div style="flex:1;">
+            <div style="font-size:10px;color:#999;">Score: 1.00</div>
+            <div style="font-size:14px;font-weight:600;color:#1e3a5f;">Program Name (clickable → detail page)</div>
+            <div style="font-size:11px;color:#666;">Organization Name (clickable)</div>
+            <div style="margin:4px 0;"><span class="wf-pill">Interest Tag</span><span class="wf-pill">Interest Tag</span></div>
+            <div style="font-size:11px;color:#666;">📅 Season: Date Range</div>
+            <div style="font-size:11px;color:#666;">📍 Location</div>
+            <div style="font-size:11px;">⏰ Deadline: <span style="color:#dc2626;">red=passed</span> / <span style="color:#f59e0b;">orange=soon</span> / <span style="color:#999;">gray=future</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:10px;color:#666;">
+            <div>↗ Share</div>
+            <div>⇔ Compare</div>
+            <div>+ Add to List</div>
+            <div class="wf-badge">MOST</div>
+            <div>☆ Save</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="annotation">Component 4: Ask Snowday CTA Banner (inserted every ~5 cards)</div>
+      <div class="wf-box orange" style="max-width:700px;min-height:50px;flex-direction:column;gap:6px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;">Contact Our Experts For Free Program Recommendations</div>
+        <div class="wf-btn sm">Ask Snowday</div>
+      </div>
+
+      <div class="annotation">Component 5: Ask Snowday Modal (triggered by CTA button)</div>
+      <div style="max-width:350px;margin:0 auto 16px;">
+        <div class="wf-card" style="text-align:center;padding:24px;border:2px solid #2563eb;">
+          <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Get Expert Recommendations</div>
+          <div class="wf-btn" style="width:100%;text-align:center;margin-bottom:8px;">Schedule video call</div>
+          <div class="wf-btn outline" style="width:100%;text-align:center;">Send email</div>
+          <div style="font-size:10px;color:#999;margin-top:8px;">✕ Close (or click overlay)</div>
+        </div>
+      </div>
+
+      <div class="annotation">Component 6: List Card (reused in Homepage carousel & Lists overview)</div>
+      <div class="wf-card" style="max-width:280px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">List Title Goes Here</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="wf-icon" style="width:32px;height:32px;">👤</div>
+          <div>
+            <div style="font-size:11px;font-weight:500;">Author Name</div>
+            <div style="font-size:10px;color:#999;">Role / Organization</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="annotation">Component 7: Interest Pill Tag (clickable, removable in filters)</div>
+      <div style="margin-bottom:16px;">
+        <span class="wf-pill">STEM</span>
+        <span class="wf-pill">Research ✕</span>
+        <span class="wf-pill">Science ✕</span>
+        <span style="font-size:10px;color:#999;margin-left:8px;">← with ✕ = removable in filter panel</span>
+      </div>
+
+      <div class="annotation">Component 8: Experts' Choice Badge</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+        <div class="wf-badge" style="padding:6px 14px;">MOST</div>
+        <span style="font-size:10px;color:#999;">= Most Recommended (highest tier)</span>
+        <div class="wf-badge" style="background:#60a5fa;padding:6px 14px;">HIGHLY</div>
+        <span style="font-size:10px;color:#999;">= Highly Recommended</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+
+</body>
+</html>
