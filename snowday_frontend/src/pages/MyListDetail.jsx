@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpDown, BadgeDollarSign, Calendar, Clock, Edit3, GraduationCap, MapPin, MoreVertical, Plus, Search, Share, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, ArrowUpDown, Calendar, Clock, Edit3, MapPin, MoreVertical, Plus, Search, Share, Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -12,10 +12,10 @@ export default function MyListDetail() {
 
   // Placeholder for the list details
   const listDetails = {
-    title: '123',
-    description: '213',
-    author: '十大2',
-    updated: 'Feb 23'
+    title: "School Counseling Group's Favorite Programs",
+    description: "Our team of former admissions officers and independent counselors have vetted these programs for their academic rigor, mentorship quality, and impact on college applications.\n\nWe prioritize programs that offer hands-on research or professional-level experiences that help students find their 'spike' for elite admissions.",
+    author: 'School Counseling Group',
+    updated: 'Feb 24, 2026'
   }
 
   // Mock search results for 'stan'
@@ -58,12 +58,12 @@ export default function MyListDetail() {
             </div>
 
             {/* List Header Info */}
-            <div>
+            <div className="sticky top-24">
               <h1 className="text-3xl font-bold text-[#011936] leading-tight mb-2">{listDetails.title}</h1>
-              <div className="text-sm text-slate-500 mb-4">
-                From {listDetails.author} • Updated {listDetails.updated}
+              <div className="text-sm text-slate-500 mb-6">
+                From <span className="text-[#892233] font-bold">{listDetails.author}</span> • Updated {listDetails.updated}
               </div>
-              <div className="text-slate-700 whitespace-pre-line text-[15px]">
+              <div className="text-slate-700 whitespace-pre-line text-[15px] leading-relaxed bg-[#ddfff7]/20 p-6 rounded-xl border border-[#011936]/5">
                 {listDetails.description}
               </div>
             </div>
@@ -90,69 +90,80 @@ export default function MyListDetail() {
               </div>
             ) : (
               <div>
-                <div className="flex justify-between items-center mb-4 font-bold text-sm">
-                  <button className="flex items-center gap-2 text-[#892233] hover:text-[#780000]">
+                <div className="flex justify-between items-center mb-6 font-bold text-sm">
+                  <button className="flex items-center gap-2 text-[#892233] hover:text-[#780000] bg-white px-4 py-2 rounded-lg border border-slate-100 shadow-sm transition-all">
                     <ArrowUpDown size={16} /> Reorder
                   </button>
                   <button 
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 text-[#892233] hover:text-[#780000]"
+                    className="flex items-center gap-2 text-[#892233] hover:text-[#780000] bg-white px-4 py-2 rounded-lg border border-slate-100 shadow-sm transition-all"
                   >
                     <Plus size={16} /> New Opportunity
                   </button>
                 </div>
 
                 {/* Horizontal Opportunity Card */}
-                <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex gap-6 relative group">
+                <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm flex flex-col gap-6 relative group overflow-hidden transition-all hover:shadow-md">
                   
-                  {/* Logo block */}
-                  <div className="w-24 h-24 bg-[#8C1515] rounded-xl flex items-center justify-center shrink-0">
-                    <span className="text-white font-serif text-5xl">S</span>
+                  <div className="flex gap-8 relative">
+                    {/* Logo block */}
+                    <div className="w-24 h-24 bg-[#8C1515] rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-slate-100 overflow-hidden">
+                      <span className="text-white font-serif text-5xl">S</span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="pr-24 mb-4">
+                        <h3 className="text-xl font-bold text-[#011936] leading-tight mb-1 hover:text-[#892233] cursor-pointer transition-colors">
+                          Stanford Physics Internship: Women and Individualized Projects (SPINWIP)
+                        </h3>
+                        <div className="text-slate-600 text-base">Stanford University</div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        <span className="px-3 py-1 bg-[#ddfff7] text-[#011936] rounded-full text-xs font-bold border border-[#011936]/10">Research</span>
+                        <span className="px-3 py-1 bg-[#ddfff7] text-[#011936] rounded-full text-xs font-bold border border-[#011936]/10">STEM</span>
+                        <span className="px-3 py-1 bg-[#ddfff7] text-[#011936] rounded-full text-xs font-bold border border-[#011936]/10">Coding</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm text-[#011936] font-medium">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={18} className="text-[#892233]" /> 
+                          <span>Summer: Jul 7 - Jul 25 <span className="text-[#ff751f]">✨</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin size={18} className="text-[#892233]" /> Online
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock size={18} className="text-[#892233]" /> 
+                          <span className="italic">Deadline:</span> on May 1 <span className="text-[#ff751f]">✨</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Top Right Badges */}
+                    <div className="absolute top-0 right-0 flex items-center gap-3">
+                      <div className="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-[#892233] transition-colors cursor-pointer">
+                        <Share size={18} />
+                      </div>
+                      <div className="w-12 h-12 bg-[#ff751f] rounded-full flex items-center justify-center border-4 border-white text-white shadow-lg" title="Highly Recommended">
+                        <Sparkles size={24} />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="pr-20 mb-3">
-                      <h3 className="text-lg font-bold text-[#011936] leading-tight mb-1 hover:text-[#892233] cursor-pointer">
-                        Stanford Physics Internship: Women and Individualized Projects (SPINWIP)
-                      </h3>
-                      <div className="text-slate-600 text-sm">Stanford University</div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="px-3 py-1 bg-[#ddfff7] text-[#011936] rounded-full text-xs font-bold border border-[#011936]/10">Research</span>
-                      <span className="px-3 py-1 bg-[#ddfff7] text-[#011936] rounded-full text-xs font-bold border border-[#011936]/10">STEM</span>
-                      <span className="px-3 py-1 bg-[#ddfff7] text-[#011936] rounded-full text-xs font-bold border border-[#011936]/10">Coding</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 text-sm text-[#011936] font-medium">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={16} className="text-[#892233]/40" /> 
-                        <span>Summer: Jul 7 - Jul 25 <span className="text-[#ff751f]">✨</span></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin size={16} className="text-[#892233]/40" /> Online
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock size={16} className="text-[#892233]/40" /> 
-                        <span className="italic">Deadline:</span> on May 1 <span className="text-[#ff751f]">✨</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Top Right Badges */}
-                  <div className="absolute top-6 right-6 flex items-center gap-2">
-                    <GraduationCap size={18} className="text-[#011936]" />
-                    <BadgeDollarSign size={18} className="text-[#011936]" />
-                    <div className="w-10 h-10 bg-[#ff751f] rounded-full flex items-center justify-center border-2 border-white text-white shadow-md ml-1" title="Highly Recommended">
-                      <Sparkles size={18} />
+                  {/* Author Commentary (Unique to this page) */}
+                  <div className="mt-2 bg-[#f8fafc] border border-slate-100 rounded-xl p-6 relative">
+                    <div className="absolute -top-3 left-6 px-3 bg-[#892233] text-white text-[10px] font-black uppercase tracking-widest rounded-full py-1">Author's Commentary</div>
+                    <div className="text-slate-700 text-[15px] leading-relaxed italic">
+                      "This is one of the most prestigious research programs for high schoolers. Students work directly with faculty on original research projects. We've seen alumni from SPINWIP leverage their experience to gain admission to Stanford, Caltech, and MIT consistently."
                     </div>
                   </div>
 
                   {/* Bottom Right Menu */}
-                  <div className="absolute bottom-6 right-6">
-                    <button className="text-[#892233] hover:text-[#780000] p-1">
-                      <MoreVertical size={20} />
+                  <div className="absolute bottom-6 right-8">
+                    <button className="text-slate-300 hover:text-[#892233] p-1 transition-colors">
+                      <MoreVertical size={24} />
                     </button>
                   </div>
 

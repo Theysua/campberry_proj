@@ -1,4 +1,4 @@
-import { ArrowRight, BadgeDollarSign, Briefcase, Code, Cog, Compass, Crown, Leaf, Microscope, PenTool, Search, Trophy } from 'lucide-react'
+import { ArrowRight, BookOpen, Briefcase, Building2, FlaskConical, Globe, Microscope, Search, Sun } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import Badge from '../components/Badge'
 import ListCard from '../components/ListCard'
@@ -7,18 +7,13 @@ export default function Home() {
   const navigate = useNavigate()
 
   const topSearches = [
-    { icon: <Compass size={24} strokeWidth={1.5} />, label: 'Browse All' },
-    { icon: <Compass size={24} strokeWidth={1.5} />, label: 'Summer' },
-    { icon: <Briefcase size={24} strokeWidth={1.5} />, label: 'School Year' },
-    { icon: <Trophy size={24} strokeWidth={1.5} />, label: 'Competition' },
-    { icon: <BadgeDollarSign size={24} strokeWidth={1.5} />, label: 'Free' },
-    { icon: <Cog size={24} strokeWidth={1.5} />, label: 'Engineering' },
-    { icon: <Crown size={24} strokeWidth={1.5} />, label: 'Leadership' },
-    { icon: <Code size={24} strokeWidth={1.5} />, label: 'Coding' },
-    { icon: <PenTool size={24} strokeWidth={1.5} />, label: 'Writing' },
+    { icon: <Sun size={24} strokeWidth={1.5} />, label: 'Summer' },
     { icon: <Microscope size={24} strokeWidth={1.5} />, label: 'STEM' },
     { icon: <Briefcase size={24} strokeWidth={1.5} />, label: 'Business' },
-    { icon: <Leaf size={24} strokeWidth={1.5} />, label: 'Sustainability' },
+    { icon: <BookOpen size={24} strokeWidth={1.5} />, label: 'Humanities' },
+    { icon: <FlaskConical size={24} strokeWidth={1.5} />, label: 'Research' },
+    { icon: <Globe size={24} strokeWidth={1.5} />, label: 'Hong Kong' },
+    { icon: <Building2 size={24} strokeWidth={1.5} />, label: 'Leadership' },
   ]
 
   const featuredLists = [
@@ -112,28 +107,24 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="card p-8 border-t-4 border-t-[#892233] bg-white">
+            <div className="card p-8 border-t-4 border-t-[#892233] bg-white group hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-bold mb-2 flex flex-wrap items-center gap-2">Experts' Choice <Badge type="NEW" /></h3>
-              <p className="text-[#011936] mb-6 text-sm opacity-70">Recommended by Education Experts.</p>
+              <p className="text-[#011936] mb-6 text-sm opacity-70">Top-tier programs selected by education consultants.</p>
               <div className="flex gap-3 mb-6">
                 <Badge type="MOST" />
                 <Badge type="HIGHLY" />
               </div>
-              <Link to="/search" className="text-sm font-semibold text-[#892233] hover:text-[#780000] flex items-center gap-1">Learn More &rarr;</Link>
+              <Link to="/search" className="text-sm font-semibold text-[#892233] hover:text-[#780000] flex items-center gap-1 group-hover:translate-x-1 transition-transform">Explore Experts' Choice &rarr;</Link>
             </div>
             
-            <div className="card p-8 border-t-4 border-t-[#ff751f] bg-white">
-              <h3 className="text-lg font-bold mb-2 flex items-center gap-2">Financial Accessibility <Badge type="NEW" /></h3>
-              <p className="text-[#011936] mb-6 text-sm opacity-70">Find Programs That Fit Your Budget.</p>
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="pill !bg-emerald-100 !text-emerald-800">A+</span>
-                <span className="pill !bg-emerald-100 !text-emerald-800">A</span>
-                <span className="pill !bg-emerald-100 !text-emerald-800">A-</span>
-                <span className="pill !bg-slate-100 !text-slate-600">B+</span>
-                <span className="pill !bg-slate-100 !text-slate-600">B-</span>
-                <span className="pill !bg-slate-100 !text-slate-600">C+</span>
+            <div className="card p-8 border-t-4 border-t-[#ff751f] bg-white group hover:shadow-xl transition-shadow">
+              <h3 className="text-lg font-bold mb-2 flex items-center gap-2">Impact on Admissions <Badge type="NEW" /></h3>
+              <p className="text-[#011936] mb-6 text-sm opacity-70">Proven effectiveness in elite college review.</p>
+              <div className="flex gap-3 mb-6">
+                <Badge type="IMPACT_MOST" />
+                <Badge type="IMPACT_HIGHLY" />
               </div>
-              <Link to="/search" className="text-sm font-semibold text-[#ff751f] hover:text-[#892233] flex items-center gap-1">Learn More &rarr;</Link>
+              <Link to="/search" className="text-sm font-semibold text-[#ff751f] hover:text-[#892233] flex items-center gap-1 group-hover:translate-x-1 transition-transform">See High-Impact Programs &rarr;</Link>
             </div>
           </div>
         </section>
@@ -183,7 +174,7 @@ export default function Home() {
             <ul className="space-y-4 text-white/90 relative z-10 font-bold">
               <li className="flex items-center gap-3"><span className="text-[#fade41] text-lg">✓</span> Search powered by AI</li>
               <li className="flex items-center gap-3"><span className="text-[#fade41] text-lg">✓</span> Filter by location, date, cost, and more</li>
-              <li className="flex items-center gap-3"><span className="text-[#fade41] text-lg">✓</span> Watch program showcase videos</li>
+              <li className="flex items-center gap-3"><span className="text-[#fade41] text-lg">✓</span> Expert-curated lists and ratings</li>
             </ul>
           </div>
         </section>

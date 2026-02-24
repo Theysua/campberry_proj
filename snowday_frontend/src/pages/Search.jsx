@@ -5,11 +5,38 @@ import ProgramCard from '../components/ProgramCard'
 
 import programsData from '../data/detailed_programs.json'
 
+import { useMemo, useState } from 'react'
+
 export default function Search() {
   const navigate = useNavigate()
+  const [isInternational, setIsInternational] = useState(true)
+  const [isUsOnly, setIsUsOnly] = useState(false)
+  const [locationName, setLocationName] = useState('')
   
-  // Use scrapped data for search results
-  const results = programsData
+  // Filtering logic
+  const filteredResults = useMemo(() => {
+    return programsData.filter(prog => {
+       const opp = prog.trpcData || {}
+       if (isInternational) {
+         return opp.onlyUsCitizens === false
+       }
+       if (isUsOnly) {
+         return opp.onlyUsCitizens === true || opp.onlyUsResidents === true
+       }
+       return true
+    })
+  }, [isInternational, isUsOnly])
+
+  const handleGeolocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLocationName("Current Location")
+        // In a real app, you'd reverse geocode here
+      })
+    }
+  }
+
+  const results = filteredResults
 
   return (
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in">
@@ -38,16 +65,31 @@ export default function Search() {
         <div className="w-full md:w-[280px] shrink-0 space-y-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-bold flex items-center gap-2 text-[#011936]"><SlidersHorizontal size={16}/> Filters (3)</h2>
-            <button className="text-xs font-bold text-[#892233] hover:text-[#780000]">Reset Filters</button>
+            <button 
+              className="text-xs font-bold text-[#892233] hover:text-[#780000]"
+              onClick={() => {
+                setIsInternational(true)
+                setIsUsOnly(false)
+                setLocationName('')
+              }}
+            >Reset Filters</button>
           </div>
 
           <div className="card p-4 space-y-4 shadow-sm border-slate-200">
-            {/* Experts' Choice */}
+            {/* Experts' Choice & Impact */}
             <div>
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Experts' Choice</div>
               <div className="flex gap-2">
                 <button className="flex-1 py-1.5 border border-[#892233] bg-[#ddfff7] text-[#892233] font-bold text-[10px] rounded hover:bg-[#892233] hover:text-white transition-colors">MOST</button>
                 <button className="flex-1 py-1.5 border border-slate-200 bg-white text-slate-600 font-bold text-[10px] rounded hover:border-[#892233] transition-colors">HIGHLY</button>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Impact on Admissions</div>
+              <div className="flex gap-2">
+                <button className="flex-1 py-1.5 border border-slate-200 bg-white text-slate-600 font-bold text-[10px] rounded hover:border-[#ff751f] transition-colors">MOST</button>
+                <button className="flex-1 py-1.5 border border-slate-200 bg-white text-slate-600 font-bold text-[10px] rounded hover:border-[#ff751f] transition-colors">HIGHLY</button>
               </div>
             </div>
 
@@ -63,10 +105,19 @@ export default function Search() {
             {/* Location */}
             <div>
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Location</div>
-              <button className="w-full text-left p-2 border border-slate-200 rounded text-xs text-[#011936] font-medium mb-2 hover:bg-[#ddfff7] flex items-center gap-2">
-                <MapPin size={14} className="text-[#892233]" /> Use current location
+              <button 
+                onClick={handleGeolocation}
+                className="w-full text-left p-2 border border-slate-200 rounded text-xs text-[#011936] font-medium mb-2 hover:bg-[#ddfff7] flex items-center gap-2 transition-colors"
+              >
+                <MapPin size={14} className="text-[#892233]" /> {locationName || "Use current location"}
               </button>
-              <input type="text" placeholder="City, State, or Zip" className="w-full p-2 border border-slate-200 rounded text-xs mb-2 outline-none focus:border-[#892233]" />
+              <input 
+                type="text" 
+                placeholder="City, State, or Zip" 
+                value={locationName}
+                onChange={(e) => setLocationName(e.target.value)}
+                className="w-full p-2 border border-slate-200 rounded text-xs mb-2 outline-none focus:border-[#892233]" 
+              />
               <button className="w-full text-left p-2 border border-slate-200 rounded text-xs text-slate-600 flex justify-between items-center">
                 Radius: 50 miles <ChevronDown size={14} />
               </button>
@@ -105,25 +156,50 @@ export default function Search() {
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Interests</div>
               <input type="text" placeholder="Add more interests..." className="w-full p-2 border border-slate-200 rounded text-xs outline-none focus:border-[#892233] mb-2 font-medium" />
               <div className="flex flex-wrap gap-2">
+                <Pill text="Summer" onRemove={() => {}} />
                 <Pill text="STEM" onRemove={() => {}} />
+                <Pill text="Business" onRemove={() => {}} />
+                <Pill text="Humanities" onRemove={() => {}} />
                 <Pill text="Research" onRemove={() => {}} />
+                <Pill text="Hong Kong" onRemove={() => {}} />
               </div>
             </div>
 
-            {/* Financial */}
+            {/* Citizenship & Residence */}
             <div>
-              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Financial Accessibility</div>
-              <div className="space-y-2 text-xs text-[#011936] font-medium">
-                <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="accent-[#892233]"/> A+ — Free + stipend</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="accent-[#892233]"/> A — Free</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="accent-[#892233]"/> A- — Very low cost</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="accent-[#892233]"/> B+ — Low cost with aid</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="accent-[#892233]"/> B- — Average cost</label>
-                <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="accent-[#892233]"/> C+ — High cost</label>
-              </div>
-              <div className="flex gap-4 mt-3">
-                <button className="text-[10px] font-bold text-[#892233] hover:underline uppercase">Select All</button>
-                <button className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase">Clear All</button>
+              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Eligibility</div>
+              <div className="space-y-2 mt-2">
+                <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isInternational ? 'border-[#892233] bg-[#ddfff7]' : 'border-slate-200 bg-white'}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-[#011936]">Allows International Students</span>
+                    <span className="text-[10px] text-[#011936] opacity-60">Non-US citizens / residents</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 accent-[#892233]" 
+                    checked={isInternational} 
+                    onChange={() => {
+                      setIsInternational(!isInternational)
+                      if (!isInternational) setIsUsOnly(false)
+                    }}
+                  />
+                </label>
+                
+                <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isUsOnly ? 'border-[#892233] bg-[#ddfff7]' : 'border-slate-200 bg-white'}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-600">US Students Only</span>
+                    <span className="text-[10px] text-slate-400">Strictly US citizenship/residence</span>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 accent-[#892233]" 
+                    checked={isUsOnly}
+                    onChange={() => {
+                        setIsUsOnly(!isUsOnly)
+                        if (!isUsOnly) setIsInternational(false)
+                    }}
+                  />
+                </label>
               </div>
             </div>
 
@@ -146,7 +222,7 @@ export default function Search() {
         <div className="flex-1 flex flex-col min-w-0">
           
           <div className="flex justify-between items-center mb-4">
-            <span className="text-sm font-medium text-slate-500">1-100 of 2,100+ results</span>
+            <span className="text-sm font-medium text-slate-500">1-{results.length > 100 ? 100 : results.length} of {results.length} results</span>
             <button className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-xs font-semibold text-slate-600 flex items-center gap-2 shadow-sm hover:bg-slate-50">
               Sort: Relevancy <ChevronDown size={14} />
             </button>

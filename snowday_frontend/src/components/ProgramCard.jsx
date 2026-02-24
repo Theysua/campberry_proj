@@ -95,6 +95,7 @@ export default function ProgramCard({ program }) {
         {recommended && (
           <div className="mt-auto flex flex-col items-center gap-2">
             <Badge type={recommended} />
+            <Badge type="IMPACT_HIGHLY" />
             <button className="flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-[#ff751f] transition-colors uppercase tracking-wider">
               <span className="text-sm">☆</span> Save
             </button>

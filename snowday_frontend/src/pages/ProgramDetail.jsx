@@ -1,6 +1,7 @@
-import { ArrowLeft, Calendar, ChevronDown, ChevronRight, ExternalLink, Globe, GraduationCap, Info, MapPin, Play, Share, Star } from 'lucide-react'
+import { ArrowLeft, Calendar, ChevronDown, ChevronRight, ExternalLink, Globe, GraduationCap, Info, MapPin, Share, Sparkles, Star } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import Badge from '../components/Badge'
 import programsData from '../data/detailed_programs.json'
 
 export default function ProgramDetail() {
@@ -16,7 +17,8 @@ export default function ProgramDetail() {
 
   if (!programData) return <div className="p-20 text-center">Loading...</div>
 
-  const { title, org, trpcData, videoUrl: scrapedVideoUrl } = programData
+  // Cleaned up variables - video logic removed
+  const { title, org, trpcData } = programData
   const opp = trpcData || {}
   
   // Formatters
@@ -35,17 +37,7 @@ export default function ProgramDetail() {
     return `on ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   }
 
-  const getYoutubeEmbed = (url) => {
-    if (!url) return '';
-    if (url.includes('embed/')) return url;
-    const idMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^?&"'>]+)/);
-    if (idMatch && idMatch[1]) {
-      return `https://www.youtube.com/embed/${idMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${idMatch[1]}`;
-    }
-    return url;
-  }
-
-  const embedUrl = getYoutubeEmbed(scrapedVideoUrl || opp.media?.videos?.[0]?.url);
+  // Removed getYoutubeEmbed function as it's no longer needed per requirements
 
   return (
     <div className="bg-[#f4f7f9] min-h-screen pb-20 animate-fade-in relative z-0 text-[#011936]">
@@ -66,93 +58,72 @@ export default function ProgramDetail() {
           </div>
         </div>
 
-        {/* Video/Image Hero */}
-        <div className="relative mb-12">
-          <div className="bg-black aspect-[21/9] rounded-xl overflow-hidden shadow-lg relative flex items-center justify-center border border-slate-200 group">
-             {embedUrl ? (
-               <iframe 
-                 src={embedUrl} 
-                 className="absolute inset-0 w-full h-full border-0 pointer-events-none" 
-                 allow="autoplay; encrypted-media" 
-                 allowFullScreen
-               ></iframe>
-             ) : (
-               <img src={`https://source.unsplash.com/random/1200x500/?${opp.interests?.[0]?.name || 'campus'},university`} alt="Program Hero" className="absolute inset-0 w-full h-full object-cover opacity-80" />
-             )}
-            
-            {/* Overlay for branding if it's MITES */}
-            {opp.name === "MITES Semester" && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/30">
-                <span className="text-6xl font-black text-[#fade41] tracking-widest drop-shadow-xl mt-20 opacity-90">MITES</span>
-              </div>
-            )}
-            
-            {!embedUrl && (
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-slate-800 relative z-10 shadow-xl group-hover:scale-105 transition-transform">
-                <Play size={24} className="ml-1" />
-              </div>
-            )}
-          </div>
-
-          {/* Recommended Badge */}
-          {opp.expertsChoiceRating && (
-            <div className="absolute -bottom-6 right-6 z-20">
-              <div className="w-24 h-24 bg-[#ff751f] rounded-full flex flex-col items-center justify-center text-white font-serif border-[3px] border-dashed border-white shadow-xl rotate-[10deg] hover:rotate-0 transition-transform cursor-pointer">
-                <div className="text-xl leading-none">❄️❄️</div>
-                <div className="font-bold text-lg leading-tight mt-1 text-center px-2">
-                   {opp.expertsChoiceRating.split('_')[0]}
-                </div>
-                <div className="text-[10px] font-semibold tracking-wide uppercase">Recommended</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Program Info Header */}
-        <div className="flex gap-6 items-start mb-8">
-          <div className="w-16 h-16 bg-white rounded p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm border border-slate-100">
-             {opp.logo?.url ? (
-               <img src={opp.logo.url} alt={org} className="w-full h-full object-contain" />
-             ) : (
-               <span className="font-serif font-black text-[#892233] text-xl leading-none text-center uppercase">
-                 {org?.substring(0,3) || 'EDU'}
-               </span>
-             )}
-          </div>
+        {/* Program Info Header - Replaced Video with prominent Logo/Title section */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 mb-8 relative overflow-hidden group">
+          {/* Subtle background decoration */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#ddfff7]/20 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110"></div>
           
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-[#011936] leading-tight mb-1">{opp.name || title}</h1>
-            <div className="text-lg text-slate-600 mb-4">{opp.provider?.name || org}</div>
-            
-            <div className="flex flex-wrap gap-2 mb-6 text-[#011936]">
-              {(opp.interests || []).slice(0, 5).map((t, i) => (
-                <span key={i} className="px-4 py-1.5 bg-[#ddfff7] rounded-full text-sm font-bold border border-[#011936]/10">{t.name}</span>
-              ))}
+          <div className="flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
+            {/* Prominent Logo Block */}
+            <div className="w-40 h-40 bg-white rounded-2xl p-4 flex items-center justify-center shrink-0 shadow-md border border-slate-100 transition-transform hover:scale-105">
+               {opp.logo?.url ? (
+                 <img src={opp.logo.url} alt={org} className="w-full h-full object-contain" />
+               ) : (
+                 <span className="font-serif font-black text-[#892233] text-5xl leading-none text-center uppercase">
+                   {org?.substring(0,3) || 'EDU'}
+                 </span>
+               )}
             </div>
+            
+            <div className="flex-1 text-center md:text-left pt-2">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h1 className="text-4xl font-bold text-[#011936] leading-tight mb-2 tracking-tight">{opp.name || title}</h1>
+                  <div className="text-xl text-[#892233] font-bold">{opp.provider?.name || org}</div>
+                </div>
+                
+                {/* Recommended Badge moved here from the video hero */}
+                {opp.expertsChoiceRating && (
+                  <div className="w-24 h-24 bg-[#ff751f] rounded-full flex flex-col items-center justify-center text-white font-serif border-[3px] border-dashed border-white shadow-xl rotate-[10deg] hover:rotate-0 transition-transform cursor-pointer shrink-0">
+                    <div className="text-xl leading-none">⭐</div>
+                    <div className="font-bold text-lg leading-tight mt-1 text-center px-2 uppercase tracking-tighter">
+                       {opp.expertsChoiceRating.split('_')[0]}
+                    </div>
+                    <div className="text-[10px] font-semibold tracking-wide uppercase">RECOMMENDED</div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
+                {(opp.interests || []).slice(0, 5).map((t, i) => (
+                  <span key={i} className="px-4 py-1.5 bg-[#ddfff7] rounded-full text-sm font-bold border border-[#011936]/10 text-[#011936]">{t.name}</span>
+                ))}
+              </div>
 
-            <div className="space-y-3 text-[15px] text-[#011936] font-medium">
-              <div className="flex items-center gap-3">
-                <GraduationCap size={18} className="text-[#892233]" /> {opp.type || 'Program'}
-              </div>
-              <div className="flex items-center gap-3">
-                <Calendar size={18} className="text-[#892233]" /> 
-                {opp.sessions?.[0] ? formatDateRange(opp.sessions[0].startDate, opp.sessions[0].endDate) : 'Dates TBD'}
-              </div>
-              <div className="flex items-center gap-3">
-                <MapPin size={18} className="text-[#892233]" /> 
-                {opp.sessions?.[0]?.location?.name || 'Various Locations'}
-              </div>
-              <div className="flex items-center gap-3 pt-1">
-                <ClockIcon size={18} className="text-[#892233]" /> 
-                <span className="italic">Deadline:</span> {formatDeadline(opp.deadlines)} <span className="text-[#ff751f]">✨</span>
-              </div>
-              <div className="flex items-center gap-3 pt-2">
-                <button 
-                  onClick={() => setIsCostsOpen(true)}
-                  className="flex items-center gap-2 text-[#892233] hover:text-[#780000] font-bold"
-                >
-                  <Info size={18} /> View Costs
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base text-[#011936] font-medium">
+                <div className="flex items-center gap-3 justify-center md:justify-start">
+                  <GraduationCap size={20} className="text-[#892233]" /> {opp.type || 'Program'}
+                </div>
+                <div className="flex items-center gap-3 justify-center md:justify-start">
+                  <Calendar size={20} className="text-[#892233]" /> 
+                  {opp.sessions?.[0] ? formatDateRange(opp.sessions[0].startDate, opp.sessions[0].endDate) : 'Dates TBD'}
+                </div>
+                <div className="flex items-center gap-3 justify-center md:justify-start">
+                  <MapPin size={20} className="text-[#892233]" /> 
+                  {opp.sessions?.[0]?.location?.name || 'Various Locations'}
+                </div>
+                <div className="flex items-center gap-3 justify-center md:justify-start">
+                  <ClockIcon size={20} className="text-[#892233]" /> 
+                  <span className="italic">Deadline:</span> {formatDeadline(opp.deadlines)} <span className="text-[#ff751f]">✨</span>
+                </div>
+                <div className="flex items-center gap-3 justify-center md:justify-start sm:col-span-2">
+                  <button 
+                    onClick={() => setIsCostsOpen(true)}
+                    className="flex items-center gap-2 text-[#892233] hover:text-[#780000] font-bold transition-colors"
+                  >
+                    <Info size={20} /> View Costs
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -163,9 +134,51 @@ export default function ProgramDetail() {
           <section className="p-8 border-b border-slate-100">
             <h2 className="text-2xl font-bold text-[#011936] mb-6">About</h2>
             <div className="text-slate-700 leading-relaxed text-[16px] space-y-4 whitespace-pre-wrap">
-              {opp.description || "No description available."}
+              {(programData.description || opp.description || "").split('\n').map((para, i) => para.trim() ? <p key={i}>{para}</p> : null)}
             </div>
           </section>
+
+          {/* Expert Guidance / Additional Info */}
+          {opp.additionalInfo && (
+            <section className="p-8 border-b border-slate-100 bg-[#ddfff7]/30">
+              <h2 className="text-xl font-bold text-[#011936] mb-4 flex items-center gap-2">
+                <Sparkles size={20} className="text-[#ff751f]" /> Expert Guidance
+              </h2>
+              <div className="text-slate-700 leading-relaxed text-[15px] space-y-4 whitespace-pre-wrap italic">
+                {opp.additionalInfo.split('\n\n').map((para, i) => para.trim() ? <p key={i}>{para}</p> : null)}
+              </div>
+            </section>
+          )}
+
+          {/* External Reviews / Insights */}
+          {opp.externalReviews && opp.externalReviews.length > 0 && (
+            <section className="p-8 border-b border-slate-100 bg-white">
+              <h2 className="text-xl font-bold text-[#011936] mb-6 flex items-center gap-2">
+                <Globe size={20} className="text-[#892233]" /> External Reviews & Insights
+              </h2>
+              <div className="space-y-6">
+                {opp.externalReviews.map((review, i) => (
+                  <div key={i} className="bg-slate-50 p-6 rounded-xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="font-bold text-[#011936] text-lg">{review.title}</h3>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{review.authorDescription}</span>
+                    </div>
+                    <p className="text-slate-600 text-[15px] leading-relaxed italic mb-4">
+                      "{review.content}"
+                    </p>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-[#892233]">— {review.authorName}</span>
+                      {review.url && (
+                        <a href={review.url} target="_blank" rel="noopener noreferrer" className="text-[#ff751f] font-bold hover:underline flex items-center gap-1">
+                          Source <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Accordions */}
           <div className="p-4 px-8">
@@ -256,12 +269,9 @@ export default function ProgramDetail() {
             </div>
             
             <div className="flex justify-between items-center pt-2">
-              <div className="text-lg font-bold text-[#011936]">Financial Accessibility</div>
+              <div className="text-lg font-bold text-[#011936]">Impact on Admissions</div>
               <div className="flex items-center gap-2 text-lg font-bold text-[#892233]">
-                <div className="w-6 h-6 rounded bg-[#892233] text-white flex items-center justify-center text-sm font-sans font-bold">
-                   {opp.financialAccessibilityGrade?.substring(0,1) || "B"}
-                </div>
-                {opp.financialAccessibilityGrade || "B"}
+                <Badge type="IMPACT_HIGHLY" />
               </div>
             </div>
           </div>
