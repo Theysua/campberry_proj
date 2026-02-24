@@ -1,8 +1,15 @@
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 export default function Auth() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/'
+
+  const handleMockLogin = () => {
+    localStorage.setItem('campberry_auth', 'true')
+    navigate(redirectTo, { replace: true })
+  }
 
   return (
     <div className="bg-[#f8fafc] min-h-[calc(100vh-68px)] flex items-center justify-center p-6 animate-fade-in relative z-0">
@@ -49,7 +56,7 @@ export default function Auth() {
               </div>
             </div>
 
-            <button className="w-full bg-[#892233] hover:bg-[#780000] text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-8 hover:-translate-y-0.5">
+            <button onClick={handleMockLogin} className="w-full bg-[#892233] hover:bg-[#780000] text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-8 hover:-translate-y-0.5">
               SIGN IN
             </button>
           </div>
@@ -75,7 +82,7 @@ export default function Auth() {
                <div className="text-sm font-bold text-[#011936]">100% free forever</div>
              </div>
           </div>
-          <button className="w-full bg-[#892233] text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:bg-[#780000] hover:-translate-y-0.5">
+          <button onClick={handleMockLogin} className="w-full bg-[#892233] text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:bg-[#780000] hover:-translate-y-0.5">
             CREATE ACCOUNT
           </button>
         </div>

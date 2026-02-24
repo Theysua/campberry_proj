@@ -5,6 +5,7 @@ import Navbar from './components/Navbar'
 
 import Auth from './pages/Auth'
 import Home from './pages/Home'
+import LegalPage from './pages/LegalPage'
 import ListDetail from './pages/ListDetail'
 import Lists from './pages/Lists'
 import Mission from './pages/Mission'
@@ -39,6 +40,8 @@ function App() {
             <Route path="/my-lists/:id" element={<MyListDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/mission" element={<Mission />} />
+            <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
+            <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

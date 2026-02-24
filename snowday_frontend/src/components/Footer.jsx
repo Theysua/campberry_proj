@@ -13,7 +13,7 @@ export default function Footer() {
           </Link>
           <div className="text-sm text-white/70 leading-relaxed font-medium">
             <strong className="text-white">About:</strong> <Link to="/mission" className="hover:text-[#ff751f]">Our Promises</Link>, <span className="hover:text-[#ff751f] cursor-pointer">Our Community</span><br/>
-            <strong className="text-white">Legal:</strong> <span className="hover:text-[#ff751f] cursor-pointer">Terms of Service</span>, <span className="hover:text-[#ff751f] cursor-pointer">Privacy Policy</span>
+            <strong className="text-white">Legal:</strong> <Link to="/terms-of-service" className="hover:text-[#ff751f]">Terms of Service</Link>, <Link to="/privacy-policy" className="hover:text-[#ff751f]">Privacy Policy</Link>
           </div>
         </div>
         

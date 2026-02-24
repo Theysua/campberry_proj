@@ -1,10 +1,12 @@
 import { ArrowRight, BookOpen, Briefcase, Building2, FlaskConical, Globe, Microscope, Search, Sun } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Badge from '../components/Badge'
 import ListCard from '../components/ListCard'
 
 export default function Home() {
   const navigate = useNavigate()
+  const [heroQuery, setHeroQuery] = useState('')
 
   const topSearches = [
     { icon: <Sun size={24} strokeWidth={1.5} />, label: 'Summer' },
@@ -42,13 +44,15 @@ export default function Home() {
               <Search className="text-[#892233] mr-2 shrink-0" size={20} />
               <input 
                 type="text" 
+                value={heroQuery}
+                onChange={e => setHeroQuery(e.target.value)}
                 placeholder="Search by interest, name..." 
                 className="w-full py-5 outline-none text-[#011936] text-base font-medium"
-                onKeyDown={(e) => e.key === 'Enter' && navigate('/search')}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(`/search${heroQuery ? '?q=' + encodeURIComponent(heroQuery) : ''}`)}
               />
             </div>
             <button 
-              onClick={() => navigate('/search')}
+              onClick={() => navigate(`/search${heroQuery ? '?q=' + encodeURIComponent(heroQuery) : ''}`)}
               className="bg-[#892233] hover:bg-[#780000] text-white px-8 py-5 font-bold transition-colors flex items-center gap-2 m-1 rounded-full"
             >
               Search
@@ -71,7 +75,11 @@ export default function Home() {
           </h2>
           <div className="scroll-x pt-4 px-2">
             {topSearches.map((item, i) => (
-              <button key={i} className="flex flex-col items-center justify-center gap-3 w-32 h-32 shrink-0 bg-white border border-slate-100 rounded-2xl hover:border-[#ff751f] hover:shadow-md hover:text-[#ff751f] transition-all group shadow-sm">
+              <button
+                key={i}
+                onClick={() => navigate(`/search?tags=${encodeURIComponent(item.label)}`)}
+                className="flex flex-col items-center justify-center gap-3 w-32 h-32 shrink-0 bg-white border border-slate-100 rounded-2xl hover:border-[#ff751f] hover:shadow-md hover:text-[#ff751f] transition-all group shadow-sm"
+              >
                 <div className="text-[#892233] group-hover:scale-110 transition-transform">{item.icon}</div>
                 <span className="text-sm font-bold text-[#011936] group-hover:text-[#ff751f]">{item.label}</span>
               </button>

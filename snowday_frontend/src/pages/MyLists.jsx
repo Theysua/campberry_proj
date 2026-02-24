@@ -1,5 +1,5 @@
 import { Plus, Sparkles, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ListCard from '../components/ListCard'
 
@@ -8,6 +8,14 @@ export default function MyLists() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [listName, setListName] = useState('')
   const [listDesc, setListDesc] = useState('')
+
+  // Auth guard: redirect to /auth if not logged in (mocked via localStorage)
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('campberry_auth') === 'true'
+    if (!isLoggedIn) {
+      navigate('/auth?redirect=/my-lists', { replace: true })
+    }
+  }, [navigate])
 
   const featuredLists = [
     { id: '1', title: "School Counseling Group's Favorite Programs", author: 'School Counseling Group', authorRole: 'Admissions Consultants' },
