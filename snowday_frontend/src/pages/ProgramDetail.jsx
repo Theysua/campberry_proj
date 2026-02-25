@@ -1,8 +1,8 @@
-import { ArrowLeft, Calendar, ChevronDown, ChevronRight, ExternalLink, Globe, GraduationCap, Info, MapPin, Share, Sparkles, Star } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ArrowLeft, Calendar, ChevronDown, ChevronRight, ExternalLink, Globe, GraduationCap, Info, Loader2, MapPin, Share, Sparkles, Star } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Badge from '../components/Badge'
-import programsData from '../data/detailed_programs.json'
+import { getProgramById } from '../services/api'
 
 export default function ProgramDetail() {
   const { id } = useParams()
@@ -10,14 +10,50 @@ export default function ProgramDetail() {
   const [activeTab, setActiveTab] = useState('sessions')
   const [isCostsOpen, setIsCostsOpen] = useState(false)
 
-  // Find program by ID or fallback to the first one (or MITES)
-  const programData = useMemo(() => {
-    return programsData.find(p => p.id === id) || programsData[programsData.length - 1]; // Fallback to last added (MITES)
+  const [programData, setProgramData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProgram = async () => {
+      try {
+        const data = await getProgramById(id)
+        if (data) {
+          const opp = {
+            ...data,
+            name: data.name,
+            provider: data.provider,
+            interests: data.interests?.map(i => i.interest) || [],
+            isHighlySelective: data.is_highly_selective,
+            expertsChoiceRating: data.experts_choice_rating,
+            costInfo: data.cost_info,
+            admissionInfo: data.admission_info,
+            eligibilityInfo: data.eligibility_info,
+            eligibleGrades: data.eligible_grades,
+            logo: { url: data.logo_url },
+            url: data.url
+          }
+          setProgramData({ title: data.name, org: data.provider?.name, trpcData: opp, description: data.description })
+        }
+      } catch (err) {
+        console.error("Failed to load program detail", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    if (id) fetchProgram()
   }, [id])
 
-  if (!programData) return <div className="p-20 text-center">Loading...</div>
+  if (loading) {
+    return (
+      <div className="bg-[#f4f7f9] min-h-screen pb-20 flex flex-col items-center justify-center p-20 text-center animate-fade-in text-slate-500">
+        <Loader2 className="animate-spin text-[#892233] mb-4" size={32} />
+        <div className="font-bold text-lg">Loading Program Details...</div>
+      </div>
+    )
+  }
 
-  // Cleaned up variables - video logic removed
+  if (!programData) return <div className="p-20 text-center">Program not found.</div>
+
   const { title, org, trpcData } = programData
   const opp = trpcData || {}
   

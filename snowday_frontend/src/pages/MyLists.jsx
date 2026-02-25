@@ -1,20 +1,35 @@
-import { Plus, Sparkles, X } from 'lucide-react'
+import { Loader2, Plus, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ListCard from '../components/ListCard'
+import { createList, getAuthToken, getMyLists } from '../services/api'
 
 export default function MyLists() {
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [listName, setListName] = useState('')
   const [listDesc, setListDesc] = useState('')
+  const [myLists, setMyLists] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  // Auth guard: redirect to /auth if not logged in (mocked via localStorage)
+  // Auth guard and fetch lists
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('campberry_auth') === 'true'
-    if (!isLoggedIn) {
-      navigate('/auth?redirect=/my-lists', { replace: true })
+    const checkAuthAndFetch = async () => {
+      const token = getAuthToken()
+      if (!token) {
+        navigate('/auth?redirect=/my-lists', { replace: true })
+        return
+      }
+      try {
+        const lists = await getMyLists()
+        setMyLists(lists)
+      } catch (err) {
+        console.error("Failed to load lists:", err)
+      } finally {
+        setLoading(false)
+      }
     }
+    checkAuthAndFetch()
   }, [navigate])
 
   const featuredLists = [
@@ -24,9 +39,14 @@ export default function MyLists() {
     { id: '4', title: "Eight Great Years’ Favorite Programs", author: 'Alyse Graham', authorRole: 'Founder, Eight Great Years' },
   ]
 
-  const handleCreateList = () => {
-    // Navigate to the newly created list page (mocked ID 123)
-    navigate('/my-lists/123')
+  const handleCreateList = async () => {
+    try {
+      if (!listName) return;
+      const newList = await createList(listName, listDesc);
+      navigate(`/my-lists/${newList.id}`);
+    } catch (err) {
+      console.error('Error creating list', err);
+    }
   }
 
   return (
@@ -35,20 +55,44 @@ export default function MyLists() {
       <div className="container max-w-5xl pt-10 px-6">
         <h1 className="text-3xl font-bold text-[#011936] mb-6">My Lists</h1>
         
-        {/* Empty State Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm mb-12 flex flex-col items-center">
-          <div className="text-[#892233] mb-4">
-            <Sparkles size={24} />
+        {loading ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm mb-12 flex flex-col items-center">
+            <Loader2 className="animate-spin text-[#892233]" size={32} />
+            <p className="mt-4 text-slate-500 font-medium">Loading your lists...</p>
           </div>
-          <h2 className="text-xl font-bold text-[#011936] mb-2">No lists yet</h2>
-          <p className="text-slate-600 mb-6">Create or save a featured list to begin.</p>
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="btn outline sm text-[#892233] border-[#892233]/20 hover:bg-[#ddfff7] rounded-full font-bold px-6"
-          >
-            <Plus size={16} /> New List
-          </button>
-        </div>
+        ) : myLists.length === 0 ? (
+          <div>
+            {/* Empty State Card */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm mb-12 flex flex-col items-center">
+              <div className="text-[#892233] mb-4">
+                <Sparkles size={24} />
+              </div>
+              <h2 className="text-xl font-bold text-[#011936] mb-2">No lists yet</h2>
+              <p className="text-slate-600 mb-6">Create or save a featured list to begin.</p>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="btn outline sm text-[#892233] border-[#892233]/20 hover:bg-[#ddfff7] rounded-full font-bold px-6"
+              >
+                <Plus size={16} /> New List
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {myLists.map(list => (
+                <ListCard key={list.id} list={list} linkPrefix="/my-lists" />
+              ))}
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center flex flex-col items-center justify-center hover:border-[#892233] hover:bg-[#ddfff7] transition-colors min-h-[160px]"
+              >
+                <Plus size={24} className="text-[#892233] mb-2" />
+                <span className="font-bold text-[#011936]">Create List</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Featured Lists Section */}
         <div className="mb-6">

@@ -1,10 +1,9 @@
-import { ArrowLeft, Check, ChevronDown, Link as LinkIcon, MapPin, Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, Link as LinkIcon, Loader2, MapPin, Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Pill from '../components/Pill'
 import ProgramCard from '../components/ProgramCard'
-
-import programsData from '../data/detailed_programs.json'
+import { getPrograms } from '../services/api'
 
 const RESULTS_PER_PAGE = 10
 const SORT_OPTIONS = ['Relevancy', 'Deadline (Soonest)', 'Selectivity', 'A–Z']
@@ -14,9 +13,43 @@ export default function Search() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const [programsData, setProgramsData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadPrograms = async () => {
+      try {
+        const response = await getPrograms('?limit=1000') // fetch all for local filtering
+        const dbPrograms = response.data.map(p => ({
+          ...p,
+          trpcData: {
+            ...p,
+            name: p.name,
+            provider: p.provider,
+            interests: p.interests?.map(i => i.interest) || [],
+            isHighlySelective: p.is_highly_selective,
+            expertsChoiceRating: p.experts_choice_rating,
+            onlyUsCitizens: p.only_us_citizens,
+            onlyUsResidents: p.only_us_residents,
+            eligibleGrades: p.eligible_grades,
+            sessions: p.sessions,
+            deadlines: p.deadlines,
+            logo: { url: p.logo_url }
+          }
+        }))
+        setProgramsData(dbPrograms)
+      } catch (err) {
+        console.error("Failed to load programs:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadPrograms()
+  }, [])
+
   // --- State (synced to URL params) ---
   const [query, setQuery] = useState(searchParams.get('q') || '')
-  const [isInternational, setIsInternational] = useState(searchParams.get('intl') !== 'false')
+  const [isInternational, setIsInternational] = useState(searchParams.get('intl') === 'true')
   const [isUsOnly, setIsUsOnly] = useState(searchParams.get('us') === 'true')
   const [locationName, setLocationName] = useState(searchParams.get('loc') || '')
   const [expertFilter, setExpertFilter] = useState(searchParams.get('expert') || '') // MOST, HIGHLY, or ''
@@ -39,7 +72,7 @@ export default function Search() {
   useEffect(() => {
     const params = {}
     if (query) params.q = query
-    if (!isInternational) params.intl = 'false'
+    if (isInternational) params.intl = 'true'
     if (isUsOnly) params.us = 'true'
     if (locationName) params.loc = locationName
     if (expertFilter) params.expert = expertFilter
@@ -50,7 +83,7 @@ export default function Search() {
     if (sortBy !== 'Relevancy') params.sort = sortBy
     if (page > 1) params.page = String(page)
     setSearchParams(params, { replace: true })
-  }, [query, isInternational, isUsOnly, locationName, expertFilter, typeFilter, seasonFilter, gradeFilter, interestTags, sortBy, page])
+  }, [query, isInternational, isUsOnly, locationName, expertFilter, typeFilter, seasonFilter, gradeFilter, interestTags, sortBy, page, setSearchParams])
 
   // Close sort menu on outside click
   useEffect(() => {
@@ -74,7 +107,7 @@ export default function Search() {
   }
 
   const handleReset = () => {
-    setIsInternational(true); setIsUsOnly(false); setLocationName('')
+    setIsInternational(false); setIsUsOnly(false); setLocationName('')
     setExpertFilter(''); setTypeFilter(''); setSeasonFilter('')
     setGradeFilter(''); setInterestTags([]); setQuery(''); setPage(1)
   }
@@ -171,7 +204,7 @@ export default function Search() {
     }
 
     return results
-  }, [isInternational, isUsOnly, query, expertFilter, typeFilter, seasonFilter, gradeFilter, interestTags, sortBy])
+  }, [isInternational, isUsOnly, query, expertFilter, typeFilter, seasonFilter, gradeFilter, interestTags, sortBy, programsData])
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredResults.length / RESULTS_PER_PAGE))
@@ -187,7 +220,7 @@ export default function Search() {
   return (
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in">
       {/* Search Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-[68px] z-40 py-4 shadow-sm">
+      <div className="bg-white border-b border-slate-200 relative z-30 py-4 shadow-sm">
         <div className="container flex gap-3 items-center">
           <button onClick={() => navigate(-1)} className="p-3 bg-slate-100 hover:bg-[#ddfff7] rounded-lg text-[#892233] transition-colors font-bold">
             <ArrowLeft size={18} />
@@ -223,25 +256,28 @@ export default function Search() {
         </div>
       </div>
 
-      <div className="container mt-8 flex flex-col md:flex-row gap-8 items-start">
+      {/* Explicit Spacer for guaranteed gap */}
+      <div className="h-8 md:h-10 w-full shrink-0"></div>
+
+      <div className="container flex flex-col md:flex-row gap-8 items-start">
 
         {/* LEFT: Filter Panel */}
         <div className="w-full md:w-[280px] shrink-0 space-y-4">
-          <div className="flex justify-between items-center mb-2">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-6">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
             <h2 className="font-bold flex items-center gap-2 text-[#011936]">
               <SlidersHorizontal size={16} />
               Filters {activeFilterCount > 0 && (
                 <span className="bg-[#892233] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{activeFilterCount}</span>
               )}
             </h2>
-            {activeFilterCount > 0 && (
-              <button className="text-xs font-bold text-[#892233] hover:text-[#780000] flex items-center gap-1" onClick={handleReset}>
-                <X size={12} /> Reset
-              </button>
-            )}
-          </div>
+              {activeFilterCount > 0 && (
+                <button className="text-xs font-bold text-[#892233] hover:text-[#780000] flex items-center gap-1 bg-[#ddfff7] px-2 py-1 rounded-md transition-colors" onClick={handleReset}>
+                  <X size={12} /> Reset
+                </button>
+              )}
+            </div>
 
-          <div className="card p-4 space-y-4 shadow-sm border-slate-200">
             {/* Experts' Choice */}
             <div>
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Experts' Choice</div>
@@ -384,7 +420,6 @@ export default function Search() {
               </div>
             </div>
           </div>
-
           <div className="space-y-2">
             <button className="w-full text-left p-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 flex justify-between items-center hover:bg-slate-50 transition-colors">
               Advanced Criteria <ChevronDown size={14} />
@@ -400,8 +435,9 @@ export default function Search() {
 
         {/* RIGHT: Results */}
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-sm font-medium text-slate-500">
+          {/* Results Header Box */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm flex justify-between items-center flex-wrap gap-4">
+            <span className="text-sm font-bold text-[#011936]">
               {filteredResults.length === 0
                 ? 'No results'
                 : `${(page - 1) * RESULTS_PER_PAGE + 1}–${Math.min(page * RESULTS_PER_PAGE, filteredResults.length)} of ${filteredResults.length} results`}
@@ -410,12 +446,12 @@ export default function Search() {
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-xs font-semibold text-slate-600 flex items-center gap-2 shadow-sm hover:bg-slate-50"
+                className="px-4 py-2 border border-slate-200 bg-white rounded-lg text-xs font-bold text-[#011936] flex items-center gap-2 shadow-sm hover:bg-slate-50 transition-colors"
               >
-                Sort: {sortBy} <ChevronDown size={14} className={`transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
+                Sort: <span className="text-[#892233]">{sortBy}</span> <ChevronDown size={14} className={`transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
               </button>
               {showSortMenu && (
-                <div className="absolute right-0 top-10 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden w-52 animate-fade-in">
+                <div className="absolute right-0 top-10 bg-white border border-slate-200 rounded-xl shadow-xl z-[100] overflow-hidden w-52 animate-fade-in">
                   {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt}
@@ -430,7 +466,12 @@ export default function Search() {
             </div>
           </div>
 
-          {filteredResults.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-20 text-slate-400">
+              <Loader2 className="animate-spin mx-auto mb-4 text-[#892233]" size={32} />
+              <div className="text-lg font-bold text-[#011936] mb-2">Finding programs...</div>
+            </div>
+          ) : filteredResults.length === 0 ? (
             <div className="text-center py-20 text-slate-400">
               <div className="text-5xl mb-4">🔍</div>
               <div className="text-lg font-bold text-[#011936] mb-2">No results found</div>

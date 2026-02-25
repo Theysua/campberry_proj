@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String             @id @default(uuid()) @db.Uuid
+  email          String             @unique @db.VarChar(255)
+  password_hash  String?            @db.VarChar(255)
+  name           String             @db.VarChar(255)
+  role           Role               @default(STUDENT)
+  created_at     DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime           @updatedAt @db.Timestamptz(6)
+  lists          List[]
+  saved_programs UserSavedProgram[]
+
+  @@map("users")
+}
+
+model Program {
+  id                    String             @id @default(uuid()) @db.Uuid
+  name                  String             @db.VarChar(255)
+  provider_id           String             @db.Uuid
+  description           String?
+  type                  ProgramType
+  url                   String?            @db.VarChar(2048)
+  logo_url              String?            @db.VarChar(2048)
+  is_highly_selective   Boolean?           @default(false)
+  cost_info             String?
+  admission_info        String?
+  eligibility_info      String?
+  experts_choice_rating Rating?
+  impact_rating         ImpactRating?
+  eligible_grades       Int[]
+  only_us_citizens      Boolean?           @default(false)
+  only_us_residents     Boolean?           @default(false)
+  created_at            DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime           @updatedAt @db.Timestamptz(6)
+  deadlines             Deadline[]
+  list_items            ListItem[]
+  interests             ProgramInterest[]
+  provider              Provider           @relation(fields: [provider_id], references: [id])
+  sessions              Session[]
+  saved_by              UserSavedProgram[]
+
+  @@map("programs")
+}
+
+model Provider {
+  id       String    @id @default(uuid()) @db.Uuid
+  name     String    @unique @db.VarChar(255)
+  programs Program[]
+
+  @@map("providers")
+}
+
+model Interest {
+  id       Int               @id @default(autoincrement())
+  name     String            @unique @db.VarChar(255)
+  programs ProgramInterest[]
+
+  @@map("interests")
+}
+
+model ProgramInterest {
+  program_id  String   @db.Uuid
+  interest_id Int
+  interest    Interest @relation(fields: [interest_id], references: [id])
+  program     Program  @relation(fields: [program_id], references: [id])
+
+  @@id([program_id, interest_id])
+  @@map("program_interests")
+}
+
+model Session {
+  id            String        @id @default(uuid()) @db.Uuid
+  program_id    String        @db.Uuid
+  start_date    DateTime?     @db.Date
+  end_date      DateTime?     @db.Date
+  location_type LocationType?
+  location_name String?       @db.VarChar(255)
+  program       Program       @relation(fields: [program_id], references: [id])
+
+  @@map("sessions")
+}
+
+model Deadline {
+  id          String   @id @default(uuid()) @db.Uuid
+  program_id  String   @db.Uuid
+  description String   @db.VarChar(255)
+  date        DateTime @db.Date
+  program     Program  @relation(fields: [program_id], references: [id])
+
+  @@map("deadlines")
+}
+
+model List {
+  id          String     @id @default(uuid()) @db.Uuid
+  title       String     @db.VarChar(255)
+  description String?
+  author_id   String     @db.Uuid
+  is_public   Boolean?   @default(true)
+  created_at  DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime   @updatedAt @db.Timestamptz(6)
+  items       ListItem[]
+  author      User       @relation(fields: [author_id], references: [id])
+
+  @@map("lists")
+}
+
+model ListItem {
+  id                String  @id @default(uuid()) @db.Uuid
+  list_id           String  @db.Uuid
+  program_id        String  @db.Uuid
+  author_commentary String?
+  display_order     Int
+  list              List    @relation(fields: [list_id], references: [id])
+  program           Program @relation(fields: [program_id], references: [id])
+
+  @@map("list_items")
+}
+
+model UserSavedProgram {
+  user_id    String   @db.Uuid
+  program_id String   @db.Uuid
+  saved_at   DateTime @default(now()) @db.Timestamptz(6)
+  program    Program  @relation(fields: [program_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, program_id])
+  @@map("user_saved_programs")
+}
+
+enum Role {
+  STUDENT
+  COUNSELOR
+  ADMIN
+}
+
+enum ProgramType {
+  PROGRAM
+  COMPETITION
+}
+
+enum Rating {
+  MOST_RECOMMENDED
+  HIGHLY_RECOMMENDED
+}
+
+enum ImpactRating {
+  MOST_HIGH_IMPACT
+  HIGH_IMPACT
+}
+
+enum LocationType {
+  IN_PERSON
+  ONLINE
+  LOCAL
+}

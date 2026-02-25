@@ -1,11 +1,38 @@
-import { Bookmark, ListChecks, Search } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+import { Bookmark, ListChecks, LogOut, Search, User } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../assets/logo.svg'
+import { clearAuthToken, getAuthToken, getMe } from '../services/api'
 
 export default function Navbar() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
   
   const isActive = (path) => location.pathname.startsWith(path)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (getAuthToken()) {
+        try {
+          const userData = await getMe()
+          setUser(userData)
+        } catch (err) {
+          console.error("Failed to fetch user:", err)
+          clearAuthToken()
+        }
+      } else {
+        setUser(null)
+      }
+    }
+    fetchUser()
+  }, [location.pathname])
+
+  const handleLogout = () => {
+    clearAuthToken()
+    setUser(null)
+    navigate('/auth')
+  }
 
   return (
     <nav className="flex justify-between items-center px-6 py-4 bg-white sticky top-0 z-50 shadow-sm border-b border-slate-100">
@@ -31,7 +58,18 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Link to="/auth" className="btn sm outline !border-[#892233] !text-[#892233] hover:!bg-[#892233] hover:!text-white font-bold transition-all">Sign In</Link>
+        {user ? (
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-bold text-slate-600 flex items-center gap-2">
+              <User size={16} className="text-[#892233]" /> {user.name}
+            </span>
+            <button onClick={handleLogout} className="text-sm font-bold text-slate-500 hover:text-[#892233] transition-colors flex items-center gap-1">
+              <LogOut size={16} /> Sign Out
+            </button>
+          </div>
+        ) : (
+          <Link to="/auth" className="btn sm outline !border-[#892233] !text-[#892233] hover:!bg-[#892233] hover:!text-white font-bold transition-all">Sign In</Link>
+        )}
       </div>
     </nav>
   )
