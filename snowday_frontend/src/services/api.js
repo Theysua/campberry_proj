@@ -20,20 +20,29 @@ const defaultHeaders = () => {
 
 export const apiFetch = async (endpoint, options = {}) => {
   const url = `${API_BASE}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...defaultHeaders(),
-      ...options.headers
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...defaultHeaders(),
+        ...options.headers
+      }
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || 'API Request Failed');
     }
-  });
 
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.error || 'API Request Failed');
+    return data;
+  } catch (error) {
+    if (endpoint.startsWith('/programs') && (!options.method || options.method === 'GET')) {
+      console.warn('API error, falling back to mock data', error);
+      // Fallback logic for programs array inside Search.jsx
+      return { _mocked_programs: true };
+    }
+    throw error;
   }
-
-  return data;
 };
 
 // Auth
@@ -49,9 +58,53 @@ export const register = (name, email, password) => apiFetch('/auth/register', {
 
 export const getMe = () => apiFetch('/me');
 
+import localProgramsData from '../data/detailed_programs.json';
+
 // Programs
-export const getPrograms = (queryParams = '') => apiFetch(`/programs${queryParams}`);
-export const getProgramById = (id) => apiFetch(`/programs/${id}`);
+export const getPrograms = async (queryParams = '') => {
+  try {
+    const res = await apiFetch(`/programs${queryParams}`);
+    if (res._mocked_programs) throw new Error("Mocked");
+    return res;
+  } catch (err) {
+    const data = localProgramsData.map(p => ({
+      ...p.trpcData,
+      is_highly_selective: p.trpcData.isHighlySelective,
+      experts_choice_rating: p.trpcData.expertsChoiceRating,
+      only_us_citizens: p.trpcData.onlyUsCitizens,
+      only_us_residents: p.trpcData.onlyUsResidents,
+      eligible_grades: p.trpcData.eligibleGrades,
+      logo_url: p.trpcData.logo?.url,
+      interests: p.trpcData.interests?.map(i => ({ interest: i })) || []
+    }));
+    return { data };
+  }
+};
+export const getProgramById = async (id) => {
+  try {
+    const res = await apiFetch(`/programs/${id}`);
+    if (res._mocked_programs) throw new Error("Mocked");
+    return res;
+  } catch (err) {
+    const p = localProgramsData.find(prog => prog.id === id);
+    if (!p) return null;
+    return {
+      ...p.trpcData,
+      name: p.trpcData.name,
+      provider: p.trpcData.provider,
+      description: p.trpcData.description,
+      is_highly_selective: p.trpcData.isHighlySelective,
+      experts_choice_rating: p.trpcData.expertsChoiceRating,
+      cost_info: p.trpcData.costInfo,
+      admission_info: p.trpcData.admissionInfo,
+      eligibility_info: p.trpcData.eligibilityInfo,
+      eligible_grades: p.trpcData.eligibleGrades,
+      logo_url: p.trpcData.logo?.url,
+      interests: p.trpcData.interests?.map(i => ({ interest: i })) || [],
+      url: p.trpcData.url
+    };
+  }
+};
 
 // Saved Programs
 export const getSavedPrograms = () => apiFetch('/me/saved-programs');

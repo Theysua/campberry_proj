@@ -35,7 +35,7 @@ export default function ProgramCard({ program }) {
 
   const title = program.title || trpcData?.name || "Untitled Program"
   const org = program.org || trpcData?.provider?.name || "Unknown Organization"
-  const logo = program.logo || trpcData?.logo?.url
+  const logo = (typeof program.logo === 'string' ? program.logo : program.logo?.url) || trpcData?.logo?.url
   const score = program.score || "1.00"
   const id = program.id
 
@@ -177,8 +177,8 @@ export default function ProgramCard({ program }) {
             {deadlineStatus === 'passed'
               ? `Deadline passed (${deadline})`
               : deadlineStatus === 'soon'
-              ? `⚡ Deadline soon: ${deadline}`
-              : `Deadline: ${deadline || 'TBD'}`}
+                ? `⚡ Deadline soon: ${deadline}`
+                : `Deadline: ${deadline || 'TBD'}`}
           </div>
         </div>
       </div>
@@ -217,7 +217,7 @@ export default function ProgramCard({ program }) {
           <button onClick={handleOpenAddList} className="text-slate-400 hover:text-[#892233] hover:bg-[#ddfff7] p-1.5 rounded-full transition-colors" title="Add to List">
             <Plus size={16} />
           </button>
-          
+
           {addListOpen && (
             <div className="absolute right-8 top-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden w-48 animate-fade-in">
               <div className="flex justify-between items-center p-3 border-b border-slate-100 bg-slate-50">
@@ -230,7 +230,7 @@ export default function ProgramCard({ program }) {
                 {loadingLists ? (
                   <div className="py-4 flex justify-center text-[#892233]"><Loader2 className="animate-spin" size={16} /></div>
                 ) : listsData.length === 0 ? (
-                  <div className="py-4 text-center text-xs text-slate-500 font-medium">No lists yet.<br/><Link to="/lists" className="text-[#892233] hover:underline hover:text-[#ff751f] ml-1">Create one</Link></div>
+                  <div className="py-4 text-center text-xs text-slate-500 font-medium">No lists yet.<br /><Link to="/lists" className="text-[#892233] hover:underline hover:text-[#ff751f] ml-1">Create one</Link></div>
                 ) : (
                   listsData.map(list => (
                     <button
