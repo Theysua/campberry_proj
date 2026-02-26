@@ -1,0 +1,514 @@
+import os
+
+colors = [
+    "#780000", "#ff751f", "#ddfff7", "#fade41", "#011936", "#892233"
+]
+
+themes_js = """
+const themes = [
+    { name: '1. Navy & Crimson', primary: '#011936', accent: '#892233', surface: '#f4f7f9', badge: '#fade41', text: '#333', btnText: '#fff' },
+    { name: '2. Crimson Focus', primary: '#892233', accent: '#011936', surface: '#fff0f2', badge: '#ff751f', text: '#333', btnText: '#fff' },
+    { name: '3. Deep Red & Orange', primary: '#780000', accent: '#ff751f', surface: '#fff7f0', badge: '#fade41', text: '#333', btnText: '#fff' },
+    { name: '4. Navy & Yellow', primary: '#011936', accent: '#fade41', surface: '#fbfbf8', badge: '#892233', text: '#333', btnText: '#011936' },
+    { name: '5. Mint Surface', primary: '#011936', accent: '#780000', surface: '#ddfff7', badge: '#ff751f', text: '#011936', btnText: '#fff' }
+];
+
+function setTheme(index) {
+    const t = themes[index];
+    document.documentElement.style.setProperty('--primary', t.primary);
+    document.documentElement.style.setProperty('--accent', t.accent);
+    document.documentElement.style.setProperty('--surface', t.surface);
+    document.documentElement.style.setProperty('--badge', t.badge);
+    document.documentElement.style.setProperty('--text', t.text);
+    document.documentElement.style.setProperty('--btn-text', t.btnText);
+    
+    document.querySelectorAll('.theme-btn').forEach((btn, i) => {
+        btn.style.fontWeight = i === index ? 'bold' : 'normal';
+        btn.style.border = i === index ? '2px solid #000' : '1px solid #ccc';
+    });
+}
+"""
+
+common_styles = """
+:root {
+    --primary: #011936;
+    --accent: #892233;
+    --surface: #f4f7f9;
+    --badge: #fade41;
+    --text: #333333;
+    --btn-text: #ffffff;
+    --mint: #ddfff7;
+    --bg: #ffffff;
+}
+
+body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; color: var(--text); background: var(--bg); }
+.theme-panel { position: fixed; bottom: 20px; right: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; }
+.theme-panel h4 { margin: 0 0 10px 0; font-size: 14px; }
+.theme-btn { display: block; width: 100%; text-align: left; padding: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; }
+.theme-btn:hover { background: #eee; }
+
+header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #eee; }
+.logo { font-size: 24px; font-weight: 800; color: var(--primary); }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a { text-decoration: none; color: var(--text); font-weight: 600; }
+
+.btn { padding: 10px 24px; background: var(--accent); color: var(--btn-text); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-block; text-align: center; }
+.btn-outline { padding: 8px 20px; background: transparent; color: var(--primary); border: 2px solid var(--primary); border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+.card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.2s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.tag { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: var(--surface); color: var(--primary); font-weight: 600; margin-right: 6px; }
+.badge { font-size: 10px; padding: 4px 8px; border-radius: 4px; background: var(--badge); color: #111; font-weight: bold; text-transform: uppercase; margin-right: 6px;}
+"""
+
+
+# -----------------------------------------------------------------------------------------
+# LAYOUT 1: Centered Hero, Filter Bar below form, Grid Results
+# -----------------------------------------------------------------------------------------
+layout1 = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Campberry - Layout 1 (Grid & Centered)</title>
+    <style>
+        {common_styles}
+        .hero {{ text-align: center; padding: 80px 20px; background: var(--surface); }}
+        .hero h1 {{ font-size: 48px; color: var(--primary); margin-bottom: 10px; font-weight: 900; }}
+        .hero p {{ font-size: 20px; color: var(--text); opacity: 0.8; margin-bottom: 20px; }}
+        .trust {{ font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 40px; }}
+        
+        .search-container {{ max-width: 800px; margin: 0 auto; }}
+        .search-box {{ display: flex; background: white; border-radius: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 5px; }}
+        .search-box input {{ flex: 1; border: none; padding: 15px 25px; font-size: 16px; border-radius: 30px; outline: none; }}
+        .search-box .btn {{ border-radius: 25px; padding: 15px 35px; font-size: 16px; }}
+        
+        .filter-bar {{ display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-wrap: wrap; }}
+        .filter-select {{ padding: 10px 20px; border: 1.5px solid var(--primary); border-radius: 20px; background: white; color: var(--primary); font-weight: 600; cursor: pointer; }}
+        
+        .main-content {{ padding: 60px 40px; max-width: 1200px; margin: 0 auto; }}
+        
+        .section-header {{ display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; border-bottom: 2px solid var(--surface); padding-bottom: 10px; }}
+        .section-header h2 {{ color: var(--primary); margin: 0; font-size: 24px; }}
+        
+        .results-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-bottom: 60px; }}
+        
+        .hot-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }}
+        .hot-card {{ background: var(--primary); color: white; padding: 24px; border-radius: 12px; height: 140px; display: flex; flex-direction: column; justify-content: space-between; }}
+        .hot-card h4 {{ margin: 0; font-size: 18px; }}
+        .hot-card p {{ margin: 0; font-size: 12px; opacity: 0.8; }}
+    </style>
+</head>
+<body>
+
+    <div class="theme-panel">
+        <h4>Select Color Scheme</h4>
+        <button class="theme-btn" onclick="setTheme(0)">1. Navy & Crimson</button>
+        <button class="theme-btn" onclick="setTheme(1)">2. Crimson Focus</button>
+        <button class="theme-btn" onclick="setTheme(2)">3. Deep Red & Orange</button>
+        <button class="theme-btn" onclick="setTheme(3)">4. Navy & Yellow</button>
+        <button class="theme-btn" onclick="setTheme(4)">5. Mint Surface</button>
+    </div>
+
+    <header>
+        <div class="logo">Campberry</div>
+        <div class="nav-links">
+            <a href="#">Find</a>
+            <a href="#">My Lists</a>
+        </div>
+        <button class="btn-outline">Log In</button>
+    </header>
+
+    <div class="hero">
+        <h1>Find Your Dream Program</h1>
+        <p>Discover extracurriculars that matter</p>
+        <div class="trust">★ Reviews and rankings by experts and parents.</div>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" placeholder="Search over 1000 opportunities...">
+                <button class="btn">Search</button>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="filter-select">Grade ▼</div>
+                <div class="filter-select">Season ▼</div>
+                <div class="filter-select">Subject ▼</div>
+                <div class="filter-select">Location ▼</div>
+                <div class="btn" style="padding: 10px 20px;">Apply Filters</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="section-header">
+            <h2>Results (124 Programs)</h2>
+            <select style="padding: 5px; border-radius: 6px;"><option>Sort by: Relevancy</option></select>
+        </div>
+        
+        <div class="results-grid">
+            <!-- Card 1 -->
+            <div class="card" style="border-top: 4px solid var(--accent);">
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 50px; height: 50px; background: var(--surface); border-radius: 8px;"></div>
+                    <div>
+                        <h3 style="margin: 0; color: var(--primary); font-size: 18px;">Stanford Pre-Collegiate</h3>
+                        <div style="color: #666; font-size: 13px;">Stanford University</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span class="badge">MOST RECOMMENDED</span>
+                    <span class="badge">HIGH IMPACT</span>
+                </div>
+                <div><span class="tag">STEM</span><span class="tag">Summer</span></div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="card" style="border-top: 4px solid var(--primary);">
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 50px; height: 50px; background: var(--surface); border-radius: 8px;"></div>
+                    <div>
+                        <h3 style="margin: 0; color: var(--primary); font-size: 18px;">MIT PRIMES</h3>
+                        <div style="color: #666; font-size: 13px;">MIT</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span class="badge">RECOMMENDED</span>
+                </div>
+                <div><span class="tag">Math</span><span class="tag">Research</span></div>
+            </div>
+            
+             <!-- Card 3 -->
+            <div class="card" style="border-top: 4px solid var(--primary);">
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 50px; height: 50px; background: var(--surface); border-radius: 8px;"></div>
+                    <div>
+                        <h3 style="margin: 0; color: var(--primary); font-size: 18px;">Clark Scholars</h3>
+                        <div style="color: #666; font-size: 13px;">Texas Tech University</div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span class="badge">HIGH IMPACT</span>
+                </div>
+                <div><span class="tag">Research</span></div>
+            </div>
+        </div>
+        
+        <div class="section-header">
+            <h2>Hot Programs</h2>
+        </div>
+        
+        <div class="hot-grid">
+            <div class="hot-card" style="background: var(--primary);">
+                <h4>Counselors' Top Picks</h4>
+                <p>Featured List</p>
+            </div>
+            <div class="hot-card" style="background: var(--accent);">
+                <h4>Best STEM Programs</h4>
+                <p>Featured List</p>
+            </div>
+            <div class="hot-card" style="background: var(--surface); color: var(--primary); border: 1px solid var(--primary);">
+                <h4>Free for Low-Income</h4>
+                <p>Featured List</p>
+            </div>
+            <div class="hot-card" style="background: var(--primary);">
+                <h4>High Impact Leadership</h4>
+                <p>Featured List</p>
+            </div>
+        </div>
+    </div>
+
+    <script>{themes_js} setTheme(0);</script>
+</body>
+</html>
+"""
+
+# -----------------------------------------------------------------------------------------
+# LAYOUT 2: Left-aligned Hero, Inline Filters, List Results vs Sidebar
+# -----------------------------------------------------------------------------------------
+layout2 = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Campberry - Layout 2 (Left Aligned & List/Sidebar)</title>
+    <style>
+        {common_styles}
+        .container {{ max-width: 1200px; margin: 0 auto; padding: 40px; }}
+        
+        .hero-inline {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; background: var(--surface); padding: 40px; border-radius: 16px; }}
+        .hero-left {{ flex: 1; padding-right: 40px; }}
+        .hero-left h1 {{ font-size: 42px; color: var(--primary); margin: 0 0 10px 0; font-weight: 900; }}
+        .hero-left p {{ font-size: 18px; color: var(--text); opacity: 0.8; margin: 0 0 20px 0; }}
+        .trust {{ font-size: 14px; font-weight: 600; color: var(--accent); }}
+        
+        .search-area {{ flex: 1; max-width: 500px; }}
+        .search-box {{ display: flex; background: white; border-radius: 8px; border: 2px solid var(--primary); overflow: hidden; }}
+        .search-box input {{ flex: 1; border: none; padding: 15px; font-size: 16px; outline: none; }}
+        .search-box .btn {{ border-radius: 0; }}
+        
+        .layout-grid {{ display: grid; grid-template-columns: 1fr 300px; gap: 40px; }}
+        
+        .filters-top {{ display: flex; gap: 10px; padding: 15px 0; border-bottom: 2px solid var(--surface); margin-bottom: 24px; flex-wrap: wrap; align-items: center; }}
+        .filter-select {{ padding: 8px 16px; border: 1px solid #ccc; border-radius: 4px; background: white; font-size: 14px; cursor: pointer; }}
+        
+        .results-list {{ display: flex; flex-direction: column; gap: 16px; }}
+        .list-card {{ display: flex; gap: 20px; padding: 20px; border-left: 6px solid var(--accent); }}
+        .list-card-logo {{ width: 80px; height: 80px; background: var(--surface); border-radius: 8px; }}
+        .list-card-content {{ flex: 1; }}
+        .list-card-title {{ margin: 0 0 5px 0; font-size: 20px; color: var(--primary); }}
+        
+        .sidebar h3 {{ color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }}
+        .hot-list-item {{ padding: 15px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px; background: white; cursor: pointer; }}
+        .hot-list-item:hover {{ border-color: var(--primary); }}
+        .hot-title {{ font-size: 16px; font-weight: bold; color: var(--primary); margin: 0 0 5px 0; }}
+    </style>
+</head>
+<body>
+    <div class="theme-panel">
+        <h4>Select Color Scheme</h4>
+        <button class="theme-btn" onclick="setTheme(0)">1. Navy & Crimson</button>
+        <button class="theme-btn" onclick="setTheme(1)">2. Crimson Focus</button>
+        <button class="theme-btn" onclick="setTheme(2)">3. Deep Red & Orange</button>
+        <button class="theme-btn" onclick="setTheme(3)">4. Navy & Yellow</button>
+        <button class="theme-btn" onclick="setTheme(4)">5. Mint Surface</button>
+    </div>
+
+    <header>
+        <div class="logo">Campberry</div>
+        <div class="nav-links"><a href="#">Find</a><a href="#">My Lists</a></div>
+        <button class="btn-outline">Log In</button>
+    </header>
+
+    <div class="container">
+        <div class="hero-inline">
+            <div class="hero-left">
+                <h1>Find Your Dream Program</h1>
+                <p>Discover extracurriculars that matter</p>
+                <div class="trust">★ Reviews and rankings by experts and parents.</div>
+            </div>
+            <div class="search-area">
+                <div class="search-box">
+                    <input type="text" placeholder="Search over 1000 opportunities...">
+                    <button class="btn">Search</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="layout-grid">
+            <div class="main-column">
+                <div class="filters-top">
+                    <strong style="color: var(--primary);">Filters:</strong>
+                    <div class="filter-select">Grade ▼</div>
+                    <div class="filter-select">Season ▼</div>
+                    <div class="filter-select">Subject ▼</div>
+                    <div class="btn" style="padding: 8px 16px;">Apply Filters</div>
+                </div>
+                
+                <h2 style="margin-top:0; color: var(--primary);">Search Results</h2>
+                <div class="results-list">
+                    <div class="card list-card">
+                        <div class="list-card-logo"></div>
+                        <div class="list-card-content">
+                            <h3 class="list-card-title">Stanford Pre-Collegiate Summer Institutes</h3>
+                            <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Stanford University</div>
+                            <div><span class="tag">STEM</span><span class="tag">Summer</span></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge" style="display:block; margin-bottom:5px;">MOST RECOMMENDED</span>
+                            <span class="badge" style="display:block; background: var(--primary); color:white;">HIGH IMPACT</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card list-card" style="border-left-color: var(--primary);">
+                        <div class="list-card-logo"></div>
+                        <div class="list-card-content">
+                            <h3 class="list-card-title">MIT PRIMES</h3>
+                            <div style="color: #666; font-size: 14px; margin-bottom: 10px;">Massachusetts Institute of Technology</div>
+                            <div><span class="tag">Math</span><span class="tag">Research</span></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge" style="display:block;">RECOMMENDED</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <h3>🔥 Hot Programs</h3>
+                <div class="hot-list-item">
+                    <h4 class="hot-title">Counselors' Top Picks</h4>
+                    <span class="tag">Featured List</span>
+                </div>
+                <div class="hot-list-item">
+                    <h4 class="hot-title">Best STEM Programs</h4>
+                    <span class="tag">Featured List</span>
+                </div>
+                <div class="hot-list-item">
+                    <h4 class="hot-title">Free for Low-Income</h4>
+                    <span class="tag">Featured List</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>{themes_js} setTheme(0);</script>
+</body>
+</html>
+"""
+
+# -----------------------------------------------------------------------------------------
+# LAYOUT 3: Integrated Top Search Bar, Full Width Sticky Filters, Masonry/Card Results
+# -----------------------------------------------------------------------------------------
+layout3 = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Campberry - Layout 3 (Integrated Search & Full Width)</title>
+    <style>
+        {common_styles}
+        header {{ background: var(--primary); color: white; border-bottom: none; }}
+        header .logo {{ color: white; }}
+        header .nav-links a {{ color: rgba(255,255,255,0.8); }}
+        header .btn-outline {{ border-color: white; color: white; }}
+        
+        .top-search-section {{ background: var(--primary); padding: 40px; text-align: center; color: white; }}
+        .top-search-section h1 {{ font-size: 36px; margin: 0 0 10px 0; }}
+        .top-search-section p {{ font-size: 18px; margin: 0 0 10px 0; opacity: 0.9; }}
+        .trust-text {{ color: var(--badge); font-size: 14px; font-weight: bold; margin-bottom: 30px; }}
+        
+        .huge-search {{ max-width: 700px; margin: 0 auto; display: flex; font-size: 18px; }}
+        .huge-search input {{ flex: 1; padding: 20px 30px; border: none; border-radius: 8px 0 0 8px; font-size: 18px; outline: none; }}
+        .huge-search .btn {{ border-radius: 0 8px 8px 0; padding: 20px 40px; font-size: 18px; }}
+        
+        .sticky-filters {{ background: white; padding: 15px 40px; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; display: flex; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }}
+        .filter-chip {{ padding: 8px 20px; border-radius: 20px; background: var(--surface); color: var(--primary); font-weight: 600; cursor: pointer; border: 1px solid transparent; }}
+        .filter-chip:hover {{ border-color: var(--primary); }}
+        
+        .content {{ padding: 40px; max-width: 1400px; margin: 0 auto; }}
+        
+        .hot-scroll {{ display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; margin-bottom: 40px; }}
+        .hot-scroll::-webkit-scrollbar {{ height: 8px; }}
+        .hot-scroll::-webkit-scrollbar-thumb {{ background: #ccc; border-radius: 4px; }}
+        .hot-card-wide {{ flex: 0 0 300px; background: white; border: 1px solid #eee; border-top: 4px solid var(--accent); padding: 20px; border-radius: 12px; }}
+        
+        .results-masonry {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; }}
+        .res-card {{ display: flex; flex-direction: column; }}
+        .res-card .card-top {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }}
+        .res-logo {{ width: 60px; height: 60px; background: var(--surface); border-radius: 8px; }}
+    </style>
+</head>
+<body>
+    <div class="theme-panel">
+        <h4>Select Color Scheme</h4>
+        <button class="theme-btn" onclick="setTheme(0)">1. Navy & Crimson</button>
+        <button class="theme-btn" onclick="setTheme(1)">2. Crimson Focus</button>
+        <button class="theme-btn" onclick="setTheme(2)">3. Deep Red & Orange</button>
+        <button class="theme-btn" onclick="setTheme(3)">4. Navy & Yellow</button>
+        <button class="theme-btn" onclick="setTheme(4)">5. Mint Surface</button>
+    </div>
+
+    <header>
+        <div class="logo">Campberry</div>
+        <div class="nav-links"><a href="#">Find</a><a href="#">My Lists</a></div>
+        <button class="btn-outline">Log In</button>
+    </header>
+
+    <div class="top-search-section">
+        <h1>Find Your Dream Program</h1>
+        <p>Discover extracurriculars that matter</p>
+        <div class="trust-text">★ Reviews and rankings by experts and parents.</div>
+        
+        <div class="huge-search">
+            <input type="text" placeholder="Search over 1000 opportunities...">
+            <button class="btn">Search</button>
+        </div>
+    </div>
+
+    <div class="sticky-filters">
+        <strong style="line-height: 36px; padding-right: 10px; color: var(--primary);">Filters:</strong>
+        <div class="filter-chip">All Grades ▼</div>
+        <div class="filter-chip">Any Season ▼</div>
+        <div class="filter-chip">Subject ▼</div>
+        <div class="filter-chip">Location ▼</div>
+        <button class="btn" style="padding: 8px 20px; margin-left: auto;">Apply Filters</button>
+    </div>
+
+    <div class="content">
+        <h2 style="color: var(--primary);">🔥 Hot Programs</h2>
+        <div class="hot-scroll">
+            <div class="hot-card-wide">
+                <h3 style="margin: 0 0 10px 0; color: var(--primary);">Counselors' Top Picks</h3>
+                <p style="margin: 0; font-size: 14px; color: #666;">Featured List by Experts</p>
+            </div>
+            <div class="hot-card-wide" style="border-top-color: var(--primary);">
+                <h3 style="margin: 0 0 10px 0; color: var(--primary);">Best STEM Programs</h3>
+                <p style="margin: 0; font-size: 14px; color: #666;">Featured List by Campberry</p>
+            </div>
+            <div class="hot-card-wide" style="border-top-color: var(--badge);">
+                <h3 style="margin: 0 0 10px 0; color: var(--primary);">High Impact Research</h3>
+                <p style="margin: 0; font-size: 14px; color: #666;">Featured List</p>
+            </div>
+             <div class="hot-card-wide">
+                <h3 style="margin: 0 0 10px 0; color: var(--primary);">Free for Low-Income</h3>
+                <p style="margin: 0; font-size: 14px; color: #666;">Featured List</p>
+            </div>
+        </div>
+
+        <h2 style="color: var(--primary); margin-top: 40px; border-bottom: 2px solid var(--surface); padding-bottom: 10px;">Results</h2>
+        <div class="results-masonry">
+            
+            <div class="card res-card" style="box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="card-top">
+                    <div class="res-logo"></div>
+                    <div style="text-align: right;">
+                        <span class="badge" style="display:block; margin-bottom:4px;">MOST RECOMMENDED</span>
+                        <span class="badge" style="display:block; background:var(--primary); color:white;">HIGH IMPACT</span>
+                    </div>
+                </div>
+                <h3 style="margin: 0 0 5px 0; color: var(--primary); font-size: 20px;">Stanford Pre-Collegiate</h3>
+                <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Stanford University</p>
+                <div><span class="tag">STEM</span><span class="tag">Summer</span></div>
+            </div>
+            
+            <div class="card res-card" style="box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="card-top">
+                    <div class="res-logo"></div>
+                    <div style="text-align: right;">
+                        <span class="badge" style="display:block; margin-bottom:4px;">RECOMMENDED</span>
+                    </div>
+                </div>
+                <h3 style="margin: 0 0 5px 0; color: var(--primary); font-size: 20px;">MIT PRIMES</h3>
+                <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Massachusetts Institute of Technology</p>
+                <div><span class="tag">Math</span><span class="tag">Research</span></div>
+            </div>
+            
+            <div class="card res-card" style="box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="card-top">
+                    <div class="res-logo"></div>
+                    <div style="text-align: right;">
+                    </div>
+                </div>
+                <h3 style="margin: 0 0 5px 0; color: var(--primary); font-size: 20px;">Clark Scholars</h3>
+                <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Texas Tech University</p>
+                <div><span class="tag">STEM</span><span class="tag">Research</span></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>{themes_js} setTheme(0);</script>
+</body>
+</html>
+"""
+
+# Write files
+with open(r'c:\campberry_proj\campberry_layout_1.html', 'w', encoding='utf-8') as f:
+    f.write(layout1)
+with open(r'c:\campberry_proj\campberry_layout_2.html', 'w', encoding='utf-8') as f:
+    f.write(layout2)
+with open(r'c:\campberry_proj\campberry_layout_3.html', 'w', encoding='utf-8') as f:
+    f.write(layout3)
+
+print("Created 3 separate HTML files in c:\campberry_proj")

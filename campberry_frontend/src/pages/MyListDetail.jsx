@@ -112,7 +112,7 @@ export default function MyListDetail() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Visibility</span>
-                  <span className={`text-xs font-bold px-2 py-1 rounded-md ${list.is_public ? 'bg-[#ddfff7] text-[#00604b]' : 'bg-slate-100 text-slate-600'}`}>
+                  <span className={`text-xs font-bold px-2 py-1 rounded-md ${list.is_public ? 'bg-[#f8fafc] text-[#00604b]' : 'bg-slate-100 text-slate-600'}`}>
                     {list.is_public ? 'Public' : 'Private'}
                   </span>
                 </div>

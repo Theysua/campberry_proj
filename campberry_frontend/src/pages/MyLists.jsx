@@ -71,7 +71,7 @@ export default function MyLists() {
               <p className="text-slate-600 mb-6">Create or save a featured list to begin.</p>
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="btn outline sm text-[#892233] border-[#892233]/20 hover:bg-[#ddfff7] rounded-full font-bold px-6"
+                className="btn outline sm text-[#892233] border-[#892233]/20 hover:bg-[#f8fafc] rounded-full font-bold px-6"
               >
                 <Plus size={16} /> New List
               </button>
@@ -85,7 +85,7 @@ export default function MyLists() {
               ))}
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center flex flex-col items-center justify-center hover:border-[#892233] hover:bg-[#ddfff7] transition-colors min-h-[160px]"
+                className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center flex flex-col items-center justify-center hover:border-[#892233] hover:bg-[#f8fafc] transition-colors min-h-[160px]"
               >
                 <Plus size={24} className="text-[#892233] mb-2" />
                 <span className="font-bold text-[#011936]">Create List</span>

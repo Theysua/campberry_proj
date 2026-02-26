@@ -9,7 +9,7 @@ async function main() {
   console.log('Start seeding from detailed_programs.json...');
 
   // Use process.cwd() instead of __dirname to avoid typescript complaints in some setups
-  const dataPath = path.join(process.cwd(), '../snowday_frontend/src/data/detailed_programs.json');
+  const dataPath = path.join(process.cwd(), '../campberry_frontend/src/data/detailed_programs.json');
   const rawData = fs.readFileSync(dataPath, 'utf8');
   const programsData = JSON.parse(rawData);
 

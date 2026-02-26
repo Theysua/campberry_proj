@@ -8,7 +8,7 @@ export default function Mission() {
           <h1 className="text-4xl md:text-6xl font-extrabold mb-8 leading-tight tracking-tight text-white">
             Our mission is to make the education sector radically more open and navigable for all.
           </h1>
-          <p className="text-xl text-[#ddfff7] max-w-2xl mx-auto leading-relaxed opacity-90 font-medium">
+          <p className="text-xl text-[#f8fafc] max-w-2xl mx-auto leading-relaxed opacity-90 font-medium">
             We believe that every student deserves access to high-quality extracurriculars, regardless of their background or zip code.
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function Mission() {
           
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="bg-white p-8 rounded-2xl shadow-xl shadow-[#892233]/5 border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#ddfff7] rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#f8fafc] rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
               <div className="text-4xl mb-6 relative">🔒</div>
               <h3 className="text-xl font-bold text-[#011936] mb-4 relative">100% Data Privacy</h3>
               <ul className="space-y-3 text-sm text-[#011936] font-medium opacity-80 relative">
@@ -32,7 +32,7 @@ export default function Mission() {
             </div>
             
             <div className="bg-white p-8 rounded-2xl shadow-xl shadow-[#892233]/5 border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#ddfff7] rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#f8fafc] rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
               <div className="text-4xl mb-6 relative">⚖️</div>
               <h3 className="text-xl font-bold text-[#011936] mb-4 relative">Unbiased Algorithm</h3>
               <ul className="space-y-3 text-sm text-[#011936] font-medium opacity-80 relative">

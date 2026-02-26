@@ -15,7 +15,7 @@ export default function Lists() {
       <div className="bg-[#892233] border-b border-[#780000] py-16 mb-8 text-white shadow-lg">
         <div className="container text-center">
            <h1 className="text-4xl font-extrabold mb-3 tracking-tight">Curated Lists</h1>
-           <p className="text-[#ddfff7] font-medium text-lg opacity-90 max-w-xl mx-auto">Discover hand-picked collections of top programs, curated by our team of experts.</p>
+           <p className="text-[#f8fafc] font-medium text-lg opacity-90 max-w-xl mx-auto">Discover hand-picked collections of top programs, curated by our team of experts.</p>
         </div>
       </div>
       

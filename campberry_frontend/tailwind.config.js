@@ -8,9 +8,9 @@ export default {
     extend: {
       colors: {
         blue: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
+          50: '#ddfff7',  // Mint for light blue backgrounds
+          100: '#caeee3',
+          200: '#a8dbcc',
           300: '#e0aeb9',
           400: '#c4697d',
           500: '#a3394c',

@@ -32,7 +32,7 @@ Campberry helps students discover, compare, and save learning opportunities (sum
 
 ```
 campberry_proj/
-├── snowday_frontend/          # React frontend application
+├── campberry_frontend/          # React frontend application
 │   ├── src/
 │   │   ├── pages/
 │   │   │   ├── Home.jsx           # Landing page
@@ -58,7 +58,7 @@ campberry_proj/
 │   ├── package.json
 │   ├── tailwind.config.js
 │   └── vite.config.js
-├── snowday_wireframes.html        # Original wireframes reference
+├── campberry_wireframes.html        # Original wireframes reference
 └── README.md
 ```
 
@@ -75,7 +75,7 @@ campberry_proj/
 ```bash
 # Clone the repo
 git clone https://github.com/Theysua/campberry_proj.git
-cd campberry_proj/snowday_frontend
+cd campberry_proj/campberry_frontend
 
 # Install dependencies
 npm install
@@ -190,7 +190,7 @@ Each program in `detailed_programs.json` follows this structure:
 
 ## 📋 Requirements Implemented
 
-Based on product requirements spec (`Copy of Copy of Snowday_Requirements.xlsx`):
+Based on product requirements spec (`Copy of Copy of Campberry_Requirements.xlsx`):
 
 - [x] Only show programs tagged "allows international students" by default
 - [x] Add "US Students Only" toggle filter

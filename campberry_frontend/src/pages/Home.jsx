@@ -30,13 +30,13 @@ export default function Home() {
   return (
     <div className="animate-fade-in">
       {/* S1: Hero */}
-      <section className="bg-[#f8fafc] pt-24 pb-12 px-6 relative overflow-hidden">
+      <section className="bg-[#ddfff7] pt-24 pb-12 px-6 relative overflow-hidden">
         <div className="container flex flex-col items-center text-center max-w-3xl relative z-10">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#011936] mb-4 tracking-tight leading-tight">
-            Find Your Dream Program
+            Extracurriculars & Enrichment
           </h1>
           <p className="text-lg text-[#011936] mb-10 max-w-xl font-medium opacity-80">
-            Discover extracurriculars that matter
+            Top Opportunities Curated by College Experts. Find the perfect program to stand out.
           </p>
 
           <div className="flex w-full max-w-2xl bg-white shadow-lg rounded-full overflow-hidden shadow-[#892233]/5 transition-transform hover:-translate-y-1 mb-16 border border-[#892233]/10">
@@ -61,7 +61,7 @@ export default function Home() {
         </div>
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
           <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[calc(100%+1.3px)] h-[40px] md:h-[80px]">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-[#f8fafc]"></path>
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-[#ddfff7]"></path>
           </svg>
         </div>
       </section>
@@ -99,7 +99,7 @@ export default function Home() {
           </div>
           <div className="flex gap-4 overflow-x-auto pb-4 scroll-x">
             {featuredLists.map(list => <ListCard key={list.id} list={list} />)}
-            <Link to="/lists" className="card flex items-center justify-center w-[280px] shrink-0 text-[#892233] font-semibold hover:bg-[#f8fafc] transition-colors gap-2 group border-dashed border-2">
+            <Link to="/lists" className="card flex items-center justify-center w-[280px] shrink-0 text-[#892233] font-semibold hover:bg-[#ddfff7] transition-colors gap-2 group border-dashed border-2">
               Explore More <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -144,20 +144,20 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-[#011936]">These are our promises to you:</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="card text-center p-8 bg-[#f8fafc] hover:bg-[#f1f5f9] transition-colors border-none shadow-sm">
+            <div className="card text-center p-8 bg-[#ddfff7] hover:bg-[#b9f2e4] transition-colors border-none shadow-sm">
               <div className="text-4xl mb-4">🔒</div>
               <h3 className="font-bold text-[#011936] mb-2">100% Data Privacy</h3>
               <p className="text-sm text-[#011936] opacity-70">Your personal information belongs to you, always.</p>
             </div>
-            <div className="card text-center p-8 bg-[#f8fafc] hover:bg-[#f1f5f9] transition-colors border-none shadow-sm">
+            <div className="card text-center p-8 bg-[#ddfff7] hover:bg-[#cbf7ea] transition-colors border-none shadow-sm">
               <div className="text-4xl mb-4">⚖️</div>
               <h3 className="font-bold text-[#011936] mb-2">Unbiased algorithms</h3>
               <p className="text-sm text-slate-600">Students come first, not marketing budgets.</p>
             </div>
             <div className="card text-center p-8 bg-[#fade41]/20 hover:bg-[#fade41]/30 transition-colors border-none shadow-sm">
-              <div className="text-4xl mb-4">⭐</div>
-              <h3 className="font-bold text-[#011936] mb-2">Reviews and Rankings</h3>
-              <p className="text-sm text-[#011936] opacity-70">Reviews and rankings by experts and parents.</p>
+              <div className="text-4xl mb-4">🆓</div>
+              <h3 className="font-bold text-[#011936] mb-2">Free, Forever</h3>
+              <p className="text-sm text-[#011936] opacity-70">Access to opportunities, without barriers.</p>
             </div>
           </div>
         </section>
@@ -169,7 +169,7 @@ export default function Home() {
         <section className="grid md:grid-cols-2 gap-6">
           <div className="!bg-[#011936] rounded-2xl p-8 overflow-hidden relative shadow-lg text-white">
             <div className="absolute -right-10 -bottom-10 opacity-10 text-[180px] leading-none">🔍</div>
-            <h3 className="text-2xl font-bold mb-6 relative z-10 !text-white">Search over 1000 opportunities</h3>
+            <h3 className="text-2xl font-bold mb-6 relative z-10 !text-white">Search 2,100+ Opportunities</h3>
             <ul className="space-y-4 text-white/90 relative z-10 font-bold">
               <li className="flex items-center gap-3"><span className="text-[#ff751f] text-lg">✓</span> New: 200+ competitions</li>
               <li className="flex items-center gap-3"><span className="text-[#ff751f] text-lg">✓</span> 700+ school year programs</li>

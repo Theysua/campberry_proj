@@ -97,7 +97,7 @@ export default function ProgramDetail() {
         {/* Program Info Header - Replaced Video with prominent Logo/Title section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 mb-8 relative overflow-hidden group">
           {/* Subtle background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#ddfff7]/20 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#f8fafc]/20 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110"></div>
           
           <div className="flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
             {/* Prominent Logo Block */}
@@ -132,7 +132,7 @@ export default function ProgramDetail() {
               
               <div className="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
                 {(opp.interests || []).slice(0, 5).map((t, i) => (
-                  <span key={i} className="px-4 py-1.5 bg-[#ddfff7] rounded-full text-sm font-bold border border-[#011936]/10 text-[#011936]">{t.name}</span>
+                  <span key={i} className="px-4 py-1.5 bg-[#f8fafc] rounded-full text-sm font-bold border border-[#011936]/10 text-[#011936]">{t.name}</span>
                 ))}
               </div>
 
@@ -176,7 +176,7 @@ export default function ProgramDetail() {
 
           {/* Expert Guidance / Additional Info */}
           {opp.additionalInfo && (
-            <section className="p-8 border-b border-slate-100 bg-[#ddfff7]/30">
+            <section className="p-8 border-b border-slate-100 bg-[#f8fafc]/30">
               <h2 className="text-xl font-bold text-[#011936] mb-4 flex items-center gap-2">
                 <Sparkles size={20} className="text-[#ff751f]" /> Expert Guidance
               </h2>
@@ -286,7 +286,7 @@ export default function ProgramDetail() {
           <a href={opp.url || "#"} target="_blank" rel="noopener noreferrer" className="flex-1 btn bg-[#892233] hover:bg-[#780000] text-white font-bold py-4 rounded-xl text-lg shadow-sm flex items-center justify-center gap-2 decoration-0 no-underline">
             Apply Here <ExternalLink size={20} />
           </a>
-          <a href={opp.url || "#"} target="_blank" rel="noopener noreferrer" className="flex-1 btn outline sm bg-white border-[#892233] text-[#892233] hover:bg-[#ddfff7] font-bold py-4 rounded-xl text-lg shadow-sm flex items-center justify-center gap-2 decoration-0 no-underline">
+          <a href={opp.url || "#"} target="_blank" rel="noopener noreferrer" className="flex-1 btn outline sm bg-white border-[#892233] text-[#892233] hover:bg-[#f8fafc] font-bold py-4 rounded-xl text-lg shadow-sm flex items-center justify-center gap-2 decoration-0 no-underline">
             <Globe size={20} /> View Website
           </a>
         </div>
@@ -314,7 +314,7 @@ export default function ProgramDetail() {
         </div>
         
         {/* Contact CTA */}
-        <div className="bg-[#ddfff7] rounded-xl p-12 text-center mb-12 border border-[#892233]/10">
+        <div className="bg-[#f8fafc] rounded-xl p-12 text-center mb-12 border border-[#892233]/10">
           <h2 className="text-2xl font-bold text-[#011936] mb-2 leading-tight">Contact Our Experts<br/>For Free Program<br/>Recommendations</h2>
           <button className="mt-6 btn bg-[#892233] hover:bg-[#780000] text-white font-bold py-3 px-8 rounded-full shadow-sm">
             <span className="flex items-center gap-2">

@@ -222,7 +222,7 @@ export default function Search() {
       {/* Search Header */}
       <div className="bg-white border-b border-slate-200 relative z-30 py-4 shadow-sm">
         <div className="container flex gap-3 items-center">
-          <button onClick={() => navigate(-1)} className="p-3 bg-slate-100 hover:bg-[#ddfff7] rounded-lg text-[#892233] transition-colors font-bold">
+          <button onClick={() => navigate(-1)} className="p-3 bg-slate-100 hover:bg-[#f8fafc] rounded-lg text-[#892233] transition-colors font-bold">
             <ArrowLeft size={18} />
           </button>
           <div className="flex-1 flex shadow-sm rounded-lg border border-slate-200 overflow-hidden focus-within:border-[#892233] focus-within:ring-1 focus-within:ring-[#892233] transition-all">
@@ -241,14 +241,14 @@ export default function Search() {
           <div className="relative">
             <button
               onClick={handleShare}
-              className="p-3 bg-slate-100 hover:bg-[#ddfff7] rounded-lg text-[#892233] transition-colors font-bold flex items-center gap-1 text-xs"
+              className="p-3 bg-slate-100 hover:bg-[#f8fafc] rounded-lg text-[#892233] transition-colors font-bold flex items-center gap-1 text-xs"
               title="Copy link to current search"
             >
               <LinkIcon size={16} />
             </button>
             {sharePopover === 'copied' && (
               <div className="absolute top-12 right-0 bg-[#011936] text-white text-xs font-bold py-2 px-3 rounded-lg shadow-xl whitespace-nowrap flex items-center gap-2 z-50 animate-fade-in">
-                <Check size={12} className="text-[#ddfff7]" /> Link copied!
+                <Check size={12} className="text-[#f8fafc]" /> Link copied!
                 <div className="absolute -top-1.5 right-3 w-3 h-3 bg-[#011936] rotate-45"></div>
               </div>
             )}
@@ -272,7 +272,7 @@ export default function Search() {
               )}
             </h2>
               {activeFilterCount > 0 && (
-                <button className="text-xs font-bold text-[#892233] hover:text-[#780000] flex items-center gap-1 bg-[#ddfff7] px-2 py-1 rounded-md transition-colors" onClick={handleReset}>
+                <button className="text-xs font-bold text-[#892233] hover:text-[#780000] flex items-center gap-1 bg-[#f8fafc] px-2 py-1 rounded-md transition-colors" onClick={handleReset}>
                   <X size={12} /> Reset
                 </button>
               )}
@@ -284,7 +284,7 @@ export default function Search() {
               <div className="flex gap-2">
                 <button
                   onClick={() => toggleButton('MOST', expertFilter, setExpertFilter)}
-                  className={`flex-1 py-1.5 border font-bold text-[10px] rounded transition-colors ${expertFilter === 'MOST' ? 'border-[#892233] bg-[#892233] text-white' : 'border-[#892233] bg-white text-[#892233] hover:bg-[#ddfff7]'}`}
+                  className={`flex-1 py-1.5 border font-bold text-[10px] rounded transition-colors ${expertFilter === 'MOST' ? 'border-[#892233] bg-[#892233] text-white' : 'border-[#892233] bg-white text-[#892233] hover:bg-[#f8fafc]'}`}
                 >MOST</button>
                 <button
                   onClick={() => toggleButton('HIGHLY', expertFilter, setExpertFilter)}
@@ -312,7 +312,7 @@ export default function Search() {
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Location</div>
               <button
                 onClick={handleGeolocation}
-                className="w-full text-left p-2 border border-slate-200 rounded text-xs text-[#011936] font-medium mb-2 hover:bg-[#ddfff7] flex items-center gap-2 transition-colors"
+                className="w-full text-left p-2 border border-slate-200 rounded text-xs text-[#011936] font-medium mb-2 hover:bg-[#f8fafc] flex items-center gap-2 transition-colors"
               >
                 <MapPin size={14} className="text-[#892233]" /> {locationName || "Use current location"}
               </button>
@@ -341,7 +341,7 @@ export default function Search() {
                   <button
                     key={s}
                     onClick={() => toggleButton(s, seasonFilter, setSeasonFilter)}
-                    className={`flex-1 py-1.5 border text-xs rounded font-semibold transition-colors flex justify-center items-center gap-1 ${seasonFilter === s ? 'border-[#892233] bg-[#ddfff7] text-[#892233]' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
+                    className={`flex-1 py-1.5 border text-xs rounded font-semibold transition-colors flex justify-center items-center gap-1 ${seasonFilter === s ? 'border-[#892233] bg-[#f8fafc] text-[#892233]' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
                   >{emoji} {s}</button>
                 ))}
               </div>
@@ -393,7 +393,7 @@ export default function Search() {
             <div>
               <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Eligibility</div>
               <div className="space-y-2 mt-2">
-                <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isInternational ? 'border-[#892233] bg-[#ddfff7]' : 'border-slate-200 bg-white'}`}>
+                <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isInternational ? 'border-[#892233] bg-[#f8fafc]' : 'border-slate-200 bg-white'}`}>
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-[#011936]">Allows International Students</span>
                     <span className="text-[10px] text-[#011936] opacity-60">Non-US citizens / residents</span>
@@ -405,7 +405,7 @@ export default function Search() {
                     onChange={() => { setIsInternational(!isInternational); if (!isInternational) setIsUsOnly(false); setPage(1) }}
                   />
                 </label>
-                <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isUsOnly ? 'border-[#892233] bg-[#ddfff7]' : 'border-slate-200 bg-white'}`}>
+                <label className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${isUsOnly ? 'border-[#892233] bg-[#f8fafc]' : 'border-slate-200 bg-white'}`}>
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-slate-600">US Students Only</span>
                     <span className="text-[10px] text-slate-400">Strictly US citizenship/residence</span>
@@ -456,7 +456,7 @@ export default function Search() {
                     <button
                       key={opt}
                       onClick={() => { setSortBy(opt); setShowSortMenu(false); setPage(1) }}
-                      className={`w-full text-left px-4 py-3 text-sm font-semibold flex items-center justify-between hover:bg-[#ddfff7] transition-colors ${sortBy === opt ? 'text-[#892233]' : 'text-[#011936]'}`}
+                      className={`w-full text-left px-4 py-3 text-sm font-semibold flex items-center justify-between hover:bg-[#f8fafc] transition-colors ${sortBy === opt ? 'text-[#892233]' : 'text-[#011936]'}`}
                     >
                       {opt} {sortBy === opt && <Check size={14} />}
                     </button>
@@ -485,7 +485,7 @@ export default function Search() {
                   <ProgramCard program={prog} />
                   {/* CTA banner every 5 cards */}
                   {(index + 1) % 5 === 0 && index < pagedResults.length - 1 && (
-                    <div className="bg-[#ddfff7] border border-[#892233]/20 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[#011936] shadow-sm my-4">
+                    <div className="bg-[#f8fafc] border border-[#892233]/20 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[#011936] shadow-sm my-4">
                       <div>
                         <div className="font-bold">Not sure where to start?</div>
                         <div className="text-sm opacity-90">Contact our experts for free, personalized program recommendations.</div>
@@ -506,7 +506,7 @@ export default function Search() {
               <button
                 onClick={() => goToPage(page - 1)}
                 disabled={page === 1}
-                className="w-10 h-10 rounded-lg border border-slate-200 bg-white text-[#011936] font-bold hover:bg-[#ddfff7] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                className="w-10 h-10 rounded-lg border border-slate-200 bg-white text-[#011936] font-bold hover:bg-[#f8fafc] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
               >‹</button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                 const pageNum = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i
@@ -514,7 +514,7 @@ export default function Search() {
                   <button
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg font-bold flex items-center justify-center transition-colors ${pageNum === page ? 'bg-[#892233] text-white shadow-md' : 'bg-white border border-slate-200 text-[#011936] hover:bg-[#ddfff7]'}`}
+                    className={`w-10 h-10 rounded-lg font-bold flex items-center justify-center transition-colors ${pageNum === page ? 'bg-[#892233] text-white shadow-md' : 'bg-white border border-slate-200 text-[#011936] hover:bg-[#f8fafc]'}`}
                   >{pageNum}</button>
                 )
               })}
@@ -525,7 +525,7 @@ export default function Search() {
               <button
                 onClick={() => goToPage(page + 1)}
                 disabled={page === totalPages}
-                className="w-10 h-10 rounded-lg border border-slate-200 bg-white text-[#011936] font-bold hover:bg-[#ddfff7] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                className="w-10 h-10 rounded-lg border border-slate-200 bg-white text-[#011936] font-bold hover:bg-[#f8fafc] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
               >›</button>
             </div>
           )}

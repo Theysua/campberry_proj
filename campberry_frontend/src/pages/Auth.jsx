@@ -100,23 +100,23 @@ export default function Auth() {
         </div>
 
         {/* Benefits Panel */}
-        <div className="bg-[#f8fafc] p-10 rounded-2xl shadow-lg border border-[#892233]/10 flex flex-col justify-center text-center">
+        <div className="bg-[#ddfff7] p-10 rounded-2xl shadow-lg border border-[#892233]/10 flex flex-col justify-center text-center">
           <h2 className="text-2xl font-bold text-[#011936] mb-4">Why Campberry?</h2>
           <p className="text-[#011936] font-medium opacity-70 mb-8 leading-relaxed max-w-sm mx-auto">
             Join thousands of students and counselors to discover the best summer opportunities.
           </p>
           <div className="bg-white rounded-xl p-6 text-left shadow-sm mb-8 space-y-4 border border-[#892233]/5">
             <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-[#f8fafc] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
+              <div className="w-8 h-8 rounded-full bg-[#ddfff7] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
               <div className="text-sm font-bold text-[#011936]">Save your favorite programs</div>
             </div>
             <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-[#f8fafc] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
+              <div className="w-8 h-8 rounded-full bg-[#ddfff7] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
               <div className="text-sm font-bold text-[#011936]">Build and share precise lists</div>
             </div>
             <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-[#f8fafc] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
-              <div className="text-sm font-bold text-[#011936]">Reviews and rankings by experts and parents.</div>
+              <div className="w-8 h-8 rounded-full bg-[#ddfff7] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
+              <div className="text-sm font-bold text-[#011936]">Completely free forever</div>
             </div>
           </div>
         </div>

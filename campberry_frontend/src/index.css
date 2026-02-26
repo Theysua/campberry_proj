@@ -12,7 +12,7 @@
   
   --primary: #892233; /* Main Brand Color */
   --primary-hover: #780000;
-  --primary-light: #ddfff7;
+  --primary-light: #f8fafc;
   --primary-border: #892233;
   
   --secondary: #ff751f; /* Orange Accent */
@@ -21,7 +21,7 @@
   --accent: #fade41; /* Yellow Accent */
   
   --nav-bg: #011936;
-  --nav-text: #ddfff7;
+  --nav-text: #f8fafc;
   --nav-active: #fade41;
   
   --heading-dark: #892233;
@@ -29,7 +29,7 @@
   --danger: #780000;
   --warning: #fade41;
   --success: #10b981;
-  --success-bg: #ddfff7;
+  --success-bg: #f8fafc;
   --success-text: #011936;
 
   --card-bg: #ffffff;

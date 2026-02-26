@@ -14,7 +14,7 @@ export default function ListCard({ list, linkPrefix = '/lists' }) {
       </h3>
       
       <div className="flex items-center gap-3 mt-auto">
-        <div className="icon-box w-10 h-10 bg-[#ddfff7] text-[#892233] shadow-sm border border-[#892233]/10">
+        <div className="icon-box w-10 h-10 bg-[#f8fafc] text-[#892233] shadow-sm border border-[#892233]/10">
           👤
         </div>
         <div>

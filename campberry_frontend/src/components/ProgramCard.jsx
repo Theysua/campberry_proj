@@ -189,7 +189,7 @@ export default function ProgramCard({ program }) {
         <div className="relative" ref={shareRef}>
           <button
             onClick={() => setShareOpen(!shareOpen)}
-            className="text-slate-400 hover:text-[#892233] hover:bg-[#ddfff7] p-1.5 rounded-full transition-colors"
+            className="text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc] p-1.5 rounded-full transition-colors"
             title="Share"
           >
             <Share size={16} />
@@ -202,7 +202,7 @@ export default function ProgramCard({ program }) {
               </div>
               <button
                 onClick={handleShare}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${copied ? 'bg-[#ddfff7] text-[#011936]' : 'bg-[#892233] text-white hover:bg-[#780000]'}`}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${copied ? 'bg-[#f8fafc] text-[#011936]' : 'bg-[#892233] text-white hover:bg-[#780000]'}`}
               >
                 {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Link</>}
               </button>
@@ -210,11 +210,11 @@ export default function ProgramCard({ program }) {
           )}
         </div>
 
-        <button className="text-slate-400 hover:text-[#892233] hover:bg-[#ddfff7] p-1.5 rounded-full transition-colors" title="Compare">
+        <button className="text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc] p-1.5 rounded-full transition-colors" title="Compare">
           <ArrowRightLeft size={16} />
         </button>
         <div className="relative" ref={addListRef}>
-          <button onClick={handleOpenAddList} className="text-slate-400 hover:text-[#892233] hover:bg-[#ddfff7] p-1.5 rounded-full transition-colors" title="Add to List">
+          <button onClick={handleOpenAddList} className="text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc] p-1.5 rounded-full transition-colors" title="Add to List">
             <Plus size={16} />
           </button>
 
@@ -236,7 +236,7 @@ export default function ProgramCard({ program }) {
                     <button
                       key={list.id}
                       onClick={(e) => handleAddToList(e, list.id)}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-[#ddfff7] text-[#011936] transition-colors truncate flex items-center justify-between group"
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-[#f8fafc] text-[#011936] transition-colors truncate flex items-center justify-between group"
                     >
                       <span className="truncate pr-2">{list.title}</span>
                       {addingToList === list.id ? <Loader2 size={12} className="animate-spin text-[#892233]" /> : addedToList === list.id ? <Check size={12} className="text-[#011936]" /> : <Plus size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
