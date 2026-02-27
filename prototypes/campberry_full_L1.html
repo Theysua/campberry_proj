@@ -7,48 +7,49 @@
     <title>L1: Grid & Centered</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             /* ── Pantone Color Palette ── */
-            --deep-red:      #780000;
-            --crimson:       #892233;
-            --orange:        #FF751F;
-            --mint:          #DDFFF7;
-            --yellow:        #FADE41;
-            --navy:          #011936;
+            --deep-red: #780000;
+            --crimson: #892233;
+            --orange: #FF751F;
+            --mint: #DDFFF7;
+            --yellow: #FADE41;
+            --navy: #011936;
 
             /* ── Derived / Functional Colors ── */
-            --primary:       var(--navy);
-            --accent:        var(--crimson);
-            --accent-light:  #a83350;
+            --primary: var(--navy);
+            --accent: var(--crimson);
+            --accent-light: #a83350;
             --accent-gradient: linear-gradient(135deg, #892233 0%, #a83350 100%);
-            --mint-dark:     #a8e8d5;
-            --orange-light:  #ffad73;
+            --mint-dark: #a8e8d5;
+            --orange-light: #ffad73;
 
             /* ── Surfaces & Text ── */
-            --bg:            #fffcf9;
-            --surface:       #ffffff;
-            --text:          #1e293b;
-            --text-secondary:#64748b;
-            --border:        #e2e8f0;
-            --border-light:  #f1f5f9;
+            --bg: #fffcf9;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
 
             /* ── Shadows (light, airy) ── */
-            --shadow-sm:     0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
-            --shadow-md:     0 4px 12px rgba(0,0,0,0.06);
-            --shadow-lg:     0 12px 32px rgba(0,0,0,0.08);
-            --shadow-xl:     0 24px 48px rgba(0,0,0,0.10);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.10);
 
             /* ── Radii ── */
-            --radius-sm:     8px;
-            --radius-md:     16px;
-            --radius-lg:     24px;
-            --radius-pill:   9999px;
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-pill: 9999px;
 
             /* ── Timing ── */
             --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-            --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         * {
@@ -68,54 +69,145 @@
 
         /* ── Utility Animations ── */
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to   { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
+
         @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            33% { transform: translate(15px, -20px); }
-            66% { transform: translate(-10px, 10px); }
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            33% {
+                transform: translate(15px, -20px);
+            }
+
+            66% {
+                transform: translate(-10px, 10px);
+            }
         }
+
         @keyframes float-reverse {
-            0%, 100% { transform: translate(0, 0); }
-            33% { transform: translate(-20px, 15px); }
-            66% { transform: translate(10px, -10px); }
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            33% {
+                transform: translate(-20px, 15px);
+            }
+
+            66% {
+                transform: translate(10px, -10px);
+            }
         }
+
         @keyframes float-slow {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(8px, -12px); }
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(8px, -12px);
+            }
         }
+
         @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
+
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
         }
+
         @keyframes pulse-soft {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
         }
 
         .animate-in {
             animation: fadeInUp 0.8s var(--ease-out-expo) forwards;
             opacity: 0;
         }
-        .delay-1 { animation-delay: 0.12s; }
-        .delay-2 { animation-delay: 0.24s; }
-        .delay-3 { animation-delay: 0.38s; }
-        .delay-4 { animation-delay: 0.52s; }
-        .delay-5 { animation-delay: 0.66s; }
+
+        .delay-1 {
+            animation-delay: 0.12s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.24s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.38s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.52s;
+        }
+
+        .delay-5 {
+            animation-delay: 0.66s;
+        }
 
         /* Scroll-triggered reveal */
         .reveal {
@@ -123,15 +215,18 @@
             transform: translateY(30px);
             transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
         }
+
         .reveal.visible {
             opacity: 1;
             transform: translateY(0);
         }
+
         .reveal-scale {
             opacity: 0;
             transform: scale(0.92);
             transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
         }
+
         .reveal-scale.visible {
             opacity: 1;
             transform: scale(1);
@@ -157,20 +252,27 @@
             position: relative;
             overflow: hidden;
         }
+
         .btn::before {
             content: '';
             position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
             transition: left 0.5s;
         }
+
         .btn:hover::before {
             left: 100%;
         }
+
         .btn:hover {
             transform: translateY(-2px) scale(1.02);
             box-shadow: 0 8px 24px rgba(137, 34, 51, 0.3);
         }
+
         .btn:active {
             transform: translateY(0) scale(0.98);
         }
@@ -193,6 +295,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .btn-dark:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
@@ -210,6 +313,7 @@
             font-family: inherit;
             transition: all 0.3s var(--ease-out-expo);
         }
+
         .btn-outline:hover {
             border-color: var(--accent);
             color: var(--accent);
@@ -227,6 +331,7 @@
             transition: all 0.4s var(--ease-out-expo);
             position: relative;
         }
+
         .card::after {
             content: '';
             position: absolute;
@@ -237,9 +342,11 @@
             background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 117, 31, 0.06), transparent 40%);
             pointer-events: none;
         }
+
         .card:hover::after {
             opacity: 1;
         }
+
         .card:hover {
             box-shadow: var(--shadow-lg);
             border-color: rgba(255, 117, 31, 0.2);
@@ -258,6 +365,7 @@
             letter-spacing: -0.01em;
             transition: all 0.25s var(--ease-out-expo);
         }
+
         .tag:hover {
             background: #dbeafe;
             color: var(--primary);
@@ -294,6 +402,7 @@
         .page {
             display: none;
         }
+
         .page.active {
             display: block;
             animation: fadeIn 0.35s ease;
@@ -316,9 +425,10 @@
             top: 0;
             z-index: 100;
         }
+
         .tab-btn {
             background: rgba(255, 255, 255, 0.06);
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
             border: none;
             padding: 8px 16px;
             border-radius: var(--radius-sm);
@@ -329,10 +439,12 @@
             transition: all 0.25s var(--ease-out-expo);
             white-space: nowrap;
         }
+
         .tab-btn:hover {
             background: rgba(255, 255, 255, 0.12);
             color: white;
         }
+
         .tab-btn.active {
             background: var(--accent);
             color: white;
@@ -354,6 +466,7 @@
             z-index: 90;
             transition: all 0.3s;
         }
+
         .logo {
             font-size: 20px;
             font-weight: 800;
@@ -363,6 +476,7 @@
             align-items: center;
             gap: 10px;
         }
+
         .logo-icon {
             width: 34px;
             height: 34px;
@@ -377,14 +491,17 @@
             box-shadow: 0 2px 8px rgba(137, 34, 51, 0.2);
             transition: transform 0.3s var(--ease-spring);
         }
+
         .logo-icon:hover {
             transform: rotate(-8deg) scale(1.1);
         }
+
         .nav-links {
             display: flex;
             align-items: center;
             gap: 4px;
         }
+
         .nav-links button {
             background: none;
             border: none;
@@ -398,6 +515,7 @@
             transition: all 0.25s;
             position: relative;
         }
+
         .nav-links button::after {
             content: '';
             position: absolute;
@@ -410,9 +528,11 @@
             transform: translateX(-50%);
             border-radius: 1px;
         }
+
         .nav-links button:hover {
             color: var(--primary);
         }
+
         .nav-links button:hover::after {
             width: 60%;
         }
@@ -438,28 +558,40 @@
             will-change: transform;
             opacity: 1;
         }
+
         .hero-orb-1 {
-            width: 700px; height: 700px;
+            width: 700px;
+            height: 700px;
             background: radial-gradient(circle, rgba(255, 117, 31, 0.5) 0%, rgba(255, 117, 31, 0.2) 40%, transparent 65%);
-            top: -5%; left: 5%;
+            top: -5%;
+            left: 5%;
             animation: float 12s ease-in-out infinite;
         }
+
         .hero-orb-2 {
-            width: 650px; height: 650px;
+            width: 650px;
+            height: 650px;
             background: radial-gradient(circle, rgba(250, 222, 65, 0.45) 0%, rgba(250, 222, 65, 0.18) 40%, transparent 65%);
-            top: 2%; right: 5%;
+            top: 2%;
+            right: 5%;
             animation: float-reverse 14s ease-in-out infinite;
         }
+
         .hero-orb-3 {
-            width: 500px; height: 500px;
+            width: 500px;
+            height: 500px;
             background: radial-gradient(circle, rgba(137, 34, 51, 0.22) 0%, rgba(137, 34, 51, 0.08) 40%, transparent 65%);
-            bottom: 0%; left: 25%;
+            bottom: 0%;
+            left: 25%;
             animation: float-slow 16s ease-in-out infinite;
         }
+
         .hero-orb-4 {
-            width: 480px; height: 480px;
+            width: 480px;
+            height: 480px;
             background: radial-gradient(circle, rgba(168, 232, 213, 0.5) 0%, rgba(221, 255, 247, 0.22) 40%, transparent 65%);
-            bottom: 10%; right: 10%;
+            bottom: 10%;
+            right: 10%;
             animation: float 18s ease-in-out infinite 3s;
         }
 
@@ -468,7 +600,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background-image: radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px);
+            background-image: radial-gradient(circle, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
             background-size: 32px 32px;
             pointer-events: none;
             mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
@@ -485,6 +617,7 @@
             z-index: 2;
             color: var(--primary);
         }
+
         .hero h1 .gradient-text {
             background: linear-gradient(135deg, var(--navy) 0%, var(--crimson) 50%, var(--orange) 100%);
             background-size: 200% auto;
@@ -493,6 +626,7 @@
             background-clip: text;
             animation: gradient-shift 8s ease infinite;
         }
+
         .hero p {
             font-size: 18px;
             color: var(--text-secondary);
@@ -519,11 +653,13 @@
             z-index: 2;
             box-shadow: var(--shadow-md);
         }
+
         .hero-search:focus-within {
             background: rgba(255, 255, 255, 0.95);
             border-color: var(--orange);
             box-shadow: 0 0 0 5px rgba(255, 117, 31, 0.15), var(--shadow-lg);
         }
+
         .hero-search input {
             flex: 1;
             padding: 18px 28px;
@@ -534,9 +670,11 @@
             background: transparent;
             color: var(--text);
         }
+
         .hero-search input::placeholder {
             color: var(--text-secondary);
         }
+
         .hero-search button {
             padding: 0 36px;
             background: var(--accent-gradient);
@@ -549,6 +687,7 @@
             transition: all 0.3s var(--ease-out-expo);
             letter-spacing: -0.01em;
         }
+
         .hero-search button:hover {
             filter: brightness(1.1);
         }
@@ -562,9 +701,11 @@
             position: relative;
             z-index: 2;
         }
+
         .stat-item {
             text-align: center;
         }
+
         .stat-number {
             font-size: 36px;
             font-weight: 800;
@@ -572,6 +713,7 @@
             letter-spacing: -0.03em;
             line-height: 1;
         }
+
         .stat-label {
             font-size: 13px;
             color: var(--text-secondary);
@@ -588,6 +730,7 @@
             position: relative;
             z-index: 2;
         }
+
         .top-search-pill {
             font-size: 13px;
             padding: 8px 18px;
@@ -600,6 +743,7 @@
             font-weight: 500;
             backdrop-filter: blur(8px);
         }
+
         .top-search-pill:hover {
             background: var(--surface);
             border-color: var(--orange);
@@ -618,6 +762,7 @@
             align-items: center;
             gap: 12px;
         }
+
         .section-subtitle {
             font-size: 15px;
             color: var(--text-secondary);
@@ -631,10 +776,12 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
         }
+
         .program-card {
             position: relative;
             overflow: hidden;
         }
+
         .program-card::before {
             content: '';
             position: absolute;
@@ -643,9 +790,11 @@
             right: 0;
             height: 3px;
         }
+
         .program-card.accent-top::before {
             background: var(--accent-gradient);
         }
+
         .program-card.primary-top::before {
             background: linear-gradient(135deg, var(--primary) 0%, #0a2f5c 100%);
         }
@@ -669,9 +818,11 @@
             overflow-y: auto;
             padding: 24px;
         }
+
         .filter-panel::-webkit-scrollbar {
             width: 4px;
         }
+
         .filter-panel::-webkit-scrollbar-thumb {
             background-color: #cbd5e1;
             border-radius: 4px;
@@ -697,6 +848,7 @@
             width: 100%;
             background: var(--border-light);
         }
+
         .segmented-btn {
             flex: 1;
             padding: 10px 0;
@@ -714,10 +866,12 @@
             font-family: inherit;
             font-weight: 500;
         }
+
         .segmented-btn:hover {
-            background: rgba(255,255,255,0.8);
+            background: rgba(255, 255, 255, 0.8);
             color: var(--text);
         }
+
         .segmented-btn.active {
             background: white;
             color: var(--primary);
@@ -736,6 +890,7 @@
             color: var(--text);
             transition: all 0.3s var(--ease-out-expo);
         }
+
         .filter-input:focus {
             border-color: var(--orange);
             box-shadow: 0 0 0 3px rgba(255, 117, 31, 0.08);
@@ -754,10 +909,12 @@
             transition: all 0.25s var(--ease-out-expo);
             user-select: none;
         }
+
         .filter-chip:hover {
             border-color: var(--accent);
             color: var(--accent);
         }
+
         .filter-chip input {
             margin-right: 6px;
             cursor: pointer;
@@ -769,6 +926,7 @@
             cursor: pointer;
             transition: all 0.3s var(--ease-spring);
         }
+
         .action-icon:hover {
             color: var(--orange);
             transform: scale(1.2) rotate(-5deg);
@@ -778,6 +936,7 @@
         .filter-accordion {
             border: none;
         }
+
         .accordion-header {
             font-weight: 700;
             font-size: 14px;
@@ -792,17 +951,21 @@
             margin-top: 8px;
             transition: color 0.2s;
         }
+
         .accordion-header:hover {
             color: var(--accent);
         }
+
         .accordion-header::-webkit-details-marker {
             display: none;
         }
+
         .chevron {
             font-size: 11px;
             color: var(--text-secondary);
             transition: transform 0.3s var(--ease-out-expo);
         }
+
         details[open] .chevron {
             transform: rotate(180deg);
         }
@@ -817,10 +980,12 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .checkbox-row:hover {
             color: var(--accent);
             padding-left: 4px;
         }
+
         .checkbox-row input[type="checkbox"] {
             width: 16px;
             height: 16px;
@@ -844,18 +1009,22 @@
             position: relative;
             overflow: hidden;
         }
+
         .feature-card:hover {
             transform: translateY(-6px);
             box-shadow: var(--shadow-lg);
         }
+
         .feature-card .icon {
             font-size: 32px;
             margin-bottom: 12px;
             transition: transform 0.4s var(--ease-spring);
         }
+
         .feature-card:hover .icon {
             transform: scale(1.15);
         }
+
         .feature-card .label {
             font-weight: 700;
             font-size: 14px;
@@ -873,10 +1042,12 @@
             position: relative;
             overflow: hidden;
         }
+
         .cta-block:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-xl);
         }
+
         .cta-block h3 {
             font-size: 22px;
             font-weight: 800;
@@ -885,6 +1056,7 @@
             z-index: 1;
             letter-spacing: -0.02em;
         }
+
         .cta-block p {
             font-size: 14px;
             opacity: 0.85;
@@ -902,6 +1074,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .rating-card::before {
             content: '';
             position: absolute;
@@ -910,36 +1083,49 @@
             right: 0;
             height: 4px;
         }
+
         .rating-card.accent-top::before {
             background: var(--accent-gradient);
         }
+
         .rating-card.primary-top::before {
             background: linear-gradient(135deg, var(--primary) 0%, #0a2f5c 100%);
         }
+
         .rating-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-lg);
         }
+
         .rating-card h4 {
             font-size: 17px;
             font-weight: 700;
             margin-bottom: 6px;
             color: var(--primary);
         }
+
         .rating-card .desc {
             font-size: 13px;
             color: var(--text-secondary);
             margin-bottom: 16px;
             line-height: 1.5;
         }
+
         .rating-card .link {
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.25s;
         }
-        .rating-card.accent-top .link { color: var(--accent); }
-        .rating-card.primary-top .link { color: var(--primary); }
+
+        .rating-card.accent-top .link {
+            color: var(--accent);
+        }
+
+        .rating-card.primary-top .link {
+            color: var(--primary);
+        }
+
         .rating-card .link:hover {
             opacity: 0.8;
             letter-spacing: 0.02em;
@@ -956,16 +1142,19 @@
             position: relative;
             overflow: hidden;
         }
+
         .hot-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-lg);
         }
+
         .hot-card h4 {
             font-size: 15px;
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 8px;
         }
+
         .hot-card .meta {
             font-size: 12px;
             color: var(--text-secondary);
@@ -976,6 +1165,7 @@
             display: flex;
             min-height: calc(100vh - 100px);
         }
+
         .auth-form {
             flex: 1;
             display: flex;
@@ -983,10 +1173,12 @@
             justify-content: center;
             padding: 40px;
         }
+
         .auth-form-inner {
             width: 100%;
             max-width: 400px;
         }
+
         .auth-form h1 {
             margin: 0 0 8px 0;
             color: var(--primary);
@@ -994,20 +1186,24 @@
             font-weight: 800;
             letter-spacing: -0.03em;
         }
+
         .auth-form .subtitle {
             color: var(--text-secondary);
             margin-bottom: 32px;
             font-size: 15px;
         }
+
         .auth-form .subtitle a {
             color: var(--accent);
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
         }
+
         .auth-form .subtitle a:hover {
             text-decoration: underline;
         }
+
         .auth-google-btn {
             width: 100%;
             padding: 14px;
@@ -1026,11 +1222,13 @@
             justify-content: center;
             gap: 10px;
         }
+
         .auth-google-btn:hover {
             border-color: var(--text-secondary);
             box-shadow: var(--shadow-md);
             transform: translateY(-1px);
         }
+
         .form-label {
             display: block;
             font-size: 13px;
@@ -1038,6 +1236,7 @@
             margin-bottom: 6px;
             color: var(--text);
         }
+
         .form-input {
             width: 100%;
             padding: 14px 16px;
@@ -1049,6 +1248,7 @@
             outline: none;
             transition: all 0.3s var(--ease-out-expo);
         }
+
         .form-input:focus {
             border-color: var(--orange);
             box-shadow: 0 0 0 4px rgba(255, 117, 31, 0.08);
@@ -1067,28 +1267,35 @@
             position: relative;
             overflow: hidden;
         }
+
         .auth-hero::before {
             content: '';
             position: absolute;
-            width: 500px; height: 500px;
-            top: -25%; right: -20%;
+            width: 500px;
+            height: 500px;
+            top: -25%;
+            right: -20%;
             background: radial-gradient(circle, rgba(255, 117, 31, 0.45) 0%, rgba(255, 117, 31, 0.1) 50%, transparent 75%);
             border-radius: 50%;
             filter: blur(80px);
             animation: float 10s ease-in-out infinite;
             pointer-events: none;
         }
+
         .auth-hero::after {
             content: '';
             position: absolute;
-            width: 450px; height: 450px;
-            bottom: -15%; left: -10%;
+            width: 450px;
+            height: 450px;
+            bottom: -15%;
+            left: -10%;
             background: radial-gradient(circle, rgba(250, 222, 65, 0.4) 0%, rgba(250, 222, 65, 0.1) 50%, transparent 75%);
             border-radius: 50%;
             filter: blur(80px);
             animation: float-reverse 12s ease-in-out infinite;
             pointer-events: none;
         }
+
         .auth-hero h2 {
             font-size: 42px;
             font-weight: 800;
@@ -1098,6 +1305,7 @@
             z-index: 1;
             color: var(--primary);
         }
+
         .auth-hero p {
             font-size: 18px;
             color: var(--text-secondary);
@@ -1115,6 +1323,7 @@
             margin-top: 40px;
             gap: 6px;
         }
+
         .pagination button {
             padding: 8px 16px;
             border: 1px solid var(--border);
@@ -1127,11 +1336,13 @@
             font-family: inherit;
             transition: all 0.25s var(--ease-out-expo);
         }
+
         .pagination button:hover {
             border-color: var(--accent);
             color: var(--accent);
             transform: translateY(-1px);
         }
+
         .pagination button.active {
             background: var(--primary);
             color: white;
@@ -1150,10 +1361,12 @@
             filter: grayscale(1);
             transition: all 0.4s;
         }
+
         .logo-wall:hover {
             opacity: 0.7;
             filter: grayscale(0.3);
         }
+
         .logo-wall-item {
             font-size: 14px;
             font-weight: 700;
@@ -1167,36 +1380,46 @@
             header {
                 padding: 12px 20px;
             }
+
             .hero {
                 padding: 60px 20px 50px;
             }
+
             .hero h1 {
                 font-size: 28px;
             }
+
             .hero-search {
                 flex-direction: column;
                 border-radius: var(--radius-md);
             }
+
             .hero-search button {
                 padding: 14px;
                 border-radius: 0 0 var(--radius-md) var(--radius-md);
             }
+
             .l1-grid {
                 grid-template-columns: 1fr;
             }
+
             .hot-row {
                 grid-template-columns: 1fr 1fr;
             }
+
             .auth-container {
                 flex-direction: column;
             }
+
             .auth-hero {
                 padding: 40px 20px;
             }
+
             .stats-bar {
                 gap: 32px;
                 flex-wrap: wrap;
             }
+
             .stat-number {
                 font-size: 28px;
             }
@@ -1242,7 +1465,8 @@
             <div class="hero-orb hero-orb-4"></div>
 
             <h1 class="animate-in"><span class="gradient-text">Find Your Dream Program</span></h1>
-            <p class="animate-in delay-1">Discover extracurriculars that matter. Curated, ranked, and reviewed by experts.</p>
+            <p class="animate-in delay-1">Discover extracurriculars that matter.<br>Curated, ranked, and reviewed by
+                experts.</p>
 
             <div class="hero-search animate-in delay-2">
                 <input type="text" placeholder="Search over 1,000 opportunities...">
@@ -1292,28 +1516,42 @@
 
         <!-- Hot Programs -->
         <div style="max-width: 1200px; margin: 48px auto; padding: 0 24px;">
-            <div class="reveal" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div class="reveal"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <div class="section-title">&#128293; Hot Programs</div>
-                <span style="font-size: 14px; color: var(--accent); font-weight: 600; cursor: pointer; transition: letter-spacing 0.3s;" onclick="showPage('lists')" onmouseover="this.style.letterSpacing='0.02em'" onmouseout="this.style.letterSpacing='0'">See All Lists &rarr;</span>
+                <span
+                    style="font-size: 14px; color: var(--accent); font-weight: 600; cursor: pointer; transition: letter-spacing 0.3s;"
+                    onclick="showPage('lists')" onmouseover="this.style.letterSpacing='0.02em'"
+                    onmouseout="this.style.letterSpacing='0'">See All Lists &rarr;</span>
             </div>
             <div class="hot-row">
                 <div class="hot-card reveal-scale" onclick="showPage('mylistdetail')" style="border-top: none;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-gradient); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-gradient); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <h4>Counselors' Top Picks</h4>
                     <div class="meta">By School Counseling Group</div>
                 </div>
-                <div class="hot-card reveal-scale" onclick="showPage('mylistdetail')" style="border-top: none; transition-delay: 0.1s;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                <div class="hot-card reveal-scale" onclick="showPage('mylistdetail')"
+                    style="border-top: none; transition-delay: 0.1s;">
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <h4>Pre-college Summer Programs</h4>
                     <div class="meta">By Campberry</div>
                 </div>
                 <div class="hot-card reveal-scale" style="border-top: none; transition-delay: 0.2s;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--mint-dark) 0%, var(--mint) 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--mint-dark) 0%, var(--mint) 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <h4>Best Free Programs</h4>
                     <div class="meta">By Campberry</div>
                 </div>
-                <div class="hot-card reveal-scale" onclick="showPage('lists')" style="border-top: none; display: flex; align-items: center; justify-content: center; transition-delay: 0.3s;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                <div class="hot-card reveal-scale" onclick="showPage('lists')"
+                    style="border-top: none; display: flex; align-items: center; justify-content: center; transition-delay: 0.3s;">
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <span style="font-size: 15px; font-weight: 700; color: var(--accent);">Explore More &rarr;</span>
                 </div>
             </div>
@@ -1323,9 +1561,11 @@
         <div style="max-width: 1200px; margin: 48px auto; padding: 0 24px;">
             <div class="reveal" style="margin-bottom: 24px;">
                 <div class="section-title">Campberry Ratings
-                    <span style="background: var(--yellow); color: var(--text); font-size: 11px; padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 700; letter-spacing: 0.03em;">NEW</span>
+                    <span
+                        style="background: var(--yellow); color: var(--text); font-size: 11px; padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 700; letter-spacing: 0.03em;">NEW</span>
                 </div>
-                <div class="section-subtitle">Find the best opportunities &mdash; ranked for quality and cost by our expert community.</div>
+                <div class="section-subtitle">Find the best opportunities &mdash; ranked for quality and cost by our
+                    expert community.</div>
             </div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                 <div class="rating-card accent-top reveal-scale">
@@ -1333,7 +1573,8 @@
                     <div class="desc">Top-tier programs selected by consultants.</div>
                     <div style="display: flex; gap: 8px; margin-bottom: 20px;">
                         <span class="badge-most">MOST</span>
-                        <span style="font-size: 10px; padding: 5px 10px; border-radius: var(--radius-pill); background: white; color: var(--accent); border: 1.5px solid var(--accent); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;">HIGHLY</span>
+                        <span
+                            style="font-size: 10px; padding: 5px 10px; border-radius: var(--radius-pill); background: white; color: var(--accent); border: 1.5px solid var(--accent); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;">HIGHLY</span>
                     </div>
                     <div class="link">Explore Experts' Choice &rarr;</div>
                 </div>
@@ -1357,11 +1598,13 @@
                     <div class="icon">&#128274;</div>
                     <div class="label" style="color: var(--primary);">100% Data Privacy</div>
                 </div>
-                <div class="feature-card reveal-scale" style="background: var(--mint); border-color: var(--mint-dark); transition-delay: 0.1s;">
+                <div class="feature-card reveal-scale"
+                    style="background: var(--mint); border-color: var(--mint-dark); transition-delay: 0.1s;">
                     <div class="icon">&#9878;&#65039;</div>
                     <div class="label" style="color: var(--primary);">Unbiased Algorithms</div>
                 </div>
-                <div class="feature-card reveal-scale" style="background: #fffde6; border-color: #fae09c; transition-delay: 0.2s;">
+                <div class="feature-card reveal-scale"
+                    style="background: #fffde6; border-color: #fae09c; transition-delay: 0.2s;">
                     <div class="icon">&#11088;</div>
                     <div class="label" style="color: #92400e;">Reviews &amp; Rankings</div>
                     <div style="font-size: 11px; color: #92400e; margin-top: 5px;">by experts and parents</div>
@@ -1369,11 +1612,13 @@
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                <div class="cta-block reveal-scale" style="background: linear-gradient(135deg, var(--navy) 0%, #0a2f5c 100%);">
+                <div class="cta-block reveal-scale"
+                    style="background: linear-gradient(135deg, var(--navy) 0%, #0a2f5c 100%);">
                     <h3>Search 1,000+ Opportunities</h3>
                     <p>&#10003; New: 200+ competitions</p>
                 </div>
-                <div class="cta-block reveal-scale" style="background: linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%); transition-delay: 0.1s;">
+                <div class="cta-block reveal-scale"
+                    style="background: linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%); transition-delay: 0.1s;">
                     <h3 style="color: var(--navy);">Save Time and Don't Miss Out</h3>
                     <p style="color: var(--navy);">&#10003; Search powered by AI</p>
                 </div>
@@ -1381,8 +1626,10 @@
         </div>
 
         <!-- Footer -->
-        <div style="max-width: 1200px; margin: 64px auto 0; padding: 40px 24px; border-top: 1px solid var(--border); text-align: center;">
-            <div style="font-size: 13px; color: var(--text-secondary);">&copy; 2026 Campberry. All rights reserved.</div>
+        <div
+            style="max-width: 1200px; margin: 64px auto 0; padding: 40px 24px; border-top: 1px solid var(--border); text-align: center;">
+            <div style="font-size: 13px; color: var(--text-secondary);">&copy; 2026 Campberry. All rights reserved.
+            </div>
         </div>
     </div>
 
@@ -1395,7 +1642,8 @@
                 onclick="showPage('home')">&larr; Back</button>
 
             <div class="hero-search" style="margin: 0 0 30px 0; max-width: 100%;">
-                <input type="text" placeholder="Search over 1,000 opportunities..." style="padding: 18px 24px; color: var(--text);">
+                <input type="text" placeholder="Search over 1,000 opportunities..."
+                    style="padding: 18px 24px; color: var(--text);">
                 <button style="padding: 0 40px;">Search</button>
             </div>
 
@@ -1403,9 +1651,12 @@
 
                 <!-- Left Sidebar Filters -->
                 <div class="filter-panel">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <strong style="font-size: 20px; color: var(--primary); letter-spacing: -0.02em;">Filters</strong>
-                        <span style="font-size: 13px; color: var(--accent); cursor: pointer; font-weight: 600;">Reset Filters</span>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong
+                            style="font-size: 20px; color: var(--primary); letter-spacing: -0.02em;">Filters</strong>
+                        <span style="font-size: 13px; color: var(--accent); cursor: pointer; font-weight: 600;">Reset
+                            Filters</span>
                     </div>
 
                     <!-- Quick Filters -->
@@ -1448,7 +1699,8 @@
                         <div style="margin-top: 20px;">
                             <div class="filter-section-title">Location</div>
                             <div style="position: relative;">
-                                <span style="position: absolute; left: 12px; top: 11px; color: var(--text-secondary);">&#128205;</span>
+                                <span
+                                    style="position: absolute; left: 12px; top: 11px; color: var(--text-secondary);">&#128205;</span>
                                 <input type="text" class="filter-input" placeholder="Enter a city, state, or zip..."
                                     style="padding-left: 36px;">
                             </div>
@@ -1459,12 +1711,15 @@
                                     <option>25 mi</option>
                                 </select>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 14px; color: var(--text-secondary);">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 14px; color: var(--text-secondary);">
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    Include Online <input type="checkbox" checked style="width:16px; height:16px; accent-color: var(--accent);">
+                                    Include Online <input type="checkbox" checked
+                                        style="width:16px; height:16px; accent-color: var(--accent);">
                                 </label>
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    Online Only <input type="checkbox" style="width:16px; height:16px; accent-color: var(--accent);">
+                                    Online Only <input type="checkbox"
+                                        style="width:16px; height:16px; accent-color: var(--accent);">
                                 </label>
                             </div>
                         </div>
@@ -1495,7 +1750,8 @@
                         <div style="margin-top: 20px;">
                             <div class="filter-section-title">Interests</div>
                             <div style="position: relative;">
-                                <span style="position: absolute; left: 12px; top: 11px; color: var(--text-secondary);">&#128269;</span>
+                                <span
+                                    style="position: absolute; left: 12px; top: 11px; color: var(--text-secondary);">&#128269;</span>
                                 <input type="text" class="filter-input" placeholder="Add more interests to filter..."
                                     style="padding-left: 36px;">
                             </div>
@@ -1549,10 +1805,14 @@
 
                 <!-- Right Results Section -->
                 <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
-                        <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;">124 Results</h2>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+                        <h2
+                            style="margin: 0; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;">
+                            124 Results</h2>
                         <div style="font-size: 14px; color: var(--text-secondary);">
-                            Sort by: <select style="border: none; background: transparent; font-weight: bold; color: var(--primary); outline: none; cursor: pointer; font-family: inherit;">
+                            Sort by: <select
+                                style="border: none; background: transparent; font-weight: bold; color: var(--primary); outline: none; cursor: pointer; font-family: inherit;">
                                 <option>Relevancy</option>
                                 <option>Rating</option>
                             </select>
@@ -1561,13 +1821,20 @@
 
                     <div class="l1-grid">
                         <!-- Card 1 -->
-                        <div class="card program-card accent-top" onclick="showPage('program')" style="cursor: pointer;">
-                            <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom:15px;">
+                        <div class="card program-card accent-top" onclick="showPage('program')"
+                            style="cursor: pointer;">
+                            <div
+                                style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom:15px;">
                                 <div style="display:flex; gap:15px;">
-                                    <div style="width:56px; height:56px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-secondary);">&#127891;</div>
+                                    <div
+                                        style="width:56px; height:56px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-secondary);">
+                                        &#127891;</div>
                                     <div>
-                                        <h3 style="margin:0 0 4px 0; font-size:17px; color: var(--primary); font-weight: 700;">Stanford Pre-Collegiate</h3>
-                                        <div style="font-size:13px; color: var(--text-secondary); font-weight: 500;">Stanford University</div>
+                                        <h3
+                                            style="margin:0 0 4px 0; font-size:17px; color: var(--primary); font-weight: 700;">
+                                            Stanford Pre-Collegiate</h3>
+                                        <div style="font-size:13px; color: var(--text-secondary); font-weight: 500;">
+                                            Stanford University</div>
                                     </div>
                                 </div>
                                 <span class="action-icon">&#9734;</span>
@@ -1576,20 +1843,28 @@
                                 <span class="tag">STEM</span>
                                 <span class="tag">Summer</span>
                             </div>
-                            <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-light);">
+                            <div
+                                style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-light);">
                                 <div><span class="badge-most">MOST RECOMMENDED</span></div>
-                                <div style="font-size: 13px; font-weight: bold; color: var(--accent);">View details &rarr;</div>
+                                <div style="font-size: 13px; font-weight: bold; color: var(--accent);">View details
+                                    &rarr;</div>
                             </div>
                         </div>
 
                         <!-- Card 2 -->
                         <div class="card program-card primary-top" style="cursor: pointer;">
-                            <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom:15px;">
+                            <div
+                                style="display:flex; justify-content: space-between; align-items: flex-start; margin-bottom:15px;">
                                 <div style="display:flex; gap:15px;">
-                                    <div style="width:56px; height:56px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-secondary);">&#128218;</div>
+                                    <div
+                                        style="width:56px; height:56px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-secondary);">
+                                        &#128218;</div>
                                     <div>
-                                        <h3 style="margin:0 0 4px 0; font-size:17px; color: var(--primary); font-weight: 700;">MIT PRIMES</h3>
-                                        <div style="font-size:13px; color: var(--text-secondary); font-weight: 500;">Massachusetts Institute of Technology</div>
+                                        <h3
+                                            style="margin:0 0 4px 0; font-size:17px; color: var(--primary); font-weight: 700;">
+                                            MIT PRIMES</h3>
+                                        <div style="font-size:13px; color: var(--text-secondary); font-weight: 500;">
+                                            Massachusetts Institute of Technology</div>
                                     </div>
                                 </div>
                                 <span class="action-icon">&#9734;</span>
@@ -1599,9 +1874,11 @@
                                 <span class="tag">Research</span>
                                 <span class="tag">Year-round</span>
                             </div>
-                            <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-light);">
+                            <div
+                                style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border-light);">
                                 <div><span class="badge-impact">HIGH IMPACT</span></div>
-                                <div style="font-size: 13px; font-weight: bold; color: var(--primary);">View details &rarr;</div>
+                                <div style="font-size: 13px; font-weight: bold; color: var(--primary);">View details
+                                    &rarr;</div>
                             </div>
                         </div>
                     </div>
@@ -1624,15 +1901,22 @@
     <!-- ═══════════════════════════════════════════ -->
     <div class="page" id="page-program">
         <div class="container">
-            <button class="btn-outline" style="margin-bottom: 24px; font-size: 13px; padding: 6px 18px;" onclick="showPage('search')">&larr; Back to Search</button>
+            <button class="btn-outline" style="margin-bottom: 24px; font-size: 13px; padding: 6px 18px;"
+                onclick="showPage('search')">&larr; Back to Search</button>
 
-            <div class="card" style="margin-bottom: 24px; display: flex; gap: 30px; align-items: flex-start; padding: 32px;">
-                <div style="width: 100px; height: 100px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 40px; flex-shrink: 0;">&#127891;</div>
+            <div class="card"
+                style="margin-bottom: 24px; display: flex; gap: 30px; align-items: flex-start; padding: 32px;">
+                <div
+                    style="width: 100px; height: 100px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 40px; flex-shrink: 0;">
+                    &#127891;</div>
                 <div style="flex: 1;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
-                            <h1 style="margin: 0 0 8px 0; font-size: 28px; color: var(--primary); font-weight: 800; letter-spacing: -0.03em;">Stanford Pre-Collegiate Summer Institutes</h1>
-                            <div style="font-size: 17px; color: var(--accent); font-weight: 600; margin-bottom: 16px;">Stanford University</div>
+                            <h1
+                                style="margin: 0 0 8px 0; font-size: 28px; color: var(--primary); font-weight: 800; letter-spacing: -0.03em;">
+                                Stanford Pre-Collegiate Summer Institutes</h1>
+                            <div style="font-size: 17px; color: var(--accent); font-weight: 600; margin-bottom: 16px;">
+                                Stanford University</div>
                         </div>
                         <div style="display: flex; gap: 10px;">
                             <button class="btn-outline">&#8599; Share</button>
@@ -1653,27 +1937,39 @@
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
                 <div>
                     <div class="card" style="margin-bottom: 20px; padding: 28px;">
-                        <h3 style="margin-top: 0; color: var(--primary); font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-                            <span style="width: 4px; height: 24px; background: var(--accent-gradient); border-radius: 2px; display: inline-block;"></span>
+                        <h3
+                            style="margin-top: 0; color: var(--primary); font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <span
+                                style="width: 4px; height: 24px; background: var(--accent-gradient); border-radius: 2px; display: inline-block;"></span>
                             About the Program
                         </h3>
-                        <p style="color: var(--text-secondary); line-height: 1.8; font-size: 15px;">Stanford Pre-Collegiate Summer Institutes offer intellectually curious students the opportunity to study a wide range of subjects taught by Stanford instructors. The program provides a challenging academic experience in a supportive environment, helping students explore their interests and prepare for college-level coursework.</p>
+                        <p style="color: var(--text-secondary); line-height: 1.8; font-size: 15px;">Stanford
+                            Pre-Collegiate Summer Institutes offer intellectually curious students the opportunity to
+                            study a wide range of subjects taught by Stanford instructors. The program provides a
+                            challenging academic experience in a supportive environment, helping students explore their
+                            interests and prepare for college-level coursework.</p>
                     </div>
                     <div class="card" style="background: #fffbef; border-color: #fde68a; padding: 28px;">
-                        <h3 style="margin-top: 0; color: #92400e; display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; margin-bottom: 12px;">
+                        <h3
+                            style="margin-top: 0; color: #92400e; display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; margin-bottom: 12px;">
                             &#11088; Expert Guidance
                         </h3>
-                        <p style="color: #b45309; font-size: 14px; line-height: 1.7;">Highly competitive and proven to demonstrate deep interest and capability in rigorous academic environments to top-tier universities.</p>
+                        <p style="color: #b45309; font-size: 14px; line-height: 1.7;">Highly competitive and proven to
+                            demonstrate deep interest and capability in rigorous academic environments to top-tier
+                            universities.</p>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div class="card" style="padding: 24px;">
-                        <h4 style="margin: 0 0 16px 0; color: var(--primary); font-size: 16px; font-weight: 700;">Dates &amp; Deadlines</h4>
-                        <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: flex; justify-content: space-between;">
+                        <h4 style="margin: 0 0 16px 0; color: var(--primary); font-size: 16px; font-weight: 700;">Dates
+                            &amp; Deadlines</h4>
+                        <div
+                            style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: var(--text);">Starts</span>
                             <span>June 20, 2026</span>
                         </div>
-                        <div style="font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-light);">
+                        <div
+                            style="font-size: 14px; color: var(--text-secondary); display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-light);">
                             <span style="font-weight: 600; color: var(--text);">Apply by</span>
                             <span>Jan 15, 2026</span>
                         </div>
@@ -1688,17 +1984,22 @@
     <!-- ═══════════════════════════════════════════ -->
     <div class="page" id="page-lists">
         <div class="container">
-            <h1 style="color: var(--primary); margin-bottom: 8px; font-size: 32px; font-weight: 800; letter-spacing: -0.03em;">Your Workspace</h1>
+            <h1
+                style="color: var(--primary); margin-bottom: 8px; font-size: 32px; font-weight: 800; letter-spacing: -0.03em;">
+                Your Workspace</h1>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h2 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--text);">My Lists</h2>
                 <button class="btn">&#65291; Create New List</button>
             </div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px;">
                 <div class="card" style="cursor: pointer;" onclick="showPage('mylistdetail')">
-                    <h3 style="margin: 0 0 8px 0; color: var(--primary); font-size: 16px; font-weight: 700;">Summer 2026 Targets</h3>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border); margin-top: 15px;">
+                    <h3 style="margin: 0 0 8px 0; color: var(--primary); font-size: 16px; font-weight: 700;">Summer 2026
+                        Targets</h3>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--border); margin-top: 15px;">
                         <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">4 Programs</span>
-                        <span style="font-size: 11px; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--mint); color: var(--primary); font-weight: 700;">Private</span>
+                        <span
+                            style="font-size: 11px; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--mint); color: var(--primary); font-weight: 700;">Private</span>
                     </div>
                 </div>
             </div>
@@ -1706,17 +2007,23 @@
             <h2 style="margin: 0 0 24px 0; font-size: 22px; font-weight: 700; color: var(--text);">Hot Programs</h2>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
                 <div class="hot-card" onclick="showPage('mylistdetail')" style="border-top: none;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--primary) 0%, #0a2f5c 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--primary) 0%, #0a2f5c 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <h4>Counselors' Top Picks</h4>
                     <div class="meta">12 Programs inside</div>
                 </div>
                 <div class="hot-card" style="border-top: none;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-gradient); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-gradient); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <h4>Best STEM Programs</h4>
                     <div class="meta">8 Programs</div>
                 </div>
                 <div class="hot-card" style="border-top: none;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;"></div>
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%); border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                    </div>
                     <h4>Free Programs</h4>
                     <div class="meta">15 Programs</div>
                 </div>
@@ -1733,10 +2040,16 @@
                 <div style="width: 320px; flex-shrink: 0; position: sticky; top: 120px;">
                     <button class="btn-outline" style="margin-bottom: 24px; padding: 6px 18px; font-size: 12px;"
                         onclick="showPage('lists')">&larr; Back to All Lists</button>
-                    <h1 style="margin: 0 0 12px 0; font-size: 28px; color: var(--primary); line-height: 1.2; font-weight: 800; letter-spacing: -0.03em;">Counselors' Top Picks</h1>
-                    <p style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); padding-bottom: 20px; border-bottom: 1px solid var(--border);">A curated selection of the most rigorous and respected programs.</p>
-                    <div style="display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border);">
-                        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Total Programs</span>
+                    <h1
+                        style="margin: 0 0 12px 0; font-size: 28px; color: var(--primary); line-height: 1.2; font-weight: 800; letter-spacing: -0.03em;">
+                        Counselors' Top Picks</h1>
+                    <p
+                        style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                        A curated selection of the most rigorous and respected programs.</p>
+                    <div
+                        style="display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--border);">
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Total
+                            Programs</span>
                         <span style="font-weight: bold; color: var(--primary);">12</span>
                     </div>
                     <div style="margin-top: 24px;">
@@ -1744,14 +2057,23 @@
                     </div>
                 </div>
                 <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <h2 style="margin: 0; font-size: 20px; color: var(--primary); font-weight: 700;">Programs in this list</h2>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h2 style="margin: 0; font-size: 20px; color: var(--primary); font-weight: 700;">Programs in
+                            this list</h2>
                     </div>
-                    <div class="card" style="display: flex; gap: 20px; align-items: center; margin-bottom: 15px; cursor: pointer; padding: 20px;" onclick="showPage('program')">
-                        <div style="font-size: 24px; font-weight: 900; color: var(--accent); min-width: 36px; text-align: center;">#1</div>
-                        <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-md); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px;">&#127891;</div>
+                    <div class="card"
+                        style="display: flex; gap: 20px; align-items: center; margin-bottom: 15px; cursor: pointer; padding: 20px;"
+                        onclick="showPage('program')">
+                        <div
+                            style="font-size: 24px; font-weight: 900; color: var(--accent); min-width: 36px; text-align: center;">
+                            #1</div>
+                        <div
+                            style="width: 56px; height: 56px; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius-md); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            &#127891;</div>
                         <div style="flex: 1;">
-                            <h3 style="margin: 0 0 5px 0; font-size: 16px; color: var(--primary); font-weight: 700;">Stanford Pre-Collegiate Summer Institutes</h3>
+                            <h3 style="margin: 0 0 5px 0; font-size: 16px; color: var(--primary); font-weight: 700;">
+                                Stanford Pre-Collegiate Summer Institutes</h3>
                             <div style="font-size: 13px; color: var(--text-secondary);">Stanford University</div>
                         </div>
                         <div style="font-size: 13px; font-weight: 600; color: var(--accent);">View &rarr;</div>
@@ -1771,7 +2093,20 @@
                     <h1>Welcome back</h1>
                     <p class="subtitle">Don't have an account? <a>Sign Up</a></p>
                     <button class="auth-google-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
                         Continue with Google
                     </button>
 
@@ -1788,11 +2123,14 @@
                     <div style="margin-bottom: 28px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                             <label class="form-label" style="margin-bottom: 0;">Password</label>
-                            <span style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600;">Forgot?</span>
+                            <span
+                                style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600;">Forgot?</span>
                         </div>
-                        <input type="password" class="form-input" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;">
+                        <input type="password" class="form-input"
+                            placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;">
                     </div>
-                    <button class="btn" style="width: 100%; padding: 16px; font-size: 16px; justify-content: center;">Sign In</button>
+                    <button class="btn"
+                        style="width: 100%; padding: 16px; font-size: 16px; justify-content: center;">Sign In</button>
                 </div>
             </div>
             <div class="auth-hero">
