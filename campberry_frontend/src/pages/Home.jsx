@@ -151,7 +151,7 @@ export default function Home() {
             <div className="section-subtitle">Find the best opportunities — ranked for quality and cost by our
               expert community.</div>
           </div>
-          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(2, 1fr)', 'gap': '20px' }}>
+          <div className="rating-grid">
             <div className="rating-card accent-top reveal-scale">
               <h4>Experts' Choice</h4>
               <div className="desc">Top-tier programs selected by consultants.</div>
@@ -175,7 +175,7 @@ export default function Home() {
         {/* Why Campberry */}
         <div style={{ 'maxWidth': '1200px', 'margin': '48px auto 16px auto', 'padding': '0 24px' }}>
           <div className="section-title reveal" style={{ 'marginBottom': '24px' }}>Why Campberry?</div>
-          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(3, 1fr)', 'gap': '20px', 'marginBottom': '20px' }}>
+          <div className="feature-grid">
             <div className="feature-card reveal-scale" style={{ 'background': 'var(--mint)', 'borderColor': 'var(--mint-dark)' }}>
               <div className="icon">🔒</div>
               <div className="label" style={{ 'color': 'var(--primary)' }}>100% Data Privacy</div>
@@ -190,7 +190,7 @@ export default function Home() {
               <div style={{ 'fontSize': '11px', 'color': '#92400e', 'marginTop': '5px' }}>by experts and parents</div>
             </div>
           </div>
-          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(2, 1fr)', 'gap': '20px' }}>
+          <div className="cta-grid">
             <div className="cta-block reveal-scale" style={{ 'background': 'linear-gradient(135deg, var(--navy) 0%, #0a2f5c 100%)' }}>
               <h3>Search 1,000+ Opportunities</h3>
               <p>✓ New: 200+ competitions</p>

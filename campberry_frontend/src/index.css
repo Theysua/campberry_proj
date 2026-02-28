@@ -773,6 +773,25 @@ header {
     overflow: hidden;
 }
 
+.rating-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.cta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
 .program-card::before {
     content: '';
     position: absolute;
@@ -1476,6 +1495,12 @@ details[open] .chevron {
     .top-search-pill {
         font-size: 12px;
         padding: 6px 14px;
+    }
+
+    .rating-grid,
+    .feature-grid,
+    .cta-grid {
+        grid-template-columns: 1fr !important;
     }
 
     /* Stacked layout for Hot Programs on mobile */
