@@ -1462,30 +1462,11 @@ details[open] .chevron {
         padding: 6px 14px;
     }
 
-    /* Horizontal scroll for Hot Programs */
+    /* Stacked layout for Hot Programs on mobile */
     .hot-row {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        padding-bottom: 16px;
-        -webkit-overflow-scrolling: touch;
-        margin: 0 -20px;
-        padding: 0 20px 16px 20px;
-    }
-
-    .hot-row>* {
-        scroll-snap-align: start;
-        flex: 0 0 85%;
-        max-width: 320px;
-    }
-
-    .hot-row::-webkit-scrollbar {
-        display: none;
-    }
-
-    .hot-row {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .l1-grid {
