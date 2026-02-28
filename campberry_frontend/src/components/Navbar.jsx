@@ -45,7 +45,7 @@ export default function Navbar() {
                 <span style={{ background: 'var(--mint)', padding: '6px 12px', borderRadius: 'var(--radius-pill)', color: 'var(--primary)', marginRight: '6px', fontSize: '12px' }}>
                   {user?.name.charAt(0)}
                 </span>
-                {user?.name}
+                <span className="desktop-only">{user?.name}</span>
               </div>
               <button className="btn-outline" onClick={logout} style={{ padding: '6px 12px', fontSize: '13px', marginLeft: '0' }}>Sign Out</button>
             </div>
