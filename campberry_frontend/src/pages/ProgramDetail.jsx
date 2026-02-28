@@ -18,18 +18,18 @@ export default function ProgramDetail() {
       <div className="page" id="page-program">
         <div className="container">
           <button className="btn-outline" onClick={() => navigate('/search')} style={{ 'marginBottom': '24px', 'fontSize': '13px', 'padding': '6px 18px' }}>← Back to Search</button>
-          <div className="card" style={{ 'marginBottom': '24px', 'display': 'flex', 'gap': '30px', 'alignItems': 'flex-start', 'padding': '32px' }}>
+          <div className="card program-header" style={{ 'marginBottom': '24px', 'padding': '32px' }}>
             <div style={{ 'width': '100px', 'height': '100px', 'background': 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', 'borderRadius': 'var(--radius-lg)', 'border': '1px solid var(--border)', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'fontSize': '40px', 'flexShrink': '0' }}>
               🎓</div>
             <div style={{ 'flex': '1' }}>
-              <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'flex-start' }}>
+              <div className="program-title-row">
                 <div>
                   <h1 style={{ 'margin': '0 0 8px 0', 'fontSize': '28px', 'color': 'var(--primary)', 'fontWeight': '800', 'letterSpacing': '-0.03em' }}>
                     Stanford Pre-Collegiate Summer Institutes</h1>
                   <div style={{ 'fontSize': '17px', 'color': 'var(--accent)', 'fontWeight': '600', 'marginBottom': '16px' }}>
                     Stanford University</div>
                 </div>
-                <div style={{ 'display': 'flex', 'gap': '10px' }}>
+                <div className="program-actions">
                   <button className="btn-outline">↗ Share</button>
                   <button onClick={() => toggleSaveProgram(mockId)} className="btn-outline" style={{ color: isSaved ? 'var(--orange)' : 'var(--text)' }}>
                     {isSaved ? '★ Saved' : '☆ Save'}
@@ -47,7 +47,7 @@ export default function ProgramDetail() {
               </div>
             </div>
           </div>
-          <div style={{ 'display': 'grid', 'gridTemplateColumns': '2fr 1fr', 'gap': '24px' }}>
+          <div className="program-layout" style={{ 'gap': '24px' }}>
             <div>
               <div className="card" style={{ 'marginBottom': '20px', 'padding': '28px' }}>
                 <h3 style={{ 'marginTop': '0', 'color': 'var(--primary)', 'fontSize': '18px', 'fontWeight': '700', 'marginBottom': '16px', 'display': 'flex', 'alignItems': 'center', 'gap': '10px' }}>
