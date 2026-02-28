@@ -20,7 +20,7 @@ export default function Lists() {
             <h2 style={{ 'margin': '0', 'fontSize': '22px', 'fontWeight': '700', 'color': 'var(--text)' }}>My Lists</h2>
             <button className="btn" onClick={() => setIsCreating(true)}>＋ Create New List</button>
           </div>
-          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(3, 1fr)', 'gap': '20px', 'marginBottom': '48px' }}>
+          <div className="l1-grid" style={{ 'marginBottom': '48px' }}>
             {userLists.map(list => (
               <div key={list.id} className="card" onClick={() => navigate(`/my-lists/${list.id}`)} style={{ 'cursor': 'pointer' }}>
                 <h3 style={{ 'margin': '0 0 8px 0', 'color': 'var(--primary)', 'fontSize': '16px', 'fontWeight': '700' }}>
@@ -34,7 +34,7 @@ export default function Lists() {
             ))}
           </div>
           <h2 style={{ 'margin': '0 0 24px 0', 'fontSize': '22px', 'fontWeight': '700', 'color': 'var(--text)' }}>Hot Programs</h2>
-          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(4, 1fr)', 'gap': '20px' }}>
+          <div className="hot-row">
             <div className="hot-card" onClick={() => navigate('/my-lists/1')} style={{ 'borderTop': 'none' }}>
               <div style={{ 'position': 'absolute', 'top': '0', 'left': '0', 'right': '0', 'height': '4px', 'background': 'linear-gradient(135deg, var(--primary) 0%, #0a2f5c 100%)', 'borderRadius': 'var(--radius-lg) var(--radius-lg) 0 0' }}>
               </div>
