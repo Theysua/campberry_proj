@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { addListItem, getMyLists, saveProgram as saveToFavorites } from '../services/api'
 import Badge from './Badge'
 import Pill from './Pill'
+import { useListContext } from '../context/ListContext'
+import AddToListModal from './AddToListModal'
 
 export default function ProgramCard({ program }) {
   const { trpcData } = program
@@ -12,19 +14,14 @@ export default function ProgramCard({ program }) {
   const shareRef = useRef(null)
 
   const [addListOpen, setAddListOpen] = useState(false)
-  const [listsData, setListsData] = useState([])
-  const [addingToList, setAddingToList] = useState(null)
-  const [addedToList, setAddedToList] = useState(null)
-  const [loadingLists, setLoadingLists] = useState(false)
-  const addListRef = useRef(null)
+
+  const { toggleSaveProgram, isProgramSaved } = useListContext()
+  const isSaved = isProgramSaved(program.id)
 
   const navigate = useNavigate()
 
   useEffect(() => {
     const handler = (e) => {
-      if (addListRef.current && !addListRef.current.contains(e.target)) {
-        setAddListOpen(false)
-      }
       if (shareRef.current && !shareRef.current.contains(e.target)) {
         setShareOpen(false)
       }
@@ -100,42 +97,14 @@ export default function ProgramCard({ program }) {
     navigate(`/program/${id}`)
   }
 
-  const handleOpenAddList = async (e) => {
+  const handleOpenAddList = (e) => {
     e.stopPropagation()
-    setAddListOpen(!addListOpen)
-    if (!addListOpen && listsData.length === 0) {
-      setLoadingLists(true)
-      try {
-        const data = await getMyLists()
-        setListsData(data)
-      } catch (err) {
-        console.error('Failed to load lists', err)
-      }
-      setLoadingLists(false)
-    }
+    setAddListOpen(true)
   }
 
-  const handleAddToList = async (e, listId) => {
+  const handleSaveProgram = (e) => {
     e.stopPropagation()
-    setAddingToList(listId)
-    try {
-      await addListItem(listId, id, '')
-      setAddedToList(listId)
-      setTimeout(() => setAddedToList(null), 2000)
-    } catch (err) {
-      console.error('Failed to add to list', err)
-    }
-    setAddingToList(null)
-  }
-
-  const handleSaveProgram = async (e) => {
-    e.stopPropagation()
-    try {
-      await saveToFavorites(id)
-      // Visual feedback here optionally
-    } catch (err) {
-      console.error('Failed to save program', err)
-    }
+    toggleSaveProgram(id)
   }
 
   return (
@@ -213,51 +182,23 @@ export default function ProgramCard({ program }) {
         <button className="text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc] p-1.5 rounded-full transition-colors" title="Compare">
           <ArrowRightLeft size={16} />
         </button>
-        <div className="relative" ref={addListRef}>
+        <div className="relative">
           <button onClick={handleOpenAddList} className="text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc] p-1.5 rounded-full transition-colors" title="Add to List">
             <Plus size={16} />
           </button>
-
-          {addListOpen && (
-            <div className="absolute right-8 top-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden w-48 animate-fade-in">
-              <div className="flex justify-between items-center p-3 border-b border-slate-100 bg-slate-50">
-                <span className="text-xs font-bold text-[#011936]">Save to List</span>
-                <button onClick={(e) => { e.stopPropagation(); setAddListOpen(false) }} className="text-slate-400 hover:text-[#892233]">
-                  <X size={12} />
-                </button>
-              </div>
-              <div className="max-h-48 overflow-y-auto w-full p-2 space-y-1">
-                {loadingLists ? (
-                  <div className="py-4 flex justify-center text-[#892233]"><Loader2 className="animate-spin" size={16} /></div>
-                ) : listsData.length === 0 ? (
-                  <div className="py-4 text-center text-xs text-slate-500 font-medium">No lists yet.<br /><Link to="/lists" className="text-[#892233] hover:underline hover:text-[#ff751f] ml-1">Create one</Link></div>
-                ) : (
-                  listsData.map(list => (
-                    <button
-                      key={list.id}
-                      onClick={(e) => handleAddToList(e, list.id)}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-[#f8fafc] text-[#011936] transition-colors truncate flex items-center justify-between group"
-                    >
-                      <span className="truncate pr-2">{list.title}</span>
-                      {addingToList === list.id ? <Loader2 size={12} className="animate-spin text-[#892233]" /> : addedToList === list.id ? <Check size={12} className="text-[#011936]" /> : <Plus size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {recommended && (
           <div className="mt-auto flex flex-col items-center gap-2">
             <Badge type={recommended} />
             <Badge type="IMPACT_HIGHLY" />
-            <button onClick={handleSaveProgram} className="flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-[#ff751f] transition-colors uppercase tracking-wider">
-              <span className="text-sm">☆</span> Save
+            <button onClick={handleSaveProgram} className={`flex items-center gap-1 text-[10px] font-bold transition-colors uppercase tracking-wider ${isSaved ? 'text-[#ff751f]' : 'text-slate-500 hover:text-[#ff751f]'}`}>
+              <span className="text-sm">{isSaved ? '★' : '☆'}</span> {isSaved ? 'Saved' : 'Save'}
             </button>
           </div>
         )}
       </div>
+      <AddToListModal isOpen={addListOpen} onClose={() => setAddListOpen(false)} programId={id} />
     </div>
   )
 }

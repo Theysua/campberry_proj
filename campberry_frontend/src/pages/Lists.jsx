@@ -1,35 +1,62 @@
-import ListCard from '../components/ListCard'
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useScrollReveal from '../hooks/useScrollReveal';
+import { useListContext } from '../context/ListContext';
+import CreateListModal from '../components/CreateListModal';
 
 export default function Lists() {
-  const allLists = [
-    { id: '1', title: "School Counseling Group's Favorite Programs", author: 'School Counseling Group', authorRole: 'Admissions Consultants', width: 'w-full' },
-    { id: '2', title: "Pre-college Summer Programs That Demonstrate Interest", author: 'Campberry', authorRole: 'Official Team Account', width: 'w-full' },
-    { id: '3', title: "Engineering Courses Summer 2026", author: 'Sam Luby', authorRole: 'Independent Counselor', width: 'w-full' },
-    { id: '4', title: "Eight Great Years’ Favorite Programs", author: 'Alyse Graham', authorRole: 'Founder, Eight Great Years', width: 'w-full' },
-    { id: '5', title: "High-Impact Experiences That Hold Up in Elite Admissions Review", author: 'John Morganelli', authorRole: 'Ex-Director of Admissions: Cornell University', width: 'w-full' },
-    { id: '6', title: "Top Free Programs for Low-Income Students", author: 'Pamela Musungu', authorRole: 'GritHub, Founder', width: 'w-full' },
-  ]
+  const navigate = useNavigate();
+  useScrollReveal();
+  const { userLists } = useListContext();
+  const [isCreating, setIsCreating] = useState(false);
 
   return (
-    <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in relative z-0">
-      <div className="bg-[#892233] border-b border-[#780000] py-16 mb-8 text-white shadow-lg">
-        <div className="container text-center">
-           <h1 className="text-4xl font-extrabold mb-3 tracking-tight">Curated Lists</h1>
-           <p className="text-[#f8fafc] font-medium text-lg opacity-90 max-w-xl mx-auto">Discover hand-picked collections of top programs, curated by our team of experts.</p>
+    <>
+      <div className="page" id="page-lists">
+        <div className="container" style={{ paddingBottom: '80px' }}>
+          <h1 style={{ 'color': 'var(--primary)', 'marginBottom': '8px', 'fontSize': '32px', 'fontWeight': '800', 'letterSpacing': '-0.03em' }}>
+            Your Workspace</h1>
+          <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'marginBottom': '24px' }}>
+            <h2 style={{ 'margin': '0', 'fontSize': '22px', 'fontWeight': '700', 'color': 'var(--text)' }}>My Lists</h2>
+            <button className="btn" onClick={() => setIsCreating(true)}>＋ Create New List</button>
+          </div>
+          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(3, 1fr)', 'gap': '20px', 'marginBottom': '48px' }}>
+            {userLists.map(list => (
+              <div key={list.id} className="card" onClick={() => navigate(`/my-lists/${list.id}`)} style={{ 'cursor': 'pointer' }}>
+                <h3 style={{ 'margin': '0 0 8px 0', 'color': 'var(--primary)', 'fontSize': '16px', 'fontWeight': '700' }}>
+                  {list.name}
+                </h3>
+                <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'paddingTop': '15px', 'borderTop': '1px solid var(--border)', 'marginTop': '15px' }}>
+                  <span style={{ 'fontSize': '13px', 'fontWeight': '600', 'color': 'var(--text-secondary)' }}>{list.programs.length} Programs</span>
+                  <span style={{ 'fontSize': '11px', 'padding': '4px 10px', 'borderRadius': 'var(--radius-pill)', 'background': 'var(--border-light)', 'color': 'var(--text-secondary)', 'fontWeight': '700' }}>Private</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <h2 style={{ 'margin': '0 0 24px 0', 'fontSize': '22px', 'fontWeight': '700', 'color': 'var(--text)' }}>Hot Programs</h2>
+          <div style={{ 'display': 'grid', 'gridTemplateColumns': 'repeat(4, 1fr)', 'gap': '20px' }}>
+            <div className="hot-card" onClick={() => navigate('/my-lists/1')} style={{ 'borderTop': 'none' }}>
+              <div style={{ 'position': 'absolute', 'top': '0', 'left': '0', 'right': '0', 'height': '4px', 'background': 'linear-gradient(135deg, var(--primary) 0%, #0a2f5c 100%)', 'borderRadius': 'var(--radius-lg) var(--radius-lg) 0 0' }}>
+              </div>
+              <h4>Counselors' Top Picks</h4>
+              <div className="meta">12 Programs inside</div>
+            </div>
+            <div className="hot-card" style={{ 'borderTop': 'none' }}>
+              <div style={{ 'position': 'absolute', 'top': '0', 'left': '0', 'right': '0', 'height': '4px', 'background': 'var(--accent-gradient)', 'borderRadius': 'var(--radius-lg) var(--radius-lg) 0 0' }}>
+              </div>
+              <h4>Best STEM Programs</h4>
+              <div className="meta">8 Programs</div>
+            </div>
+            <div className="hot-card" style={{ 'borderTop': 'none' }}>
+              <div style={{ 'position': 'absolute', 'top': '0', 'left': '0', 'right': '0', 'height': '4px', 'background': 'linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%)', 'borderRadius': 'var(--radius-lg) var(--radius-lg) 0 0' }}>
+              </div>
+              <h4>Free Programs</h4>
+              <div className="meta">15 Programs</div>
+            </div>
+          </div>
         </div>
       </div>
-      
-      <div className="container">
-        <div className="flex justify-between items-end mb-6">
-          <h2 className="text-xl font-bold text-[#011936]">Featured Lists</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allLists.map(list => (
-            <ListCard key={list.id} list={list} />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+      <CreateListModal isOpen={isCreating} onClose={() => setIsCreating(false)} />
+    </>
+  );
 }

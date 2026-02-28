@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Footer from './components/Footer'
 import Navbar from './components/Navbar'
+import { AuthProvider } from './context/AuthContext'
+import { ListProvider } from './context/ListContext'
 
 import Auth from './pages/Auth'
 import Home from './pages/Home'
@@ -25,29 +27,33 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-1 flex flex-col">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/program/:id" element={<ProgramDetail />} />
-            <Route path="/lists" element={<Lists />} />
-            <Route path="/lists/:id" element={<ListDetail />} />
-            <Route path="/my-lists" element={<MyLists />} />
-            <Route path="/my-lists/:id" element={<MyListDetail />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/mission" element={<Mission />} />
-            <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
-            <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </BrowserRouter>
+    <AuthProvider>
+      <ListProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-1 flex flex-col">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/program/:id" element={<ProgramDetail />} />
+                <Route path="/lists" element={<Lists />} />
+                <Route path="/lists/:id" element={<ListDetail />} />
+                <Route path="/my-lists" element={<MyLists />} />
+                <Route path="/my-lists/:id" element={<MyListDetail />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/mission" element={<Mission />} />
+                <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
+                <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </BrowserRouter>
+      </ListProvider>
+    </AuthProvider>
   )
 }
 

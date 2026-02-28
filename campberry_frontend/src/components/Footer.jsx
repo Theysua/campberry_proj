@@ -12,11 +12,11 @@ export default function Footer() {
             </div>
           </Link>
           <div className="text-sm text-white/70 leading-relaxed font-medium">
-            <strong className="text-white">About:</strong> <Link to="/mission" className="hover:text-[#ff751f]">Our Promises</Link>, <span className="hover:text-[#ff751f] cursor-pointer">Our Community</span><br/>
+            <strong className="text-white">About:</strong> <Link to="/mission" className="hover:text-[#ff751f]">Our Promises</Link>, <span className="hover:text-[#ff751f] cursor-pointer">Our Community</span><br />
             <strong className="text-white">Legal:</strong> <Link to="/terms-of-service" className="hover:text-[#ff751f]">Terms of Service</Link>, <Link to="/privacy-policy" className="hover:text-[#ff751f]">Privacy Policy</Link>
           </div>
         </div>
-        
+
         <div className="text-sm text-white/70 md:text-right leading-relaxed flex flex-col gap-2 font-medium">
           <div><strong className="text-white">Socials:</strong> <span className="hover:text-[#ff751f] cursor-pointer">TikTok</span>, <span className="hover:text-[#ff751f] cursor-pointer">Instagram</span>, <span className="hover:text-[#ff751f] cursor-pointer">LinkedIn</span></div>
           <div><strong className="text-white">Contact:</strong> <span className="hover:text-[#ff751f] cursor-pointer">Contact Us</span></div>

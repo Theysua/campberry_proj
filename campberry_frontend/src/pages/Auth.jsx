@@ -1,127 +1,65 @@
-import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { login, register, setAuthToken } from '../services/api'
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Auth() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/'
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
-  const [isSignUP, setIsSignUp] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleAuth = async () => {
-    setError('')
-    setLoading(true)
-    try {
-      if (isSignUP) {
-        if (!name) { throw new Error('Name is required') }
-        const data = await register(name, email, password)
-        setAuthToken(data.token)
-      } else {
-        const data = await login(email, password)
-        setAuthToken(data.token)
-      }
-      navigate(redirectTo, { replace: true })
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/lists');
     }
-  }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    login();
+    navigate('/lists');
+  };
 
   return (
-    <div className="bg-[#f8fafc] min-h-[calc(100vh-68px)] flex items-center justify-center p-6 animate-fade-in relative z-0">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 relative">
-        <button onClick={() => navigate(-1)} className="absolute -top-12 left-0 text-slate-500 hover:text-[#892233] flex items-center gap-1 font-bold transition-colors">
-          <ArrowLeft size={16} /> Back
-        </button>
-
-        {/* Auth Form */}
-        <div className="bg-white p-10 rounded-2xl shadow-xl shadow-[#892233]/5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-1 bg-[#892233] transform origin-left transition-transform duration-500"></div>
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-[#011936] mb-2">{isSignUP ? 'Create Account' : 'Sign In'}</h2>
-            <p className="text-sm text-slate-500 mb-8 font-medium">
-              {isSignUP ? 'Already have an account? ' : 'Not registered yet? '}
-              <button onClick={() => setIsSignUp(!isSignUP)} className="text-[#892233] font-bold hover:underline">
-                {isSignUP ? 'Sign In' : 'Sign Up'}
+    <>
+      <div className="page" id="page-auth">
+        <div className="auth-container">
+          <div className="auth-form">
+            <div className="auth-form-inner">
+              <h1>Welcome back</h1>
+              <p className="subtitle">Don't have an account? <a>Sign Up</a></p>
+              <button className="auth-google-btn" onClick={handleLogin}>
+                <svg height="18" viewbox="0 0 24 24" width="18">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"></path>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+                </svg>
+                Continue with Google
               </button>
-            </p>
-
-            <button className="w-full border-2 border-slate-200 bg-white text-slate-700 font-semibold py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-3 mb-6">
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-              Continue with Google
-            </button>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-[1px] bg-slate-200 flex-1"></div>
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-widest">or</span>
-              <div className="h-[1px] bg-slate-200 flex-1"></div>
-            </div>
-
-            {error && <div className="text-red-500 text-sm font-bold mb-4">{error}</div>}
-
-            <div className="space-y-4 text-left">
-              {isSignUP && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Full Name</label>
-                  <div className="input-wrapper">
-                    <input type="text" placeholder="Jane Doe" className="input-field" value={name} onChange={e => setName(e.target.value)} />
-                  </div>
-                </div>
-              )}
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email address</label>
-                <div className="input-wrapper">
-                  <input type="email" placeholder="you@example.com" className="input-field" value={email} onChange={e => setEmail(e.target.value)} />
-                </div>
+              <div style={{ 'display': 'flex', 'alignItems': 'center', 'gap': '16px', 'marginBottom': '24px' }}>
+                <div style={{ 'flex': '1', 'height': '1px', 'background': 'var(--border)' }}></div>
+                <span style={{ 'fontSize': '13px', 'color': 'var(--text-secondary)', 'fontWeight': '500' }}>or</span>
+                <div style={{ 'flex': '1', 'height': '1px', 'background': 'var(--border)' }}></div>
               </div>
-              <div>
-                <div className="flex justify-between items-end mb-1.5 ml-1">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                  {!isSignUP && <button className="text-[11px] font-bold text-[#892233] hover:underline">Forgot password?</button>}
-                </div>
-                <div className="input-wrapper">
-                  <input type="password" placeholder="••••••••" className="input-field" value={password} onChange={e => setPassword(e.target.value)} />
-                </div>
+              <div style={{ 'marginBottom': '20px' }}>
+                <label className="form-label">Email address</label>
+                <input className="form-input" placeholder="you@example.com" type="email" />
               </div>
-            </div>
-
-            <button disabled={loading} onClick={handleAuth} className="w-full bg-[#892233] hover:bg-[#780000] disabled:bg-slate-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-8 hover:-translate-y-0.5">
-              {loading ? 'PLEASE WAIT...' : (isSignUP ? 'SIGN UP' : 'SIGN IN')}
-            </button>
-          </div>
-        </div>
-
-        {/* Benefits Panel */}
-        <div className="bg-[#ddfff7] p-10 rounded-2xl shadow-lg border border-[#892233]/10 flex flex-col justify-center text-center">
-          <h2 className="text-2xl font-bold text-[#011936] mb-4">Why Campberry?</h2>
-          <p className="text-[#011936] font-medium opacity-70 mb-8 leading-relaxed max-w-sm mx-auto">
-            Join thousands of students and counselors to discover the best summer opportunities.
-          </p>
-          <div className="bg-white rounded-xl p-6 text-left shadow-sm mb-8 space-y-4 border border-[#892233]/5">
-            <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-[#ddfff7] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
-              <div className="text-sm font-bold text-[#011936]">Save your favorite programs</div>
-            </div>
-            <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-[#ddfff7] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
-              <div className="text-sm font-bold text-[#011936]">Build and share precise lists</div>
-            </div>
-            <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-full bg-[#ddfff7] text-[#892233] flex items-center justify-center shrink-0 font-bold shadow-sm">✓</div>
-              <div className="text-sm font-bold text-[#011936]">Completely free forever</div>
+              <div style={{ 'marginBottom': '28px' }}>
+                <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '6px' }}>
+                  <label className="form-label" style={{ 'marginBottom': '0' }}>Password</label>
+                  <span style={{ 'fontSize': '12px', 'color': 'var(--accent)', 'cursor': 'pointer', 'fontWeight': '600' }}>Forgot?</span>
+                </div>
+                <input className="form-input" placeholder="••••••••" type="password" />
+              </div>
+              <button className="btn" onClick={handleLogin} style={{ 'width': '100%', 'padding': '16px', 'fontSize': '16px', 'justifyContent': 'center' }}>Sign In</button>
             </div>
           </div>
+          <div className="auth-hero">
+            <h2>Empower Your<br />Future</h2>
+            <p>Join thousands of students and counselors discovering the best summer opportunities.</p>
+          </div>
         </div>
-
       </div>
-    </div>
-  )
+    </>
+  );
 }
