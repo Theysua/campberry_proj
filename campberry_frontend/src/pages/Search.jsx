@@ -9,6 +9,7 @@ export default function Search() {
 
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState('Relevancy');
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const sortRef = useRef(null);
 
   useEffect(() => {
@@ -31,12 +32,14 @@ export default function Search() {
             <button onClick={() => navigate('/search')} style={{ 'padding': '0 40px' }}>Search</button>
           </div>
           <div style={{ 'display': 'flex', 'gap': '30px', 'alignItems': 'flex-start' }}>
-            {/* Left Sidebar Filters */}
-            <div className="filter-panel">
-              <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'marginBottom': '5px' }}>
+            {/* Left Sidebar Filters - Hidden on mobile unless open */}
+            <div className={`filter-panel ${isMobileFilterOpen ? 'mobile-open' : ''}`}>
+              <div className="filter-panel-header">
                 <strong style={{ 'fontSize': '20px', 'color': 'var(--primary)', 'letterSpacing': '-0.02em' }}>Filters</strong>
-                <span style={{ 'fontSize': '13px', 'color': 'var(--accent)', 'cursor': 'pointer', 'fontWeight': '600' }}>Reset
-                  Filters</span>
+                <div style={{ 'display': 'flex', 'gap': '16px', 'alignItems': 'center' }}>
+                  <span style={{ 'fontSize': '13px', 'color': 'var(--accent)', 'cursor': 'pointer', 'fontWeight': '600' }}>Reset Filters</span>
+                  <button className="mobile-close-filter" onClick={() => setIsMobileFilterOpen(false)}>×</button>
+                </div>
               </div>
               {/* Quick Filters */}
               <details className="filter-accordion" open>
@@ -163,9 +166,17 @@ export default function Search() {
             </div>
             {/* Right Results Section */}
             <div style={{ 'flex': '1' }}>
-              <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'flex-end', 'marginBottom': '24px' }}>
+              <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'marginBottom': '24px', 'flexWrap': 'wrap', 'gap': '12px' }}>
                 <h2 style={{ 'margin': '0', 'fontSize': '24px', 'fontWeight': '800', 'color': 'var(--primary)', 'letterSpacing': '-0.02em' }}>
                   124 Results</h2>
+
+                {/* Mobile Filter Toggle Button */}
+                <button
+                  className="mobile-filter-toggle btn-outline"
+                  onClick={() => setIsMobileFilterOpen(true)}
+                >
+                  <span style={{ fontSize: '16px' }}>⚙️</span> Filters
+                </button>
                 <div style={{ 'fontSize': '14px', 'color': 'var(--text-secondary)', 'display': 'flex', 'alignItems': 'center', 'gap': '6px', 'position': 'relative' }} ref={sortRef}>
                   <span>Sort by:</span>
                   <button

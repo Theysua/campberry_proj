@@ -808,6 +808,22 @@ header {
     max-height: calc(100vh - 140px);
     overflow-y: auto;
     padding: 24px;
+    z-index: 60;
+}
+
+.mobile-filter-toggle {
+    display: none;
+}
+
+.mobile-close-filter {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
 }
 
 .filter-panel::-webkit-scrollbar {
@@ -1496,10 +1512,35 @@ details[open] .chevron {
         flex-direction: column;
     }
 
+    .mobile-filter-toggle {
+        display: flex !important;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+    }
+
+    .mobile-close-filter {
+        display: block !important;
+    }
+
     .filter-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
         width: 100%;
-        position: static;
-        margin-bottom: 24px;
+        height: 100vh;
+        max-height: 100vh;
+        z-index: 200;
+        border-radius: 0;
+        margin-bottom: 0;
+        transform: translateY(100%);
+        transition: transform 0.4s var(--ease-out-expo);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-panel.mobile-open {
+        transform: translateY(0);
     }
 
     .program-layout {
