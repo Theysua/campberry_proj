@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
 import { ChevronDown, Check } from 'lucide-react';
+import { getPrograms } from '../services/api';
 
 export default function Search() {
   const navigate = useNavigate();
@@ -10,7 +11,16 @@ export default function Search() {
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState('Relevancy');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [programs, setPrograms] = useState([]);
+  const [totalPrograms, setTotalPrograms] = useState(0);
   const sortRef = useRef(null);
+
+  useEffect(() => {
+    getPrograms().then(res => {
+      setPrograms(res.data);
+      if (res.meta) setTotalPrograms(res.meta.total);
+    }).catch(err => console.error("Failed to load programs", err));
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -141,7 +151,7 @@ export default function Search() {
             <div style={{ 'flex': '1' }}>
               <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'marginBottom': '24px', 'flexWrap': 'wrap', 'gap': '12px' }}>
                 <h2 style={{ 'margin': '0', 'fontSize': '24px', 'fontWeight': '800', 'color': 'var(--primary)', 'letterSpacing': '-0.02em' }}>
-                  124 Results</h2>
+                  {totalPrograms > 0 ? totalPrograms : programs.length} Results</h2>
 
                 {/* Mobile Filter Toggle Button */}
                 <button
@@ -176,60 +186,38 @@ export default function Search() {
                 </div>
               </div>
               <div className="l1-grid">
-                {/* Card 1 */}
-                <div className="card program-card accent-top" onClick={() => navigate('/program/1')} style={{ 'cursor': 'pointer' }}>
-                  <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'flex-start', 'marginBottom': '15px' }}>
-                    <div style={{ 'display': 'flex', 'gap': '15px' }}>
-                      <div style={{ 'width': '56px', 'height': '56px', 'background': 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', 'borderRadius': 'var(--radius-md)', 'border': '1px solid var(--border)', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'fontSize': '24px', 'color': 'var(--text-secondary)' }}>
-                        🎓</div>
-                      <div>
-                        <h3 style={{ 'margin': '0 0 4px 0', 'fontSize': '17px', 'color': 'var(--primary)', 'fontWeight': '700' }}>
-                          Stanford Pre-Collegiate</h3>
-                        <div style={{ 'fontSize': '13px', 'color': 'var(--text-secondary)', 'fontWeight': '500' }}>
-                          Stanford University</div>
+                {programs.map((prog, idx) => (
+                  <div key={prog.id || idx} className={`card program-card ${idx % 2 === 0 ? 'accent-top' : 'primary-top'}`} onClick={() => navigate(`/program/${prog.id}`)} style={{ 'cursor': 'pointer' }}>
+                    <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'flex-start', 'marginBottom': '15px' }}>
+                      <div style={{ 'display': 'flex', 'gap': '15px' }}>
+                        <div style={{ 'width': '56px', 'height': '56px', 'background': 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', 'borderRadius': 'var(--radius-md)', 'border': '1px solid var(--border)', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'fontSize': '24px', 'color': 'var(--text-secondary)', 'overflow': 'hidden' }}>
+                          {prog.logo_url ? <img src={prog.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} /> : (prog.type === 'COMPETITION' ? '🏆' : '🎓')}
+                        </div>
+                        <div>
+                          <h3 style={{ 'margin': '0 0 4px 0', 'fontSize': '17px', 'color': 'var(--primary)', 'fontWeight': '700' }}>
+                            {prog.name}</h3>
+                          <div style={{ 'fontSize': '13px', 'color': 'var(--text-secondary)', 'fontWeight': '500' }}>
+                            {prog.provider?.name || prog.provider}</div>
+                        </div>
                       </div>
+                      <span className="action-icon">☆</span>
                     </div>
-                    <span className="action-icon">☆</span>
-                  </div>
-                  <div style={{ 'marginBottom': '15px' }}>
-                    <span className="tag">STEM</span>
-                    <span className="tag">Summer</span>
-                  </div>
-                  <div style={{ 'marginTop': 'auto', 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'paddingTop': '15px', 'borderTop': '1px solid var(--border-light)' }}>
-                    <div style={{ 'display': 'flex', 'gap': '4px', 'flexWrap': 'wrap' }}>
-                      <span className="badge-impact">High Impact</span>
-                      <span className="badge-most">Most Recommended</span>
+                    <div style={{ 'marginBottom': '15px', 'display': 'flex', 'flexWrap': 'wrap', 'gap': '6px' }}>
+                      {prog.interests && prog.interests.slice(0, 3).map((i, idx2) => (
+                        <span key={idx2} className="tag">{i.interest?.name || i.interest}</span>
+                      ))}
+                      {prog.eligible_grades && <span className="tag">Grades {prog.eligible_grades}</span>}
                     </div>
-                    <div style={{ 'fontSize': '13px', 'fontWeight': 'bold', 'color': 'var(--accent)' }}>View details
-                      →</div>
-                  </div>
-                </div>
-                {/* Card 2 */}
-                <div className="card program-card primary-top" onClick={() => navigate('/program/2')} style={{ 'cursor': 'pointer' }}>
-                  <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'flex-start', 'marginBottom': '15px' }}>
-                    <div style={{ 'display': 'flex', 'gap': '15px' }}>
-                      <div style={{ 'width': '56px', 'height': '56px', 'background': 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', 'borderRadius': 'var(--radius-md)', 'border': '1px solid var(--border)', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'fontSize': '24px', 'color': 'var(--text-secondary)' }}>
-                        📚</div>
-                      <div>
-                        <h3 style={{ 'margin': '0 0 4px 0', 'fontSize': '17px', 'color': 'var(--primary)', 'fontWeight': '700' }}>
-                          MIT PRIMES</h3>
-                        <div style={{ 'fontSize': '13px', 'color': 'var(--text-secondary)', 'fontWeight': '500' }}>
-                          Massachusetts Institute of Technology</div>
+                    <div style={{ 'marginTop': 'auto', 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'paddingTop': '15px', 'borderTop': '1px solid var(--border-light)' }}>
+                      <div style={{ 'display': 'flex', 'gap': '4px', 'flexWrap': 'wrap' }}>
+                        {prog.impact_rating && <span className="badge-impact">High Impact</span>}
+                        {prog.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
+                        {prog.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
                       </div>
+                      <div style={{ 'fontSize': '13px', 'fontWeight': 'bold', 'color': 'var(--accent)' }}>View details →</div>
                     </div>
-                    <span className="action-icon">☆</span>
                   </div>
-                  <div style={{ 'marginBottom': '15px' }}>
-                    <span className="tag">Math</span>
-                    <span className="tag">Research</span>
-                    <span className="tag">Year-round</span>
-                  </div>
-                  <div style={{ 'marginTop': 'auto', 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'paddingTop': '15px', 'borderTop': '1px solid var(--border-light)' }}>
-                    <div><span className="badge-highly">Highly Recommended</span></div>
-                    <div style={{ 'fontSize': '13px', 'fontWeight': 'bold', 'color': 'var(--primary)' }}>View details
-                      →</div>
-                  </div>
-                </div>
+                ))}
               </div>
               <div className="pagination">
                 <button>Previous</button>

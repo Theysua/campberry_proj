@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useListContext } from '../context/ListContext';
 
 export default function AddToListModal({ isOpen, onClose, programId }) {
     const { userLists, createList, addProgramToList } = useListContext();
+    const navigate = useNavigate();
     const [isCreating, setIsCreating] = useState(false);
     const [newListName, setNewListName] = useState('');
     const [newListDescription, setNewListDescription] = useState('');
+    const [successList, setSuccessList] = useState(null);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setSuccessList(null);
+            setIsCreating(false);
+            setNewListName('');
+            setNewListDescription('');
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
     const handleAddToList = (listId) => {
         addProgramToList(programId, listId);
-        onClose();
+        const list = userLists.find(l => l.id === listId);
+        setSuccessList(list);
     };
 
     const handleCreateSubmit = (e) => {
@@ -19,10 +32,10 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
         if (newListName.trim()) {
             const newList = createList(newListName.trim(), newListDescription.trim());
             addProgramToList(programId, newList.id);
+            setSuccessList(newList);
             setNewListName('');
             setNewListDescription('');
             setIsCreating(false);
-            onClose();
         }
     };
 
@@ -34,63 +47,103 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 1000
         }}>
-            <div className="card" style={{ width: '100%', maxWidth: '400px', margin: '20px', position: 'relative' }}>
-                <button
-                    onClick={onClose}
-                    style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                >
-                    &times;
-                </button>
-                <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '20px', color: 'var(--primary)' }}>Add to List</h2>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', marginBottom: '24px' }}>
-                    {userLists.map(list => {
-                        const isAdded = list.programs.includes(programId);
-                        return (
-                            <button
-                                key={list.id}
-                                onClick={() => !isAdded && handleAddToList(list.id)}
-                                className={isAdded ? "btn-outline" : "btn"}
-                                style={{ justifyContent: 'space-between', padding: '12px 16px', opacity: isAdded ? 0.7 : 1, cursor: isAdded ? 'default' : 'pointer' }}
-                                disabled={isAdded}
-                            >
-                                <span>{list.name}</span>
-                                {isAdded ? <span>&#10003; Added</span> : <span>+ Add</span>}
-                            </button>
-                        );
-                    })}
+            {successList ? (
+                <div className="card" style={{ width: '100%', maxWidth: '400px', margin: '20px', position: 'relative', textAlign: 'center', padding: '40px 24px' }}>
+                    <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
+                    <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px', color: 'var(--primary)', fontWeight: '800' }}>Added to List!</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '15px' }}>
+                        Successfully saved to <strong>{successList.name}</strong>.
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                        <button className="btn-outline" style={{ flex: 1, padding: '10px 16px', justifyContent: 'center' }} onClick={onClose}>Keep Browsing</button>
+                        <button className="btn" style={{ flex: 1, padding: '10px 16px', justifyContent: 'center' }} onClick={() => { onClose(); navigate(`/my-lists/${successList.id}`); }}>View List</button>
+                    </div>
                 </div>
-
-                {isCreating ? (
-                    <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-                        <input
-                            type="text"
-                            placeholder="New list name..."
-                            className="form-input"
-                            value={newListName}
-                            onChange={e => setNewListName(e.target.value)}
-                            autoFocus
-                            required
-                        />
-                        <textarea
-                            placeholder="Description (optional)..."
-                            className="form-input"
-                            value={newListDescription}
-                            onChange={e => setNewListDescription(e.target.value)}
-                            rows={2}
-                            style={{ resize: 'vertical' }}
-                        />
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button type="submit" className="btn" style={{ flex: 1, justifyContent: 'center' }}>Create & Add</button>
-                            <button type="button" className="btn-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setIsCreating(false)}>Cancel</button>
-                        </div>
-                    </form>
-                ) : (
-                    <button className="btn-outline" style={{ width: '100%', justifyContent: 'center', borderStyle: 'dashed' }} onClick={() => setIsCreating(true)}>
-                        ＋ Create New List
+            ) : (
+                <div className="card" style={{ width: '100%', maxWidth: '400px', margin: '20px', position: 'relative' }}>
+                    <button
+                        onClick={onClose}
+                        style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                    >
+                        &times;
                     </button>
-                )}
-            </div>
+                    <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '20px', color: 'var(--primary)' }}>Add to List</h2>
+
+                    <style>{`
+                    .modal-list-btn:hover {
+                        transform: translateY(-2px) !important;
+                        box-shadow: 0 6px 16px rgba(137, 34, 51, 0.15) !important;
+                    }
+                    .modal-list-container {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                        max-height: 300px;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                        margin-bottom: 24px;
+                        padding: 4px; /* padding for subtle shadow */
+                        margin-left: -4px;
+                        margin-right: -4px;
+                    }
+                `}</style>
+                    <div className="modal-list-container">
+                        {userLists.map(list => {
+                            const isAdded = list.programs.includes(programId);
+                            return (
+                                <button
+                                    key={list.id}
+                                    onClick={() => !isAdded && handleAddToList(list.id)}
+                                    className={isAdded ? "btn-outline modal-list-btn" : "btn modal-list-btn"}
+                                    style={{
+                                        width: '100%',
+                                        boxSizing: 'border-box',
+                                        justifyContent: 'space-between',
+                                        padding: '12px 16px',
+                                        opacity: isAdded ? 0.7 : 1,
+                                        cursor: isAdded ? 'default' : 'pointer'
+                                    }}
+                                    disabled={isAdded}
+                                >
+                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', marginRight: '8px' }}>{list.name}</span>
+                                    <span style={{ flexShrink: 0 }}>{isAdded ? '\u2713 Added' : '+ Add'}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {isCreating ? (
+                        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                            <input
+                                type="text"
+                                placeholder="New list name..."
+                                className="form-input"
+                                value={newListName}
+                                onChange={e => setNewListName(e.target.value)}
+                                autoFocus
+                                required
+                            />
+                            <textarea
+                                placeholder="Description (optional)..."
+                                className="form-input"
+                                value={newListDescription}
+                                onChange={e => setNewListDescription(e.target.value)}
+                                rows={2}
+                                style={{ resize: 'vertical' }}
+                            />
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button type="submit" className="btn" style={{ flex: 1, justifyContent: 'center' }}>Create & Add</button>
+                                <button type="button" className="btn-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setIsCreating(false)}>Cancel</button>
+                            </div>
+                        </form>
+                    ) : (
+                        <button className="btn-outline" style={{ width: '100%', justifyContent: 'center', borderStyle: 'dashed' }} onClick={() => setIsCreating(true)}>
+                            ＋ Create New List
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
