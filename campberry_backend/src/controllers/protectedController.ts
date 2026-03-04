@@ -137,6 +137,35 @@ export const createList = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updateList = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const id = String(req.params.id);
+    const { title, description, isPublic } = req.body;
+
+    const list = await prisma.list.findUnique({ where: { id } });
+    if (!list || list.author_id !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to modify this list' });
+    }
+
+    const updatedList = await prisma.list.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(isPublic !== undefined && { is_public: isPublic })
+      }
+    });
+
+    res.json(updatedList);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update list' });
+  }
+};
+
 export const addListItem = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -195,6 +224,40 @@ export const removeListItem = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to remove item' });
+  }
+};
+
+export const updateListItem = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const listId = String(req.params.listId);
+    const itemId = String(req.params.itemId);
+    const { commentary, displayOrder } = req.body;
+
+    const list = await prisma.list.findUnique({ where: { id: listId } });
+    if (!list || list.author_id !== userId) {
+      return res.status(403).json({ error: 'Unauthorized to modify this list' });
+    }
+
+    const item = await prisma.listItem.findFirst({ where: { id: itemId, list_id: listId } });
+    if (!item) {
+      return res.status(404).json({ error: 'Item not found in this list' });
+    }
+
+    const updatedItem = await prisma.listItem.update({
+      where: { id: itemId },
+      data: {
+        ...(commentary !== undefined && { author_commentary: commentary }),
+        ...(displayOrder !== undefined && { display_order: displayOrder })
+      }
+    });
+
+    res.json(updatedItem);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update list item' });
   }
 };
 

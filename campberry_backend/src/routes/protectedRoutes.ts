@@ -1,7 +1,6 @@
 import { Response, Router } from 'express';
 import {
     addListItem,
-    AuthRequest,
     createList,
     deleteList,
     getMe,
@@ -9,9 +8,11 @@ import {
     getSavedPrograms,
     removeListItem,
     saveProgram,
-    unsaveProgram
+    unsaveProgram,
+    updateList,
+    updateListItem
 } from '../controllers/protectedController';
-import { authMiddleware } from '../middleware/authMiddleware';
+import { AuthRequest, authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -28,8 +29,10 @@ router.get('/lists', (req: AuthRequest, res: Response) => { getMyLists(req, res)
 
 // Note: Additional protected routes for Lists creation/updating can be implemented later as needed.
 router.post('/lists', (req: AuthRequest, res: Response) => { createList(req, res); });
+router.put('/lists/:id', (req: AuthRequest, res: Response) => { updateList(req, res); });
 router.delete('/lists/:id', (req: AuthRequest, res: Response) => { deleteList(req, res); });
 router.post('/lists/:listId/items', (req: AuthRequest, res: Response) => { addListItem(req, res); });
+router.put('/lists/:listId/items/:itemId', (req: AuthRequest, res: Response) => { updateListItem(req, res); });
 router.delete('/lists/:listId/items/:itemId', (req: AuthRequest, res: Response) => { removeListItem(req, res); });
 
 export default router;

@@ -76,9 +76,13 @@ export const unsaveProgram = (programId) => apiFetch(`/me/saved-programs/${progr
 export const getLists = () => apiFetch('/lists');
 export const getListById = (id) => apiFetch(`/lists/${id}`);
 export const getMyLists = () => apiFetch('/me/lists');
-export const createList = (title, description) => apiFetch('/me/lists', {
+export const createList = (title, description, isPublic = true) => apiFetch('/me/lists', {
   method: 'POST',
-  body: JSON.stringify({ title, description, isPublic: true })
+  body: JSON.stringify({ title, description, isPublic })
+});
+export const updateList = (id, title, description, isPublic) => apiFetch(`/me/lists/${id}`, {
+  method: 'PUT',
+  body: JSON.stringify({ title, description, isPublic })
 });
 export const deleteList = (id) => apiFetch(`/me/lists/${id}`, {
   method: 'DELETE'
@@ -86,6 +90,10 @@ export const deleteList = (id) => apiFetch(`/me/lists/${id}`, {
 export const addListItem = (listId, programId, commentary = '') => apiFetch(`/me/lists/${listId}/items`, {
   method: 'POST',
   body: JSON.stringify({ programId, commentary })
+});
+export const updateListItem = (listId, itemId, commentary, displayOrder) => apiFetch(`/me/lists/${listId}/items/${itemId}`, {
+  method: 'PUT',
+  body: JSON.stringify({ commentary, displayOrder })
 });
 export const removeListItem = (listId, itemId) => apiFetch(`/me/lists/${listId}/items/${itemId}`, {
   method: 'DELETE'
