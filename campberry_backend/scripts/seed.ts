@@ -66,9 +66,13 @@ async function main() {
         cost_info: p.costInfo,
         admission_info: p.admissionInfo,
         eligibility_info: p.eligibilityInfo,
-        eligible_grades: p.eligibleGrades || [],
+        experts_choice_rating: p.expertsChoiceRating === 'MOST_RECOMMENDED' ? 'MOST_RECOMMENDED' : p.expertsChoiceRating === 'HIGHLY_RECOMMENDED' ? 'HIGHLY_RECOMMENDED' : null,
+        impact_rating: p.impactOnAdmissionsRating === 'MOST_HIGH_IMPACT' ? 'MOST_HIGH_IMPACT' : p.impactOnAdmissionsRating === 'HIGH_IMPACT' ? 'HIGH_IMPACT' : null,
+        eligible_grades: p.eligibleGrades ? p.eligibleGrades.join(',') : '',
         only_us_citizens: p.onlyUsCitizens || false,
         only_us_residents: p.onlyUsResidents || false,
+        allows_international: p.allowsInternational ?? true,
+        trpc_data: JSON.stringify(p),
       },
     });
 

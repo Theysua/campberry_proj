@@ -3,43 +3,62 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id             String             @id @default(uuid()) @db.Uuid
-  email          String             @unique @db.VarChar(255)
-  password_hash  String?            @db.VarChar(255)
-  name           String             @db.VarChar(255)
-  role           Role               @default(STUDENT)
-  created_at     DateTime           @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime           @updatedAt @db.Timestamptz(6)
+  id             String             @id @default(uuid())
+  email          String             @unique
+  password_hash  String?
+  name           String
+  avatar_url     String?
+  role           String             @default("STUDENT")
+  created_at     DateTime           @default(now())
+  updated_at     DateTime           @updatedAt
+  is_verified    Boolean            @default(false)
   lists          List[]
   saved_programs UserSavedProgram[]
+  refresh_tokens RefreshToken[]
 
   @@map("users")
 }
 
+model RefreshToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
 model Program {
-  id                    String             @id @default(uuid()) @db.Uuid
-  name                  String             @db.VarChar(255)
-  provider_id           String             @db.Uuid
+  id                    String             @id @default(uuid())
+  name                  String
+  provider_id           String
   description           String?
-  type                  ProgramType
-  url                   String?            @db.VarChar(2048)
-  logo_url              String?            @db.VarChar(2048)
+  type                  String             @default("PROGRAM")
+  url                   String?
+  logo_url              String?
   is_highly_selective   Boolean?           @default(false)
   cost_info             String?
   admission_info        String?
   eligibility_info      String?
-  experts_choice_rating Rating?
-  impact_rating         ImpactRating?
-  eligible_grades       Int[]
+  experts_choice_rating String?
+  impact_rating         String?
+  // Note: SQLite doesn't directly support String[]. If this becomes an issue we might need a relation, but Prisma handles it via JSON.
+  // Wait, Prisma SQLite does not support scalar lists (like Int[]). We will change eligible_grades to a String (comma separated) for MVP.
+  eligible_grades       String?
   only_us_citizens      Boolean?           @default(false)
   only_us_residents     Boolean?           @default(false)
-  created_at            DateTime           @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime           @updatedAt @db.Timestamptz(6)
+  allows_international  Boolean?           @default(true)
+  // SQLite does not support Json. We map trpc_data to String.
+  trpc_data             String?
+  created_at            DateTime           @default(now())
+  updated_at            DateTime           @updatedAt
   deadlines             Deadline[]
   list_items            ListItem[]
   interests             ProgramInterest[]
@@ -51,8 +70,8 @@ model Program {
 }
 
 model Provider {
-  id       String    @id @default(uuid()) @db.Uuid
-  name     String    @unique @db.VarChar(255)
+  id       String    @id @default(uuid())
+  name     String    @unique
   programs Program[]
 
   @@map("providers")
@@ -60,14 +79,14 @@ model Provider {
 
 model Interest {
   id       Int               @id @default(autoincrement())
-  name     String            @unique @db.VarChar(255)
+  name     String            @unique
   programs ProgramInterest[]
 
   @@map("interests")
 }
 
 model ProgramInterest {
-  program_id  String   @db.Uuid
+  program_id  String
   interest_id Int
   interest    Interest @relation(fields: [interest_id], references: [id])
   program     Program  @relation(fields: [program_id], references: [id])
@@ -77,35 +96,35 @@ model ProgramInterest {
 }
 
 model Session {
-  id            String        @id @default(uuid()) @db.Uuid
-  program_id    String        @db.Uuid
-  start_date    DateTime?     @db.Date
-  end_date      DateTime?     @db.Date
-  location_type LocationType?
-  location_name String?       @db.VarChar(255)
-  program       Program       @relation(fields: [program_id], references: [id])
+  id            String    @id @default(uuid())
+  program_id    String
+  start_date    DateTime?
+  end_date      DateTime?
+  location_type String?
+  location_name String?
+  program       Program   @relation(fields: [program_id], references: [id])
 
   @@map("sessions")
 }
 
 model Deadline {
-  id          String   @id @default(uuid()) @db.Uuid
-  program_id  String   @db.Uuid
-  description String   @db.VarChar(255)
-  date        DateTime @db.Date
+  id          String   @id @default(uuid())
+  program_id  String
+  description String
+  date        DateTime
   program     Program  @relation(fields: [program_id], references: [id])
 
   @@map("deadlines")
 }
 
 model List {
-  id          String     @id @default(uuid()) @db.Uuid
-  title       String     @db.VarChar(255)
+  id          String     @id @default(uuid())
+  title       String
   description String?
-  author_id   String     @db.Uuid
+  author_id   String
   is_public   Boolean?   @default(true)
-  created_at  DateTime   @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime   @updatedAt @db.Timestamptz(6)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
   items       ListItem[]
   author      User       @relation(fields: [author_id], references: [id])
 
@@ -113,51 +132,25 @@ model List {
 }
 
 model ListItem {
-  id                String  @id @default(uuid()) @db.Uuid
-  list_id           String  @db.Uuid
-  program_id        String  @db.Uuid
+  id                String   @id @default(uuid())
+  list_id           String
+  program_id        String?
   author_commentary String?
   display_order     Int
-  list              List    @relation(fields: [list_id], references: [id])
-  program           Program @relation(fields: [program_id], references: [id])
+  type              String   @default("PROGRAM")
+  list              List     @relation(fields: [list_id], references: [id])
+  program           Program? @relation(fields: [program_id], references: [id])
 
   @@map("list_items")
 }
 
 model UserSavedProgram {
-  user_id    String   @db.Uuid
-  program_id String   @db.Uuid
-  saved_at   DateTime @default(now()) @db.Timestamptz(6)
+  user_id    String
+  program_id String
+  saved_at   DateTime @default(now())
   program    Program  @relation(fields: [program_id], references: [id])
   user       User     @relation(fields: [user_id], references: [id])
 
   @@id([user_id, program_id])
   @@map("user_saved_programs")
-}
-
-enum Role {
-  STUDENT
-  COUNSELOR
-  ADMIN
-}
-
-enum ProgramType {
-  PROGRAM
-  COMPETITION
-}
-
-enum Rating {
-  MOST_RECOMMENDED
-  HIGHLY_RECOMMENDED
-}
-
-enum ImpactRating {
-  MOST_HIGH_IMPACT
-  HIGH_IMPACT
-}
-
-enum LocationType {
-  IN_PERSON
-  ONLINE
-  LOCAL
 }

@@ -22,6 +22,7 @@ export const apiFetch = async (endpoint, options = {}) => {
   const url = `${API_BASE}${endpoint}`;
   try {
     const response = await fetch(url, {
+      credentials: 'include',
       ...options,
       headers: {
         ...defaultHeaders(),
@@ -54,6 +55,10 @@ export const login = (email, password) => apiFetch('/auth/login', {
 export const register = (name, email, password) => apiFetch('/auth/register', {
   method: 'POST',
   body: JSON.stringify({ name, email, password })
+});
+
+export const logoutUser = () => apiFetch('/auth/logout', {
+  method: 'POST'
 });
 
 export const getMe = () => apiFetch('/me');

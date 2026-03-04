@@ -1,23 +1,52 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { clearAuthToken, getMe, login as apiLogin, logoutUser, setAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const login = (userData = { name: "Demo User", email: "student@example.com" }) => {
+    useEffect(() => {
+        const initAuth = async () => {
+            try {
+                const me = await getMe();
+                setUser(me);
+                setIsAuthenticated(true);
+            } catch (err) {
+                // Not authenticated or token expired
+                clearAuthToken();
+                setIsAuthenticated(false);
+                setUser(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        initAuth();
+    }, []);
+
+    const login = async (email, password) => {
+        const res = await apiLogin(email, password);
+        setAuthToken(res.accessToken);
+        setUser(res.user);
         setIsAuthenticated(true);
-        setUser(userData);
+        return res;
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await logoutUser();
+        } catch (e) {
+            console.warn('Logout API failed', e);
+        }
+        clearAuthToken();
         setIsAuthenticated(false);
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,13 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../db';
-
-// Use an extended Request interface to access req.user from JWT middleware
-export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    role: string;
-  };
-}
+import { AuthRequest } from '../middleware/authMiddleware';
 
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
@@ -18,7 +11,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
       where: { id: userId },
       select: { id: true, name: true, email: true, role: true, created_at: true }
     });
-    
+
     res.json(user);
   } catch (error) {
     console.error(error);
@@ -125,7 +118,7 @@ export const createList = async (req: AuthRequest, res: Response) => {
     const { title, description, isPublic = false } = req.body;
 
     if (!title) {
-        return res.status(400).json({ error: 'Title is required' });
+      return res.status(400).json({ error: 'Title is required' });
     }
 
     const list = await prisma.list.create({
@@ -149,7 +142,7 @@ export const addListItem = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { listId } = req.params;
+    const listId = String(req.params.listId);
     const { programId, commentary } = req.body;
 
     // Verify ownership
@@ -163,7 +156,7 @@ export const addListItem = async (req: AuthRequest, res: Response) => {
       where: { list_id: listId },
       _max: { display_order: true }
     });
-    const nextOrder = (maxOrder._max.display_order || 0) + 1;
+    const nextOrder = (maxOrder?._max?.display_order || 0) + 1;
 
     const listItem = await prisma.listItem.create({
       data: {
@@ -186,7 +179,8 @@ export const removeListItem = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { listId, itemId } = req.params;
+    const listId = String(req.params.listId);
+    const itemId = String(req.params.itemId);
 
     const list = await prisma.list.findUnique({ where: { id: listId } });
     if (!list || list.author_id !== userId) {
@@ -209,7 +203,7 @@ export const deleteList = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { id } = req.params;
+    const id = String(req.params.id);
 
     const list = await prisma.list.findUnique({ where: { id } });
     if (!list || list.author_id !== userId) {

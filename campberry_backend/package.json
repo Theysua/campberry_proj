@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
@@ -23,15 +24,13 @@
   "devDependencies": {
     "@prisma/client": "^6.19.2",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.3.3",
     "prisma": "^6.19.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
-  },
-  "prisma": {
-    "seed": "tsx scripts/seed.ts"
   }
 }
