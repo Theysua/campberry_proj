@@ -29,10 +29,39 @@ export const getPrograms = async (req: Request, res: Response) => {
         mode: 'insensitive',
       };
     }
-    
-    // Note: Type assertions and complex filters like interests, isFree, minGrade can be expanded here
-    
-    // Default fetch for now
+
+    if (type) {
+      whereClause.type = String(type);
+    }
+
+    if (isSelective === 'true') {
+      whereClause.is_highly_selective = true;
+    }
+
+    if (rating) {
+      whereClause.experts_choice_rating = String(rating);
+    }
+
+    if (isFree === 'true') {
+      // According to frontend filters, free maps roughly to cost_info containing 'free' or 0
+      whereClause.cost_info = {
+        contains: 'free',
+        mode: 'insensitive'
+      };
+    }
+
+    if (interests && typeof interests === 'string') {
+      const interestIds = interests.split(',').map(Number).filter(n => !isNaN(n));
+      if (interestIds.length > 0) {
+        whereClause.interests = {
+          some: {
+            interest_id: { in: interestIds }
+          }
+        };
+      }
+    }
+
+    // Default fetch with new filters
     const programs = await prisma.program.findMany({
       where: whereClause,
       include: {
@@ -116,7 +145,7 @@ export const getListById = async (req: Request, res: Response) => {
       where: { id: String(id) },
       include: {
         author: {
-           select: { name: true }
+          select: { name: true }
         },
         items: {
           include: {
