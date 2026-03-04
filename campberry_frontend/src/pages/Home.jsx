@@ -155,18 +155,17 @@ export default function Home() {
             <div className="rating-card accent-top reveal-scale">
               <h4>Experts' Choice</h4>
               <div className="desc">Top-tier programs selected by consultants.</div>
-              <div style={{ 'display': 'flex', 'gap': '8px', 'marginBottom': '20px' }}>
-                <span className="badge-most">MOST</span>
-                <span style={{ 'fontSize': '10px', 'padding': '5px 10px', 'borderRadius': 'var(--radius-pill)', 'background': 'white', 'color': 'var(--accent)', 'border': '1.5px solid var(--accent)', 'fontWeight': '700', 'letterSpacing': '0.03em', 'textTransform': 'uppercase' }}>HIGHLY</span>
+              <div style={{ 'display': 'flex', 'gap': '8px', 'marginBottom': '20px', 'flexWrap': 'wrap' }}>
+                <span className="badge-most">MOST RECOMMENDED</span>
+                <span className="badge-highly">HIGHLY RECOMMENDED</span>
               </div>
               <div className="link">Explore Experts' Choice →</div>
             </div>
             <div className="rating-card primary-top reveal-scale" style={{ 'transitionDelay': '0.1s' }}>
               <h4>Impact on Admissions</h4>
               <div className="desc">Proven effectiveness in elite college review.</div>
-              <div style={{ 'display': 'flex', 'gap': '8px', 'marginBottom': '20px' }}>
-                <span className="badge-impact">MOST HIGH IMPACT</span>
-                <span className="badge-impact" style={{ 'opacity': '0.75' }}>HIGH IMPACT</span>
+              <div style={{ 'display': 'flex', 'gap': '8px', 'marginBottom': '20px', 'flexWrap': 'wrap' }}>
+                <span className="badge-impact">High Impact</span>
               </div>
               <div className="link">See High-Impact Programs →</div>
             </div>

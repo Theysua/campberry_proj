@@ -48,15 +48,13 @@ export default function Search() {
                 </summary>
                 {/* Experts Choice */}
                 <div style={{ 'marginTop': '15px' }}>
-                  <div className="filter-section-title">Experts' Choice</div>
+                  <div className="filter-section-title">Expert's Review</div>
                   <div className="segmented-control">
-                    <button className="segmented-btn">
-                      <span style={{ 'fontSize': '16px' }}>❄️</span>
-                      Most
+                    <button className="segmented-btn" style={{ flexDirection: 'column' }}>
+                      Most<br />Recommended
                     </button>
-                    <button className="segmented-btn">
-                      <span style={{ 'fontSize': '16px' }}>✳️</span>
-                      Highly
+                    <button className="segmented-btn" style={{ flexDirection: 'column' }}>
+                      High<br />Impact
                     </button>
                   </div>
                 </div>
@@ -84,7 +82,11 @@ export default function Search() {
                   <div style={{ 'display': 'flex', 'alignItems': 'center', 'gap': '10px', 'marginTop': '10px' }}>
                     <span style={{ 'fontSize': '14px', 'color': 'var(--text-secondary)' }}>Radius</span>
                     <select className="filter-input" style={{ 'width': '80px', 'padding': '6px 10px', 'background': 'var(--border-light)', 'border': 'none', 'borderRadius': 'var(--radius-sm)' }}>
+                      <option>5 mi</option>
+                      <option>10 mi</option>
                       <option>25 mi</option>
+                      <option>50 mi</option>
+                      <option>100 mi</option>
                     </select>
                   </div>
                   <div style={{ 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'marginTop': '15px', 'fontSize': '14px', 'color': 'var(--text-secondary)' }}>
@@ -108,11 +110,14 @@ export default function Search() {
                 {/* Grade */}
                 <div style={{ 'marginTop': '20px' }}>
                   <div className="filter-section-title">Current grade <span style={{ 'color': 'var(--accent)', 'cursor': 'pointer', 'fontWeight': 'normal' }}>?</span></div>
-                  <div className="segmented-control">
-                    <button className="segmented-btn" style={{ 'flexDirection': 'row' }}>9</button>
-                    <button className="segmented-btn" style={{ 'flexDirection': 'row' }}>10</button>
-                    <button className="segmented-btn" style={{ 'flexDirection': 'row' }}>11</button>
-                    <button className="segmented-btn" style={{ 'flexDirection': 'row' }}>12</button>
+                  <div className="segmented-control" style={{ flexWrap: 'wrap' }}>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>6</button>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>7</button>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>8</button>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>9</button>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>10</button>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>11</button>
+                    <button className="segmented-btn" style={{ 'flexDirection': 'row', 'flexBasis': 'calc(25% - 8px)' }}>12</button>
                   </div>
                 </div>
                 {/* Interests */}
@@ -123,44 +128,12 @@ export default function Search() {
                     <input className="filter-input" placeholder="Add more interests to filter..." style={{ 'paddingLeft': '36px' }} type="text" />
                   </div>
                 </div>
-                {/* Financial */}
-                <div style={{ 'marginTop': '20px' }}>
-                  <div className="filter-section-title">Financial Accessibility <span style={{ 'color': 'var(--accent)', 'cursor': 'pointer', 'fontWeight': 'normal' }}>?</span></div>
-                  <select className="filter-input" style={{ 'background': 'var(--border-light)' }}>
-                    <option>💰 Select ratings...</option>
-                  </select>
-                </div>
-              </details>
-              {/* Advanced Criteria */}
-              <div style={{ 'marginTop': '15px', 'paddingTop': '15px', 'borderTop': '1px solid var(--border)' }}>
-                <label className="checkbox-row"><input type="checkbox" /> Highly Selective</label>
-                <label className="checkbox-row"><input type="checkbox" /> Free or Pays You (A or A+)</label>
-                <label className="checkbox-row"><input type="checkbox" /> Allows International Students</label>
-                <label className="checkbox-row"><input type="checkbox" /> Offers College Credit</label>
-                <label className="checkbox-row"><input type="checkbox" /> 1-on-1 programs</label>
-              </div>
-              {/* Only For Accordion */}
-              <details className="filter-accordion">
-                <summary className="accordion-header">
-                  Only For... <span className="chevron">▼</span>
-                </summary>
-                <div style={{ 'paddingTop': '10px' }}>
-                  <label className="checkbox-row"><input type="checkbox" /> 1st Generation Students</label>
-                  <label className="checkbox-row"><input type="checkbox" /> Under-represented Minorities</label>
-                  <label className="checkbox-row"><input type="checkbox" /> Girls</label>
-                  <label className="checkbox-row"><input type="checkbox" /> Boys</label>
-                </div>
-              </details>
-              {/* Filter Out Accordion */}
-              <details className="filter-accordion">
-                <summary className="accordion-header">
-                  Filter Out Opportunities Only For... <span className="chevron">▼</span>
-                </summary>
-                <div style={{ 'paddingTop': '10px' }}>
-                  <label className="checkbox-row"><input type="checkbox" /> 1st Generation Students</label>
-                  <label className="checkbox-row"><input type="checkbox" /> Under-represented Minorities</label>
-                  <label className="checkbox-row"><input type="checkbox" /> Girls</label>
-                  <label className="checkbox-row"><input type="checkbox" /> Boys</label>
+                {/* Advanced Criteria */}
+                <div style={{ 'marginTop': '15px', 'paddingTop': '15px', 'borderTop': '1px solid var(--border)' }}>
+                  <label className="checkbox-row"><input type="checkbox" /> Highly Selective</label>
+                  <label className="checkbox-row"><input type="checkbox" /> Allows International Students</label>
+                  <label className="checkbox-row"><input type="checkbox" /> Offers College Credit</label>
+                  <label className="checkbox-row"><input type="checkbox" /> 1-on-1 programs</label>
                 </div>
               </details>
             </div>
@@ -223,7 +196,10 @@ export default function Search() {
                     <span className="tag">Summer</span>
                   </div>
                   <div style={{ 'marginTop': 'auto', 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'paddingTop': '15px', 'borderTop': '1px solid var(--border-light)' }}>
-                    <div><span className="badge-most">MOST RECOMMENDED</span></div>
+                    <div style={{ 'display': 'flex', 'gap': '4px', 'flexWrap': 'wrap' }}>
+                      <span className="badge-impact">High Impact</span>
+                      <span className="badge-most">Most Recommended</span>
+                    </div>
                     <div style={{ 'fontSize': '13px', 'fontWeight': 'bold', 'color': 'var(--accent)' }}>View details
                       →</div>
                   </div>
@@ -249,7 +225,7 @@ export default function Search() {
                     <span className="tag">Year-round</span>
                   </div>
                   <div style={{ 'marginTop': 'auto', 'display': 'flex', 'justifyContent': 'space-between', 'alignItems': 'center', 'paddingTop': '15px', 'borderTop': '1px solid var(--border-light)' }}>
-                    <div><span className="badge-impact">HIGH IMPACT</span></div>
+                    <div><span className="badge-highly">Highly Recommended</span></div>
                     <div style={{ 'fontSize': '13px', 'fontWeight': 'bold', 'color': 'var(--primary)' }}>View details
                       →</div>
                   </div>
