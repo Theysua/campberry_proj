@@ -11,7 +11,7 @@
 Currently, the Campberry frontend relies on static JSON data (`detailed_programs.json`). To evolve into a fully functional product, it needs a dynamic backend to serve up-to-date program information, authenticate users, and support personalized actions such as saving programs and creating curated lists.
 
 ## 2. Goals & Success Metrics
-- **Core Goal:** Build out the backend using the established Express + Prisma + PostgreSQL stack to support the full user journey.
+- **Core Goal:** Build out the backend using the established Express + Prisma + SQLite stack to support the full user journey.
 - **Success Criteria:**
   - Unauthenticated users can search, filter, and view programs and public lists perfectly matching the frontend UI requirements.
   - Users can register/login (Email/Password or Google Auth).
@@ -63,7 +63,7 @@ Currently, the Campberry frontend relies on static JSON data (`detailed_programs
 **Stack:**
 - **Runtime:** Node.js (via `tsx`)
 - **Framework:** Express.js 5.x
-- **DB/ORM:** PostgreSQL + Prisma (v6)
+- **DB/ORM:** SQLite + Prisma (v6)
 - **Auth:** `jsonwebtoken`, `bcryptjs`, Google Auth Library.
 
 **Key Decision:** The authentication state will use HTTP-Only secure cookies for JWT storage to prevent XSS attacks while supporting seamless session continuity.
@@ -154,7 +154,7 @@ model SavedProgram {
 | `/api/user/lists`| POST | Create personal list| Yes | Body requires `title`. |
 
 ## 11. Non-Functional Requirements
-- **Performance:** Program search `GET /api/programs` should respond in < 200ms. Leverage Postgres indexes on `interests`, `type`, and `title`.
+- **Performance:** Program search `GET /api/programs` should respond in < 200ms. Leverage SQLite indexes on `interests`, `type`, and `title`.
 - **Security:** Passwords hashed with `bcryptjs`. JWT stored in HttpOnly cookies to mitigate XSS. CORS properly configured to only allow the Vite frontend.
 - **Resilience:** The backend should gracefully handle missing `trpcData` nodes without bringing down the UI.
 
@@ -164,7 +164,7 @@ model SavedProgram {
 - **Idempotency on Save:** Calling the save endpoint twice for the same program should quietly return `200 OK` rather than a unique constraint error.
 
 ## 13. Test Plan
-- **Backend Setup Validation:** Successfully spin up Postgres and run Prisma migrations.
+- **Backend Setup Validation:** Successfully spin up SQLite database schema and run Prisma migrations.
 - **API Functional Tests:** Use Postman or internal scripts to verify auth flow and program retrieval.
 - **Frontend Integration:**
   1. Login via frontend UI.

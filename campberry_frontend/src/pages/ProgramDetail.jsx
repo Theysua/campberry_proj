@@ -13,6 +13,18 @@ export default function ProgramDetail() {
   const { isProgramSaved, toggleSaveProgram } = useListContext();
   const [addListOpen, setAddListOpen] = useState(false);
   const [program, setProgram] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error("Failed to copy", e);
+    }
+  };
 
   useEffect(() => {
     getProgramById(id).then(res => setProgram(res)).catch(e => console.error(e));
@@ -28,8 +40,8 @@ export default function ProgramDetail() {
         <div className="container">
           <button className="btn-outline" onClick={() => navigate('/search')} style={{ 'marginBottom': '24px', 'fontSize': '13px', 'padding': '6px 18px' }}>← Back to Search</button>
           <div className="card program-header" style={{ 'marginBottom': '24px', 'padding': '32px' }}>
-            <div style={{ 'width': '100px', 'height': '100px', 'background': 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', 'borderRadius': 'var(--radius-lg)', 'border': '1px solid var(--border)', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'fontSize': '40px', 'flexShrink': '0' }}>
-              {program.logo_url ? <img src={program.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '8px' }} /> : (program.type === 'COMPETITION' ? '🏆' : '🎓')}</div>
+            <div style={{ 'width': '100px', 'height': '100px', 'background': program.logo_url ? '#ffffff' : 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', 'borderRadius': 'var(--radius-lg)', 'border': '1px solid var(--border)', 'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'fontSize': '40px', 'flexShrink': '0' }}>
+              {program.logo_url ? <img src={program.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} /> : (program.type === 'COMPETITION' ? '🏆' : '🎓')}</div>
             <div style={{ 'flex': '1' }}>
               <div className="program-title-row">
                 <div>
@@ -39,7 +51,9 @@ export default function ProgramDetail() {
                     {program.provider?.name || program.provider}</div>
                 </div>
                 <div className="program-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                  <button className="btn-outline">↗ Share</button>
+                  <button onClick={handleShare} className="btn-outline">
+                    {copied ? '✓ Copied!' : '↗ Share'}
+                  </button>
                   <button onClick={() => toggleSaveProgram(id)} className="btn-outline" style={{ color: isSaved ? 'var(--orange)' : 'var(--text)' }}>
                     {isSaved ? '★ Saved' : '☆ Save'}
                   </button>

@@ -55,6 +55,8 @@ model Program {
   only_us_citizens      Boolean?           @default(false)
   only_us_residents     Boolean?           @default(false)
   allows_international  Boolean?           @default(true)
+  offers_college_credit Boolean?           @default(false)
+  is_one_on_one         Boolean?           @default(false)
   // SQLite does not support Json. We map trpc_data to String.
   trpc_data             String?
   created_at            DateTime           @default(now())

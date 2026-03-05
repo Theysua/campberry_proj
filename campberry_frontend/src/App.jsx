@@ -15,6 +15,9 @@ import MyListDetail from './pages/MyListDetail'
 import MyLists from './pages/MyLists'
 import ProgramDetail from './pages/ProgramDetail'
 import Search from './pages/Search'
+import VerifyEmail from './pages/VerifyEmail'
+import Compare from './pages/Compare'
+import CompareBar from './components/CompareBar'
 
 // ScrollToTop strictly for scrolling to top on route change
 function ScrollToTop() {
@@ -38,6 +41,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="/program/:id" element={<ProgramDetail />} />
+                <Route path="/compare" element={<Compare />} />
                 <Route path="/lists" element={<Lists />} />
                 <Route path="/lists/:id" element={<ListDetail />} />
                 <Route path="/my-lists" element={<MyLists />} />
@@ -46,10 +50,12 @@ function App() {
                 <Route path="/mission" element={<Mission />} />
                 <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
                 <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
             <Footer />
+            <CompareBar />
           </div>
         </HashRouter>
       </ListProvider>

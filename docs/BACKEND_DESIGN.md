@@ -9,10 +9,10 @@ We will adopt a monolithic architecture for simplicity and rapid development, wh
 *   **Tech Stack:**
     *   **Runtime:** Node.js
     *   **Framework:** Express.js (or a similar robust framework like NestJS for more structure)
-    *   **Database:** PostgreSQL (for its robustness, scalability, and support for JSON data types)
+    *   **Database:** SQLite (Chosen for simplicity, zero maintenance, and high read performance suitable for deployment on a persistent VPS)
     *   **ORM:** Prisma (for its type-safety, intuitive schema definition, and migration management)
 *   **Authentication:** Token-based authentication using JSON Web Tokens (JWT).
-*   **Deployment:** The application will be containerized using Docker for consistent environments and deployed on a cloud platform like Vercel, Render, or AWS.
+*   **Deployment:** The application will be deployed as a persistent service on a traditional VPS (e.g., DigitalOcean, AWS EC2, Railway with permanent disks) to prevent data loss from the local SQLite `dev.db`. Serverless environments (like Vercel) are avoided due to ephemeral storage.
 
 ## 2. Database Schema
 
@@ -194,8 +194,8 @@ All endpoints will be versioned under `/api/v1/`.
 
 ## 4. Implementation Roadmap
 
-1.  **Project Setup:** Initialize a Node.js/Express project with TypeScript. Install Prisma and configure it for PostgreSQL.
-2.  **Database Migration:** Define the complete schema in `schema.prisma`. Run `prisma migrate dev` to generate the initial database tables.
+1.  **Project Setup:** Initialize a Node.js/Express project with TypeScript. Install Prisma and configure it for SQLite.
+2.  **Database Migration:** Define the complete schema in `schema.prisma`. Run `prisma migrate dev` to generate the initial local `dev.db` database tables.
 3.  **Seed Database:** Write a script to parse the `detailed_programs.json` file and populate the `programs`, `providers`, `interests`, and related tables with the initial 2100+ items.
 4.  **Authentication Module:** Implement the `users` model and the `/auth/register`, `/auth/login` endpoints. Set up JWT generation and a middleware for verifying tokens on protected routes.
 5.  **Public API Development:** Build the public-facing endpoints (`/programs`, `/lists`, etc.), focusing on efficient querying and data aggregation.

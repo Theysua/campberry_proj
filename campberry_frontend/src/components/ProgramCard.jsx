@@ -15,8 +15,9 @@ export default function ProgramCard({ program }) {
 
   const [addListOpen, setAddListOpen] = useState(false)
 
-  const { toggleSaveProgram, isProgramSaved } = useListContext()
+  const { toggleSaveProgram, isProgramSaved, toggleCompare, compareList } = useListContext()
   const isSaved = isProgramSaved(program.id)
+  const isComparing = compareList.some(p => p.id === program.id)
 
   const navigate = useNavigate()
 
@@ -107,12 +108,17 @@ export default function ProgramCard({ program }) {
     toggleSaveProgram(id)
   }
 
+  const handleCompareList = (e) => {
+    e.stopPropagation()
+    toggleCompare(program)
+  }
+
   return (
     <div onClick={handleCardClick} className="card flex gap-4 hover:-translate-y-1 group relative cursor-pointer">
       {/* Logo */}
-      <div className={`icon-box sq lg shadow-sm overflow-hidden bg-white shrink-0 border border-slate-100 flex items-center justify-center ${logo ? '' : 'p-2'}`}>
+      <div className={`w-[56px] h-[56px] min-w-[56px] min-h-[56px] shrink-0 rounded-xl shadow-sm overflow-hidden bg-white border border-slate-100 flex items-center justify-center ${logo ? '' : 'p-2'}`}>
         {logo ? (
-          <img src={logo} alt={org} className="w-full h-full object-cover" />
+          <img src={logo} alt={org} className="w-full h-full object-contain p-1" />
         ) : (
           <span className="font-bold text-slate-300 text-xl text-center leading-none">
             {org?.substring(0, 1)}
@@ -179,7 +185,11 @@ export default function ProgramCard({ program }) {
           )}
         </div>
 
-        <button className="text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc] p-1.5 rounded-full transition-colors" title="Compare">
+        <button
+          onClick={handleCompareList}
+          className={`p-1.5 rounded-full transition-colors ${isComparing ? 'text-[#892233] bg-[#f8fafc]' : 'text-slate-400 hover:text-[#892233] hover:bg-[#f8fafc]'}`}
+          title="Compare"
+        >
           <ArrowRightLeft size={16} />
         </button>
         <div className="relative">

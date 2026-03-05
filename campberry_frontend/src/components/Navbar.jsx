@@ -38,7 +38,7 @@ export default function Navbar() {
         </div>
         <div className="nav-links">
           <button onClick={() => navigate('/search')}>Find</button>
-          <button onClick={() => navigate('/lists')}>My Lists</button>
+          <button onClick={() => navigate('/my-lists')}>My Lists</button>
           {isAuthenticated ? (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginLeft: '16px' }}>
               <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--primary)', cursor: 'default' }}>

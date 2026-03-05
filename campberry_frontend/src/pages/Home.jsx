@@ -117,13 +117,13 @@ export default function Home() {
             <span onClick={() => navigate('/lists')} style={{ 'fontSize': '14px', 'color': 'var(--accent)', 'fontWeight': '600', 'cursor': 'pointer', 'transition': 'letter-spacing 0.3s' }}>See All Lists →</span>
           </div>
           <div className="hot-row">
-            <div className="hot-card reveal-scale" onClick={() => navigate('/mylistdetail')} style={{ 'borderTop': 'none' }}>
+            <div className="hot-card reveal-scale" onClick={() => navigate('/lists')} style={{ 'borderTop': 'none' }}>
               <div style={{ 'position': 'absolute', 'top': '0', 'left': '0', 'right': '0', 'height': '4px', 'background': 'var(--accent-gradient)', 'borderRadius': 'var(--radius-lg) var(--radius-lg) 0 0' }}>
               </div>
               <h4>Counselors' Top Picks</h4>
               <div className="meta">By School Counseling Group</div>
             </div>
-            <div className="hot-card reveal-scale" onClick={() => navigate('/mylistdetail')} style={{ 'borderTop': 'none', 'transitionDelay': '0.1s' }}>
+            <div className="hot-card reveal-scale" onClick={() => navigate('/lists')} style={{ 'borderTop': 'none', 'transitionDelay': '0.1s' }}>
               <div style={{ 'position': 'absolute', 'top': '0', 'left': '0', 'right': '0', 'height': '4px', 'background': 'linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%)', 'borderRadius': 'var(--radius-lg) var(--radius-lg) 0 0' }}>
               </div>
               <h4>Pre-college Summer Programs</h4>

@@ -59,7 +59,12 @@ export const logoutUser = () => apiFetch('/auth/logout', {
 export const getMe = () => apiFetch('/me');
 
 // Programs
-export const getPrograms = (queryParams = '') => apiFetch(`/programs${queryParams}`);
+export const getPrograms = (params = {}) => {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([_, v]) => v !== undefined && v !== '' && v !== null && v !== false)
+  ).toString();
+  return apiFetch(`/programs${query ? `?${query}` : ''}`);
+};
 export const getProgramById = (id) => apiFetch(`/programs/${id}`);
 
 // Saved Programs

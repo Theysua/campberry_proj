@@ -7,11 +7,17 @@ export const getPrograms = async (req: Request, res: Response) => {
       search,
       interests,
       type,
-      minGrade,
-      maxGrade,
       isFree,
       isSelective,
       rating,
+      zip,
+      season,
+      onlineOnly,
+      includeOnline,
+      grades,
+      international,
+      collegeCredit,
+      oneOnOne,
       page = 1,
       limit = 10,
     } = req.query;
@@ -48,6 +54,74 @@ export const getPrograms = async (req: Request, res: Response) => {
         contains: 'free',
         mode: 'insensitive'
       };
+    }
+
+    if (season) {
+      whereClause.sessions = {
+        some: {
+          name: {
+            contains: String(season),
+            mode: 'insensitive'
+          }
+        }
+      };
+    }
+
+    if (international === 'true') {
+      whereClause.allows_international = true;
+    }
+
+    if (collegeCredit === 'true') {
+      whereClause.offers_college_credit = true;
+    }
+
+    if (oneOnOne === 'true') {
+      whereClause.is_one_on_one = true;
+    }
+
+    if (zip) {
+      whereClause.sessions = {
+        ...(whereClause.sessions || {}),
+        some: {
+          ...(whereClause.sessions?.some || {}),
+          location_name: {
+            contains: String(zip),
+            mode: 'insensitive'
+          }
+        }
+      };
+    }
+
+    if (onlineOnly === 'true') {
+      whereClause.sessions = {
+        ...(whereClause.sessions || {}),
+        some: {
+          ...(whereClause.sessions?.some || {}),
+          location_type: 'ONLINE'
+        }
+      };
+    } else if (includeOnline !== 'true') {
+      // Exclude online programs
+      whereClause.sessions = {
+        ...(whereClause.sessions || {}),
+        none: {
+          location_type: 'ONLINE'
+        }
+      };
+    }
+
+    if (grades && typeof grades === 'string') {
+      const selectedGrades = grades.split(',').map(g => parseInt(g.trim())).filter(g => !isNaN(g));
+      if (selectedGrades.length > 0) {
+        whereClause.AND = [
+          ...(whereClause.AND || []),
+          {
+            OR: selectedGrades.map(g => ({
+              eligible_grades: { contains: String(g) }
+            }))
+          }
+        ];
+      }
     }
 
     if (interests && typeof interests === 'string') {
