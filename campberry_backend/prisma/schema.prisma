@@ -17,7 +17,10 @@ model User {
   created_at     DateTime           @default(now())
   updated_at     DateTime           @updatedAt
   is_verified    Boolean            @default(false)
+  email_verification_tokens EmailVerificationToken[]
   lists          List[]
+  list_reviews   ListReview[]
+  program_reviews ProgramReview[]
   saved_programs UserSavedProgram[]
   refresh_tokens RefreshToken[]
 
@@ -35,6 +38,19 @@ model RefreshToken {
   @@index([user_id])
   @@index([expires_at])
   @@map("refresh_tokens")
+}
+
+model EmailVerificationToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("email_verification_tokens")
 }
 
 model Program {
@@ -62,6 +78,7 @@ model Program {
   updated_at            DateTime           @updatedAt
   deadlines             Deadline[]
   list_items            ListItem[]
+  reviews               ProgramReview[]
   interests             ProgramInterest[]
   provider              Provider           @relation(fields: [provider_id], references: [id])
   sessions              Session[]
@@ -145,6 +162,7 @@ model List {
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
   items       ListItem[]
+  reviews     ListReview[]
   author      User       @relation(fields: [author_id], references: [id])
 
   @@index([author_id, updated_at])
@@ -177,4 +195,38 @@ model UserSavedProgram {
   @@id([user_id, program_id])
   @@index([program_id])
   @@map("user_saved_programs")
+}
+
+model ProgramReview {
+  id         String   @id @default(uuid())
+  program_id String
+  user_id    String
+  rating     Int
+  comment    String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  program    Program  @relation(fields: [program_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([program_id, user_id])
+  @@index([program_id, created_at])
+  @@index([user_id, created_at])
+  @@map("program_reviews")
+}
+
+model ListReview {
+  id         String   @id @default(uuid())
+  list_id    String
+  user_id    String
+  rating     Int
+  comment    String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  list       List     @relation(fields: [list_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([list_id, user_id])
+  @@index([list_id, created_at])
+  @@index([user_id, created_at])
+  @@map("list_reviews")
 }

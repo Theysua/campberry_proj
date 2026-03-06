@@ -1,5 +1,14 @@
 import { Request, Response, Router } from 'express';
-import { googleAuth, login, logout, refreshToken, register, verifyEmail } from '../controllers/authController';
+import {
+  getDevVerificationLink,
+  googleAuth,
+  login,
+  logout,
+  refreshToken,
+  register,
+  resendVerificationEmail,
+  verifyEmail,
+} from '../controllers/authController';
 
 const router = Router();
 
@@ -8,6 +17,8 @@ router.post('/login', (req: Request, res: Response) => { login(req, res); });
 router.post('/refresh', (req: Request, res: Response) => { refreshToken(req, res); });
 router.post('/logout', (req: Request, res: Response) => { logout(req, res); });
 router.post('/verify-email', (req: Request, res: Response) => { verifyEmail(req, res); });
+router.post('/resend-verification', (req: Request, res: Response) => { resendVerificationEmail(req, res); });
 router.post('/google', (req: Request, res: Response) => { googleAuth(req, res); });
+router.get('/dev/verification-link', (req: Request, res: Response) => { getDevVerificationLink(req, res); });
 
 export default router;

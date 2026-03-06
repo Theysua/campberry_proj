@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import 'dotenv/config';
+import { OAuth2Client } from 'google-auth-library';
 import request from 'supertest';
 import prisma from './db';
 
@@ -26,11 +27,20 @@ const cleanupUserByEmail = async (email: string) => {
   const listIds = lists.map((list) => list.id);
 
   if (listIds.length > 0) {
+    await prisma.listReview.deleteMany({
+      where: { list_id: { in: listIds } },
+    });
     await prisma.listItem.deleteMany({
       where: { list_id: { in: listIds } },
     });
   }
 
+  await prisma.programReview.deleteMany({
+    where: { user_id: user.id },
+  });
+  await prisma.listReview.deleteMany({
+    where: { user_id: user.id },
+  });
   await prisma.list.deleteMany({
     where: { author_id: user.id },
   });
@@ -38,6 +48,9 @@ const cleanupUserByEmail = async (email: string) => {
     where: { user_id: user.id },
   });
   await prisma.refreshToken.deleteMany({
+    where: { user_id: user.id },
+  });
+  await prisma.emailVerificationToken.deleteMany({
     where: { user_id: user.id },
   });
   await prisma.user.delete({
@@ -93,6 +106,76 @@ test('forces self-registered users to remain STUDENT even if role is provided', 
   try {
     const loginResponse = await registerAndLogin(email, { role: 'ADMIN' });
     assert.equal(loginResponse.user.role, 'STUDENT');
+  } finally {
+    await cleanupUserByEmail(email);
+  }
+});
+
+test('register issues a local verification token and verify-email consumes it', async () => {
+  const email = uniqueEmail('verify-email');
+
+  try {
+    const registerResponse = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Verify Me',
+        email,
+        password: 'password123',
+      })
+      .expect(201);
+
+    assert.ok(registerResponse.body.verification?.verificationUrl);
+    const token = registerResponse.body.verification?.token;
+    assert.ok(token);
+
+    const beforeVerify = await prisma.user.findUnique({
+      where: { email },
+      select: { is_verified: true },
+    });
+    assert.equal(beforeVerify?.is_verified, false);
+
+    const verifyResponse = await request(app)
+      .post('/api/v1/auth/verify-email')
+      .send({ verificationToken: token })
+      .expect(200);
+
+    assert.equal(verifyResponse.body.user.is_verified, true);
+
+    const afterVerify = await prisma.user.findUnique({
+      where: { email },
+      select: { is_verified: true },
+    });
+    assert.equal(afterVerify?.is_verified, true);
+
+    const remainingTokens = await prisma.emailVerificationToken.count({
+      where: { user: { email } },
+    });
+    assert.equal(remainingTokens, 0);
+  } finally {
+    await cleanupUserByEmail(email);
+  }
+});
+
+test('dev verification endpoint returns the latest local verification link', async () => {
+  const email = uniqueEmail('verify-dev-link');
+
+  try {
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Dev Link User',
+        email,
+        password: 'password123',
+      })
+      .expect(201);
+
+    const response = await request(app)
+      .get(`/api/v1/auth/dev/verification-link?email=${encodeURIComponent(email)}`)
+      .expect(200);
+
+    assert.equal(response.body.email, email);
+    assert.equal(response.body.is_verified, false);
+    assert.match(response.body.verification.verificationUrl, /verify-email\?token=/);
   } finally {
     await cleanupUserByEmail(email);
   }
@@ -168,5 +251,167 @@ test('private lists are hidden from public route but accessible to the owner', a
     assert.equal(myListResponse.body.title, 'Private Notes');
   } finally {
     await cleanupUserByEmail(email);
+  }
+});
+
+test('saved programs and list item flows work end-to-end for an authenticated user', async () => {
+  const email = uniqueEmail('saved-list-flow');
+
+  try {
+    const loginResponse = await registerAndLogin(email);
+    const program = await prisma.program.findFirst({
+      select: { id: true },
+    });
+
+    assert.ok(program?.id, 'Expected at least one program in the database');
+
+    await request(app)
+      .post('/api/v1/me/saved-programs')
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .send({ programId: program!.id })
+      .expect(201);
+
+    const savedProgramsResponse = await request(app)
+      .get('/api/v1/me/saved-programs')
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .expect(200);
+
+    assert.ok(savedProgramsResponse.body.some((item: any) => item.program.id === program!.id));
+
+    const createListResponse = await request(app)
+      .post('/api/v1/me/lists')
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .send({
+        title: 'Reach Programs',
+        description: 'Saved from test flow',
+      })
+      .expect(201);
+
+    const listId = createListResponse.body.id;
+
+    await request(app)
+      .post(`/api/v1/me/lists/${listId}/items`)
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .send({ programId: program!.id })
+      .expect(201);
+
+    const myListResponse = await request(app)
+      .get(`/api/v1/me/lists/${listId}`)
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .expect(200);
+
+    assert.equal(myListResponse.body.id, listId);
+    assert.ok(myListResponse.body.items.some((item: any) => item.program_id === program!.id));
+  } finally {
+    await cleanupUserByEmail(email);
+  }
+});
+
+test('google auth exchanges a verified Google credential for a Campberry session', async () => {
+  const email = uniqueEmail('google-auth');
+  const originalClientId = process.env.GOOGLE_CLIENT_ID;
+  const originalVerifyIdToken = OAuth2Client.prototype.verifyIdToken;
+
+  process.env.GOOGLE_CLIENT_ID = 'test-google-client-id.apps.googleusercontent.com';
+  OAuth2Client.prototype.verifyIdToken = async function mockVerifyIdToken() {
+    return {
+      getPayload: () => ({
+        email,
+        email_verified: true,
+        name: 'Google Tester',
+        picture: 'https://example.com/avatar.png',
+      }),
+    } as any;
+  };
+
+  try {
+    const response = await request(app)
+      .post('/api/v1/auth/google')
+      .send({ credential: 'mock-google-credential' })
+      .expect(200);
+
+    assert.ok(response.body.accessToken);
+    assert.equal(response.body.user.email, email);
+    assert.equal(response.body.user.is_verified, true);
+  } finally {
+    OAuth2Client.prototype.verifyIdToken = originalVerifyIdToken;
+    if (originalClientId === undefined) {
+      delete process.env.GOOGLE_CLIENT_ID;
+    } else {
+      process.env.GOOGLE_CLIENT_ID = originalClientId;
+    }
+    await cleanupUserByEmail(email);
+  }
+});
+
+test('program and list feedback endpoints support ratings and comments', async () => {
+  const studentEmail = uniqueEmail('feedback-student');
+  const counselorEmail = uniqueEmail('feedback-counselor');
+
+  try {
+    const loginResponse = await registerAndLogin(studentEmail);
+    const program = await prisma.program.findFirst({
+      select: { id: true },
+    });
+    assert.ok(program?.id, 'Expected at least one program in the database');
+
+    const counselor = await prisma.user.create({
+      data: {
+        email: counselorEmail,
+        name: 'Feedback Counselor',
+        role: 'COUNSELOR',
+        is_verified: true,
+      },
+    });
+
+    const publicList = await prisma.list.create({
+      data: {
+        title: 'Feedback Test Public List',
+        description: 'List used for feedback endpoint coverage',
+        author_id: counselor.id,
+        is_public: true,
+      },
+    });
+
+    const programFeedbackResponse = await request(app)
+      .post(`/api/v1/me/programs/${program!.id}/feedback`)
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .send({
+        rating: 5,
+        comment: 'Excellent fit for ambitious students.',
+      })
+      .expect(201);
+
+    assert.equal(programFeedbackResponse.body.review.rating, 5);
+    assert.equal(programFeedbackResponse.body.summary.ratingCount, 1);
+
+    const publicProgramFeedbackResponse = await request(app)
+      .get(`/api/v1/programs/${program!.id}/feedback`)
+      .expect(200);
+
+    assert.equal(publicProgramFeedbackResponse.body.summary.ratingCount, 1);
+    assert.ok(publicProgramFeedbackResponse.body.reviews.length >= 1);
+
+    const listFeedbackResponse = await request(app)
+      .post(`/api/v1/me/lists/${publicList.id}/feedback`)
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .send({
+        rating: 4,
+        comment: 'Helpful shortlist with clear commentary.',
+      })
+      .expect(201);
+
+    assert.equal(listFeedbackResponse.body.review.rating, 4);
+    assert.equal(listFeedbackResponse.body.summary.ratingCount, 1);
+
+    const publicListFeedbackResponse = await request(app)
+      .get(`/api/v1/lists/${publicList.id}/feedback`)
+      .expect(200);
+
+    assert.equal(publicListFeedbackResponse.body.summary.ratingCount, 1);
+    assert.ok(publicListFeedbackResponse.body.reviews.length >= 1);
+  } finally {
+    await cleanupUserByEmail(studentEmail);
+    await cleanupUserByEmail(counselorEmail);
   }
 });

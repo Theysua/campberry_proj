@@ -222,6 +222,103 @@ const getRelevanceScore = (
 const canUseDistance = (lat?: number, lng?: number) =>
   Number.isFinite(lat) && Number.isFinite(lng);
 
+const formatAverageRating = (value: number | null | undefined) =>
+  typeof value === 'number' ? Math.round(value * 10) / 10 : null;
+
+const getProgramFeedbackSnapshot = async (programId: string) => {
+  const [aggregate, commentCount, reviews] = await prisma.$transaction([
+    prisma.programReview.aggregate({
+      where: { program_id: programId },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.programReview.count({
+      where: {
+        program_id: programId,
+        comment: { not: null },
+      },
+    }),
+    prisma.programReview.findMany({
+      where: {
+        program_id: programId,
+        comment: { not: null },
+      },
+      orderBy: { created_at: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        created_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            avatar_url: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    summary: {
+      averageRating: formatAverageRating(aggregate._avg.rating),
+      ratingCount: aggregate._count._all,
+      commentCount,
+    },
+    reviews,
+  };
+};
+
+const getListFeedbackSnapshot = async (listId: string) => {
+  const [aggregate, commentCount, reviews] = await prisma.$transaction([
+    prisma.listReview.aggregate({
+      where: { list_id: listId },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.listReview.count({
+      where: {
+        list_id: listId,
+        comment: { not: null },
+      },
+    }),
+    prisma.listReview.findMany({
+      where: {
+        list_id: listId,
+        comment: { not: null },
+      },
+      orderBy: { created_at: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        created_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            avatar_url: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    summary: {
+      averageRating: formatAverageRating(aggregate._avg.rating),
+      ratingCount: aggregate._count._all,
+      commentCount,
+    },
+    reviews,
+  };
+};
+
 const getBoundingBox = (lat: number, lng: number, radiusMiles: number) => {
   const latDelta = radiusMiles / 69;
   const cosLat = Math.cos(toRadians(lat));
@@ -664,7 +761,13 @@ export const getProgramById = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Program not found' });
     }
 
-    res.json(program);
+    const feedback = await getProgramFeedbackSnapshot(program.id);
+
+    res.json({
+      ...program,
+      feedback_summary: feedback.summary,
+      feedback_preview: feedback.reviews.slice(0, 3),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch program' });
@@ -719,10 +822,59 @@ export const getListById = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'List not found' });
     }
 
-    res.json(list);
+    const feedback = await getListFeedbackSnapshot(list.id);
+
+    res.json({
+      ...list,
+      feedback_summary: feedback.summary,
+      feedback_preview: feedback.reviews.slice(0, 3),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch list' });
+  }
+};
+
+export const getProgramFeedback = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const program = await prisma.program.findUnique({
+      where: { id: String(id) },
+      select: { id: true },
+    });
+
+    if (!program) {
+      return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const feedback = await getProgramFeedbackSnapshot(program.id);
+    res.json(feedback);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch program feedback' });
+  }
+};
+
+export const getListFeedback = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const list = await prisma.list.findFirst({
+      where: {
+        id: String(id),
+        is_public: true,
+      },
+      select: { id: true },
+    });
+
+    if (!list) {
+      return res.status(404).json({ error: 'List not found' });
+    }
+
+    const feedback = await getListFeedbackSnapshot(list.id);
+    res.json(feedback);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch list feedback' });
   }
 };
 

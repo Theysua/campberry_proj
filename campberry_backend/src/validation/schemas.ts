@@ -27,6 +27,14 @@ export const loginBodySchema = z.object({
   password: z.string().min(1).max(128),
 });
 
+export const emailBodySchema = z.object({
+  email: z.email().max(255),
+});
+
+export const googleAuthBodySchema = z.object({
+  credential: z.string().trim().min(1).max(4096),
+});
+
 export const verifyEmailBodySchema = z
   .object({
     verificationToken: z.string().trim().optional(),
@@ -69,6 +77,11 @@ export const updateListItemBodySchema = z
   .refine((value) => value.commentary !== undefined || value.displayOrder !== undefined, {
     message: 'commentary or displayOrder is required',
   });
+
+export const createFeedbackBodySchema = z.object({
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: z.string().trim().max(4000).optional().or(z.literal('')),
+});
 
 export const searchProgramsQuerySchema = z
   .object({

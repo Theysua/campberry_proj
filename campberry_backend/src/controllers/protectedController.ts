@@ -4,6 +4,7 @@ import { AuthRequest } from '../middleware/authMiddleware';
 import { parseOrRespond } from '../validation/parse';
 import {
   addListItemBodySchema,
+  createFeedbackBodySchema,
   createListBodySchema,
   saveProgramBodySchema,
   updateListBodySchema,
@@ -19,6 +20,53 @@ const ensureAuthenticated = (req: AuthRequest, res: Response) => {
   }
 
   return req.user;
+};
+
+const formatAverageRating = (value: number | null | undefined) =>
+  typeof value === 'number' ? Math.round(value * 10) / 10 : null;
+
+const getProgramFeedbackSummary = async (programId: string) => {
+  const [aggregate, commentCount] = await prisma.$transaction([
+    prisma.programReview.aggregate({
+      where: { program_id: programId },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.programReview.count({
+      where: {
+        program_id: programId,
+        comment: { not: null },
+      },
+    }),
+  ]);
+
+  return {
+    averageRating: formatAverageRating(aggregate._avg.rating),
+    ratingCount: aggregate._count._all,
+    commentCount,
+  };
+};
+
+const getListFeedbackSummary = async (listId: string) => {
+  const [aggregate, commentCount] = await prisma.$transaction([
+    prisma.listReview.aggregate({
+      where: { list_id: listId },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.listReview.count({
+      where: {
+        list_id: listId,
+        comment: { not: null },
+      },
+    }),
+  ]);
+
+  return {
+    averageRating: formatAverageRating(aggregate._avg.rating),
+    ratingCount: aggregate._count._all,
+    commentCount,
+  };
 };
 
 export const getMe = async (req: AuthRequest, res: Response) => {
@@ -434,5 +482,120 @@ export const deleteList = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to delete list' });
+  }
+};
+
+export const upsertProgramFeedback = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    const programId = String(req.params.programId);
+    const parsedBody = parseOrRespond(createFeedbackBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const program = await prisma.program.findUnique({
+      where: { id: programId },
+      select: { id: true },
+    });
+    if (!program) {
+      return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const review = await prisma.programReview.upsert({
+      where: {
+        program_id_user_id: {
+          program_id: programId,
+          user_id: user.id,
+        },
+      },
+      update: {
+        rating: parsedBody.rating,
+        comment: parsedBody.comment ? String(parsedBody.comment).trim() : null,
+      },
+      create: {
+        program_id: programId,
+        user_id: user.id,
+        rating: parsedBody.rating,
+        comment: parsedBody.comment ? String(parsedBody.comment).trim() : null,
+      },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
+
+    const summary = await getProgramFeedbackSummary(programId);
+
+    res.status(201).json({ review, summary });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to save program feedback' });
+  }
+};
+
+export const upsertListFeedback = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    const listId = String(req.params.listId);
+    const parsedBody = parseOrRespond(createFeedbackBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const list = await prisma.list.findFirst({
+      where: {
+        id: listId,
+        is_public: true,
+      },
+      select: { id: true },
+    });
+    if (!list) {
+      return res.status(404).json({ error: 'List not found' });
+    }
+
+    const review = await prisma.listReview.upsert({
+      where: {
+        list_id_user_id: {
+          list_id: listId,
+          user_id: user.id,
+        },
+      },
+      update: {
+        rating: parsedBody.rating,
+        comment: parsedBody.comment ? String(parsedBody.comment).trim() : null,
+      },
+      create: {
+        list_id: listId,
+        user_id: user.id,
+        rating: parsedBody.rating,
+        comment: parsedBody.comment ? String(parsedBody.comment).trim() : null,
+      },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
+
+    const summary = await getListFeedbackSummary(listId);
+
+    res.status(201).json({ review, summary });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to save list feedback' });
   }
 };
