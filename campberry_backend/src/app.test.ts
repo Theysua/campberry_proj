@@ -47,10 +47,16 @@ const cleanupUserByEmail = async (email: string) => {
   await prisma.userSavedProgram.deleteMany({
     where: { user_id: user.id },
   });
+  await prisma.userSavedList.deleteMany({
+    where: { user_id: user.id },
+  });
   await prisma.refreshToken.deleteMany({
     where: { user_id: user.id },
   });
   await prisma.emailVerificationToken.deleteMany({
+    where: { user_id: user.id },
+  });
+  await prisma.passwordResetToken.deleteMany({
     where: { user_id: user.id },
   });
   await prisma.user.delete({
@@ -181,6 +187,47 @@ test('dev verification endpoint returns the latest local verification link', asy
   }
 });
 
+test('forgot password issues a reset token and reset-password updates the password', async () => {
+  const email = uniqueEmail('password-reset');
+
+  try {
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        name: 'Reset Me',
+        email,
+        password: 'password123',
+      })
+      .expect(201);
+
+    const forgotResponse = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email })
+      .expect(200);
+
+    const token = forgotResponse.body.reset?.token;
+    assert.ok(token);
+
+    await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({
+        token,
+        password: 'newpassword123',
+      })
+      .expect(200);
+
+    await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email,
+        password: 'newpassword123',
+      })
+      .expect(200);
+  } finally {
+    await cleanupUserByEmail(email);
+  }
+});
+
 test('search endpoint validates geo params and still supports season filtering', async () => {
   await request(app)
     .get('/api/v1/programs?lat=40.7')
@@ -197,6 +244,12 @@ test('search endpoint validates geo params and still supports season filtering',
     .expect(200);
 
   assert.ok(Array.isArray(distanceResponse.body.data));
+
+  const impactResponse = await request(app)
+    .get('/api/v1/programs?impact=HIGH_IMPACT&limit=5')
+    .expect(200);
+
+  assert.ok(Array.isArray(impactResponse.body.data));
 });
 
 test('student users cannot create public lists', async () => {
@@ -302,6 +355,47 @@ test('saved programs and list item flows work end-to-end for an authenticated us
 
     assert.equal(myListResponse.body.id, listId);
     assert.ok(myListResponse.body.items.some((item: any) => item.program_id === program!.id));
+  } finally {
+    await cleanupUserByEmail(email);
+  }
+});
+
+test('public lists can be saved and appear in saved lists for an authenticated user', async () => {
+  const email = uniqueEmail('saved-public-list');
+
+  try {
+    const loginResponse = await registerAndLogin(email);
+    const publicList = await prisma.list.findFirst({
+      where: { is_public: true },
+      select: { id: true },
+    });
+
+    assert.ok(publicList?.id, 'Expected at least one public list in the database');
+
+    await request(app)
+      .post('/api/v1/me/saved-lists')
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .send({ listId: publicList!.id })
+      .expect(201);
+
+    const savedListsResponse = await request(app)
+      .get('/api/v1/me/saved-lists')
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .expect(200);
+
+    assert.ok(savedListsResponse.body.some((item: any) => item.list.id === publicList!.id));
+
+    await request(app)
+      .delete(`/api/v1/me/saved-lists/${publicList!.id}`)
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .expect(200);
+
+    const afterUnsaveResponse = await request(app)
+      .get('/api/v1/me/saved-lists')
+      .set('Authorization', `Bearer ${loginResponse.accessToken}`)
+      .expect(200);
+
+    assert.ok(afterUnsaveResponse.body.every((item: any) => item.list.id !== publicList!.id));
   } finally {
     await cleanupUserByEmail(email);
   }

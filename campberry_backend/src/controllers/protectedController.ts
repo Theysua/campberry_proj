@@ -6,6 +6,7 @@ import {
   addListItemBodySchema,
   createFeedbackBodySchema,
   createListBodySchema,
+  saveListBodySchema,
   saveProgramBodySchema,
   updateListBodySchema,
   updateListItemBodySchema,
@@ -119,6 +120,37 @@ export const getSavedPrograms = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getSavedLists = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    const savedLists = await prisma.userSavedList.findMany({
+      where: { user_id: user.id },
+      include: {
+        list: {
+          include: {
+            author: {
+              select: { name: true, role: true },
+            },
+            _count: {
+              select: { items: true },
+            },
+          },
+        },
+      },
+      orderBy: { saved_at: 'desc' },
+    });
+
+    res.json(savedLists.map((item: typeof savedLists[number]) => ({ savedAt: item.saved_at, list: item.list })));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch saved lists' });
+  }
+};
+
 export const saveProgram = async (req: AuthRequest, res: Response) => {
   try {
     const user = ensureAuthenticated(req, res);
@@ -165,6 +197,58 @@ export const saveProgram = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const saveList = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    const parsedBody = parseOrRespond(saveListBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { listId } = parsedBody;
+
+    const list = await prisma.list.findFirst({
+      where: {
+        id: String(listId),
+        is_public: true,
+      },
+      select: { id: true },
+    });
+    if (!list) {
+      return res.status(404).json({ error: 'Public list not found' });
+    }
+
+    const existing = await prisma.userSavedList.findUnique({
+      where: {
+        user_id_list_id: {
+          user_id: user.id,
+          list_id: String(listId),
+        },
+      },
+    });
+
+    if (existing) {
+      return res.status(200).json(existing);
+    }
+
+    const saved = await prisma.userSavedList.create({
+      data: {
+        user_id: user.id,
+        list_id: String(listId),
+      },
+    });
+
+    res.status(201).json(saved);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to save list' });
+  }
+};
+
 export const unsaveProgram = async (req: AuthRequest, res: Response) => {
   try {
     const user = ensureAuthenticated(req, res);
@@ -185,6 +269,29 @@ export const unsaveProgram = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to unsave program' });
+  }
+};
+
+export const unsaveList = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    const { listId } = req.params;
+
+    await prisma.userSavedList.deleteMany({
+      where: {
+        user_id: user.id,
+        list_id: String(listId),
+      },
+    });
+
+    res.json({ message: 'List unsaved successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to unsave list' });
   }
 };
 

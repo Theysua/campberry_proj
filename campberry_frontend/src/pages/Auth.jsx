@@ -204,6 +204,15 @@ export default function Auth() {
               <div style={{ marginBottom: '28px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label className="form-label" style={{ marginBottom: '0' }}>Password</label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/reset-password')}
+                      style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
                 </div>
                 <input className="form-input" placeholder="Enter your password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
               </div>

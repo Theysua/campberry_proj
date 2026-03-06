@@ -11,12 +11,14 @@ import {
   googleAuthBodySchema,
   loginBodySchema,
   registerBodySchema,
+  resetPasswordBodySchema,
   verifyEmailBodySchema,
 } from '../validation/schemas';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'campberry_super_secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'campberry_refresh_super_secret';
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID || '';
 const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -87,6 +89,9 @@ const issueSession = async (
 const buildVerificationUrl = (token: string) =>
   `${getFrontendBaseUrl().replace(/\/$/, '')}/verify-email?token=${encodeURIComponent(token)}`;
 
+const buildPasswordResetUrl = (token: string) =>
+  `${getFrontendBaseUrl().replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+
 const createEmailVerificationToken = async (userId: string) => {
   const token = crypto.randomBytes(24).toString('hex');
 
@@ -136,6 +141,51 @@ const getLatestEmailVerificationPreview = async (email: string) => {
       is_verified: user.is_verified,
     },
     latestToken,
+  };
+};
+
+const createPasswordResetToken = async (userId: string) => {
+  const token = crypto.randomBytes(24).toString('hex');
+
+  await prisma.passwordResetToken.deleteMany({
+    where: { user_id: userId },
+  });
+
+  const record = await prisma.passwordResetToken.create({
+    data: {
+      token,
+      user_id: userId,
+      expires_at: new Date(Date.now() + PASSWORD_RESET_TTL_MS),
+    },
+  });
+
+  return {
+    token: record.token,
+    resetUrl: buildPasswordResetUrl(record.token),
+    expiresAt: record.expires_at,
+  };
+};
+
+const getLatestPasswordResetPreview = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      password_reset_tokens: {
+        orderBy: { created_at: 'desc' },
+        take: 1,
+      },
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    user,
+    latestToken: user.password_reset_tokens[0] || null,
   };
 };
 
@@ -377,6 +427,101 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
   }
 };
 
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsedBody = parseOrRespond(emailBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: parsedBody.email },
+      select: { id: true, email: true },
+    });
+
+    if (!user) {
+      res.status(200).json({ message: 'If an account exists for that email, a reset link has been issued.' });
+      return;
+    }
+
+    const reset = await createPasswordResetToken(user.id);
+
+    if (canExposeDevEmailPreview()) {
+      console.log(`[password-reset-dev] Reset ${user.email}: ${reset.resetUrl}`);
+    }
+
+    res.status(200).json({
+      message: 'If an account exists for that email, a reset link has been issued.',
+      ...(canExposeDevEmailPreview()
+        ? {
+            reset: {
+              token: reset.token,
+              resetUrl: reset.resetUrl,
+              expiresAt: reset.expiresAt,
+            },
+          }
+        : {}),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to start password reset' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsedBody = parseOrRespond(resetPasswordBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const tokenRecord = await prisma.passwordResetToken.findUnique({
+      where: { token: parsedBody.token },
+      include: { user: true },
+    });
+
+    if (!tokenRecord) {
+      res.status(404).json({ error: 'Password reset token not found' });
+      return;
+    }
+
+    if (tokenRecord.expires_at < new Date()) {
+      await prisma.passwordResetToken.delete({
+        where: { token: tokenRecord.token },
+      });
+      res.status(400).json({ error: 'Password reset token has expired' });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(parsedBody.password, 10);
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: tokenRecord.user_id },
+        data: { password_hash: passwordHash },
+      }),
+      prisma.passwordResetToken.deleteMany({
+        where: { user_id: tokenRecord.user_id },
+      }),
+      prisma.refreshToken.deleteMany({
+        where: { user_id: tokenRecord.user_id },
+      }),
+    ]);
+
+    res.clearCookie('refreshToken', getCookieOptions());
+    res.status(200).json({
+      message: 'Password reset successfully',
+      user: {
+        id: tokenRecord.user.id,
+        email: tokenRecord.user.email,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+};
+
 export const getDevVerificationLink = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!canExposeDevEmailPreview()) {
@@ -413,6 +558,44 @@ export const getDevVerificationLink = async (req: Request, res: Response): Promi
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to load development verification link' });
+  }
+};
+
+export const getDevPasswordResetLink = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!canExposeDevEmailPreview()) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+
+    const parsedQuery = parseOrRespond(emailBodySchema, req.query, res);
+    if (!parsedQuery) {
+      return;
+    }
+
+    const preview = await getLatestPasswordResetPreview(parsedQuery.email);
+    if (!preview) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    if (!preview.latestToken) {
+      res.status(404).json({ error: 'No password reset token found for this user' });
+      return;
+    }
+
+    res.status(200).json({
+      email: preview.user.email,
+      reset: {
+        token: preview.latestToken.token,
+        resetUrl: buildPasswordResetUrl(preview.latestToken.token),
+        expiresAt: preview.latestToken.expires_at,
+        createdAt: preview.latestToken.created_at,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to load development password reset link' });
   }
 };
 

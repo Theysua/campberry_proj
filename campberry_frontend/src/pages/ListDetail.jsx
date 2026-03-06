@@ -2,19 +2,24 @@ import { ArrowLeft, Loader2, Share } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ProgramCard from '../components/ProgramCard'
+import { useAuth } from '../context/AuthContext'
+import { useListContext } from '../context/ListContext'
 import { getListById } from '../services/api'
 import { getListCoverImage } from '../utils/listCoverImages'
-import { getBackTarget } from '../utils/navigationContext'
+import { buildAuthRedirectPath, getBackTarget } from '../utils/navigationContext'
 
 export default function ListDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const { isAuthenticated } = useAuth()
+  const { isListSaved, toggleSaveList } = useListContext()
 
   const [list, setList] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [saveBusy, setSaveBusy] = useState(false)
 
   useEffect(() => {
     const fetchList = async () => {
@@ -78,6 +83,23 @@ export default function ListDetail() {
   const feedbackSummary = list.feedback_summary || { averageRating: null, ratingCount: 0, commentCount: 0 }
   const feedbackPreview = Array.isArray(list.feedback_preview) ? list.feedback_preview : []
   const cover = getListCoverImage(list.title)
+  const isSaved = isListSaved(list.id)
+
+  const handleToggleSaveList = async () => {
+    if (!isAuthenticated) {
+      navigate(buildAuthRedirectPath(location))
+      return
+    }
+
+    setSaveBusy(true)
+    try {
+      await toggleSaveList(list)
+    } catch (err) {
+      console.error('Failed to save list', err)
+    } finally {
+      setSaveBusy(false)
+    }
+  }
 
   return (
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in relative z-0">
@@ -112,6 +134,17 @@ export default function ListDetail() {
           </div>
           <div className="text-xs text-slate-400 mb-5">
             Updated {new Date(list.updated_at).toLocaleDateString()}
+          </div>
+
+          <div className="flex gap-3 mb-5">
+            <button
+              type="button"
+              onClick={handleToggleSaveList}
+              disabled={saveBusy}
+              className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm"
+            >
+              {saveBusy ? 'Saving...' : isSaved ? 'Saved to My Lists' : 'Save List'}
+            </button>
           </div>
 
           {list.description && (

@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { warmSearchBootstrapCache } from '../services/api';
+import { buildSearchPath } from '../utils/searchUrlState';
 import logo from '../assets/logo.svg';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const headerRef = useRef(null);
   const { isAuthenticated, user, logout } = useAuth();
   const handleWarmFind = () => {
@@ -43,7 +45,7 @@ export default function Navbar() {
           <img src={logo} alt="Campberry Logo" style={{ height: '32px' }} />
         </div>
         <div className="nav-links">
-          <button onClick={() => navigate('/search')} onMouseEnter={handleWarmFind} onFocus={handleWarmFind}>Find</button>
+          <button onClick={() => navigate(buildSearchPath({}, location))} onMouseEnter={handleWarmFind} onFocus={handleWarmFind}>Find</button>
           <button onClick={() => navigate('/lists')}>Lists</button>
           <button onClick={() => navigate('/my-lists')}>My Lists</button>
           {isAuthenticated ? (

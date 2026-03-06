@@ -18,8 +18,10 @@ model User {
   updated_at     DateTime           @updatedAt
   is_verified    Boolean            @default(false)
   email_verification_tokens EmailVerificationToken[]
+  password_reset_tokens PasswordResetToken[]
   lists          List[]
   list_reviews   ListReview[]
+  saved_lists    UserSavedList[]
   program_reviews ProgramReview[]
   saved_programs UserSavedProgram[]
   refresh_tokens RefreshToken[]
@@ -51,6 +53,19 @@ model EmailVerificationToken {
   @@index([user_id])
   @@index([expires_at])
   @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("password_reset_tokens")
 }
 
 model Program {
@@ -163,6 +178,7 @@ model List {
   updated_at  DateTime   @updatedAt
   items       ListItem[]
   reviews     ListReview[]
+  saved_by    UserSavedList[]
   author      User       @relation(fields: [author_id], references: [id])
 
   @@index([author_id, updated_at])
@@ -195,6 +211,18 @@ model UserSavedProgram {
   @@id([user_id, program_id])
   @@index([program_id])
   @@map("user_saved_programs")
+}
+
+model UserSavedList {
+  user_id   String
+  list_id   String
+  saved_at  DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+  list      List     @relation(fields: [list_id], references: [id])
+
+  @@id([user_id, list_id])
+  @@index([list_id])
+  @@map("user_saved_lists")
 }
 
 model ProgramReview {

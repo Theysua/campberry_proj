@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import ProgramCard from '../components/ProgramCard'
 import { getAuthToken, getSavedPrograms } from '../services/api'
 import { getBackTarget } from '../utils/navigationContext'
+import { buildSearchPath } from '../utils/searchUrlState'
 
 export default function SavedPrograms() {
   const navigate = useNavigate()
@@ -84,7 +85,7 @@ export default function SavedPrograms() {
               <p className="text-slate-500 text-sm font-medium mb-6 max-w-sm mx-auto">
                 Click the &quot;Save&quot; button on any program to add it to this list.
               </p>
-              <Link to="/search" className="btn primary px-6 shadow-md hover:shadow-lg transition-all animate-fade-in hover:-translate-y-0.5 font-bold flex items-center gap-2">
+              <Link to={buildSearchPath({}, location)} className="btn primary px-6 shadow-md hover:shadow-lg transition-all animate-fade-in hover:-translate-y-0.5 font-bold flex items-center gap-2">
                 <Search size={16} /> Look for Programs
               </Link>
             </div>

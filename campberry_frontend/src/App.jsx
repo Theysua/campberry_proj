@@ -14,6 +14,7 @@ import Mission from './pages/Mission'
 import MyListDetail from './pages/MyListDetail'
 import MyLists from './pages/MyLists'
 import ProgramDetail from './pages/ProgramDetail'
+import ResetPassword from './pages/ResetPassword'
 import SavedPrograms from './pages/SavedPrograms'
 import Search from './pages/Search'
 import VerifyEmail from './pages/VerifyEmail'
@@ -51,6 +52,7 @@ function App() {
                 <Route path="/account/lists/:id" element={<MyListDetail />} />
                 <Route path="/saved-programs" element={<SavedPrograms />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/mission" element={<Mission />} />
                 <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
                 <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />

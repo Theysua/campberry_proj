@@ -1,3 +1,5 @@
+import { buildCurrentPath, getDefaultBackLabel } from './navigationContext'
+
 const SORT_LABEL_BY_API_VALUE = {
   relevancy: 'Relevancy',
   rating: 'Rating',
@@ -49,6 +51,7 @@ export const parseSearchStateFromParams = (searchParams) => {
     searchQuery,
     typeFilter: searchParams.get('type') || '',
     ratingFilter: searchParams.get('rating') || '',
+    impactFilter: searchParams.get('impact') || '',
     isFree: parseBooleanParam(searchParams.get('isFree')),
     isSelective: parseBooleanParam(searchParams.get('isSelective')),
     locationInput: '',
@@ -74,6 +77,7 @@ export const buildSearchParamsFromState = ({
   searchQuery,
   typeFilter,
   ratingFilter,
+  impactFilter,
   isFree,
   isSelective,
   locationInput,
@@ -103,6 +107,10 @@ export const buildSearchParamsFromState = ({
 
   if (ratingFilter) {
     nextParams.set('rating', ratingFilter)
+  }
+
+  if (impactFilter) {
+    nextParams.set('impact', impactFilter)
   }
 
   if (isFree) {
@@ -149,10 +157,20 @@ export const buildSearchParamsFromState = ({
   return nextParams
 }
 
-export const buildSearchPath = (params = {}) => {
+export const buildSearchPath = (params = {}, location = null, overrides = {}) => {
   const searchParams = new URLSearchParams(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '')
   )
+
+  if (location && !location.pathname.startsWith('/search')) {
+    const inheritedParams = new URLSearchParams(location.search)
+    const inheritedReturnTo = inheritedParams.get('returnTo') || ''
+    const inheritedReturnLabel = inheritedParams.get('returnLabel') || ''
+
+    searchParams.set('returnTo', overrides.returnTo || inheritedReturnTo || buildCurrentPath(location))
+    searchParams.set('returnLabel', overrides.returnLabel || inheritedReturnLabel || getDefaultBackLabel(location.pathname))
+  }
+
   const query = searchParams.toString()
   return `/search${query ? `?${query}` : ''}`
 }

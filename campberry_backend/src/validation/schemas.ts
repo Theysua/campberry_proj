@@ -31,6 +31,11 @@ export const emailBodySchema = z.object({
   email: z.email().max(255),
 });
 
+export const resetPasswordBodySchema = z.object({
+  token: z.string().trim().min(1),
+  password: z.string().min(8).max(128),
+});
+
 export const googleAuthBodySchema = z.object({
   credential: z.string().trim().min(1).max(4096),
 });
@@ -64,6 +69,10 @@ export const saveProgramBodySchema = z.object({
   programId: z.string().trim().min(1),
 });
 
+export const saveListBodySchema = z.object({
+  listId: z.string().trim().min(1),
+});
+
 export const addListItemBodySchema = z.object({
   programId: z.string().trim().min(1),
   commentary: z.string().trim().max(4000).optional().or(z.literal('')),
@@ -93,6 +102,10 @@ export const searchProgramsQuerySchema = z
     rating: z.preprocess(
       emptyToUndefined,
       z.enum(['MOST_RECOMMENDED', 'HIGHLY_RECOMMENDED']).optional()
+    ),
+    impact: z.preprocess(
+      emptyToUndefined,
+      z.enum(['MOST_HIGH_IMPACT', 'HIGH_IMPACT']).optional()
     ),
     zip: optionalQueryString,
     locationQuery: optionalQueryString,

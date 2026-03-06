@@ -489,6 +489,7 @@ export const getPrograms = async (req: Request, res: Response) => {
       isFree,
       isSelective,
       rating,
+      impact,
       zip,
       locationQuery,
       season,
@@ -564,6 +565,10 @@ export const getPrograms = async (req: Request, res: Response) => {
 
     if (rating) {
       whereClause.experts_choice_rating = String(rating);
+    }
+
+    if (impact) {
+      whereClause.impact_rating = String(impact);
     }
 
     if (isFree === 'true') {

@@ -6,9 +6,12 @@ import {
     getMe,
     getMyListById,
     getMyLists,
+    getSavedLists,
     getSavedPrograms,
     removeListItem,
+    saveList,
     saveProgram,
+    unsaveList,
     unsaveProgram,
     updateList,
     updateListItem,
@@ -26,6 +29,9 @@ router.get('/', (req: AuthRequest, res: Response) => { getMe(req, res); });
 router.get('/saved-programs', (req: AuthRequest, res: Response) => { getSavedPrograms(req, res); });
 router.post('/saved-programs', (req: AuthRequest, res: Response) => { saveProgram(req, res); });
 router.delete('/saved-programs/:programId', (req: AuthRequest, res: Response) => { unsaveProgram(req, res); });
+router.get('/saved-lists', (req: AuthRequest, res: Response) => { getSavedLists(req, res); });
+router.post('/saved-lists', (req: AuthRequest, res: Response) => { saveList(req, res); });
+router.delete('/saved-lists/:listId', (req: AuthRequest, res: Response) => { unsaveList(req, res); });
 router.post('/programs/:programId/feedback', (req: AuthRequest, res: Response) => { upsertProgramFeedback(req, res); });
 
 // Lists

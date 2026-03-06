@@ -1,19 +1,25 @@
 import { ArrowRight, Bookmark, Loader2, Plus, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import ListCard from '../components/ListCard'
 import { useListContext } from '../context/ListContext'
 import { getAuthToken, getLists } from '../services/api'
+import { buildCurrentPath, withSearchParams } from '../utils/navigationContext'
 
 export default function MyLists() {
   const navigate = useNavigate()
-  const { userLists, listsLoading, refreshLists, createList } = useListContext()
+  const location = useLocation()
+  const { userLists, savedLists, listsLoading, refreshLists, createList } = useListContext()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [listName, setListName] = useState('')
   const [listDesc, setListDesc] = useState('')
   const [loading, setLoading] = useState(true)
 
   const [featuredLists, setFeaturedLists] = useState([])
+  const savedProgramsPath = withSearchParams('/saved-programs', {
+    returnTo: buildCurrentPath(location),
+    returnLabel: 'Back to My Lists',
+  })
 
   // Auth guard and fetch lists
   useEffect(() => {
@@ -63,7 +69,7 @@ export default function MyLists() {
           </div>
 
           <button
-            onClick={() => navigate('/saved-programs')}
+            onClick={() => navigate(savedProgramsPath)}
             className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-5 text-left shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-4"
           >
             <div className="flex items-center gap-4">
@@ -77,6 +83,27 @@ export default function MyLists() {
             </div>
             <ArrowRight size={18} className="text-slate-400 shrink-0" />
           </button>
+        </div>
+
+        <div className="mb-12">
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-[#011936] mb-1">Saved Lists</h2>
+              <p className="text-slate-500 font-medium text-sm">Public counselor lists you want to revisit later.</p>
+            </div>
+          </div>
+
+          {savedLists.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl px-6 py-5 text-slate-500 shadow-sm">
+              You haven&apos;t saved any public lists yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {savedLists.map((list) => (
+                <ListCard key={list.id} list={list} />
+              ))}
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -103,6 +130,12 @@ export default function MyLists() {
           </div>
         ) : (
           <div className="mb-12">
+            <div className="flex items-end justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-[#011936] mb-1">Created Lists</h2>
+                <p className="text-slate-500 font-medium text-sm">Lists you created for your own planning workflow.</p>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {userLists.map(list => (
                 <ListCard key={list.id} list={list} linkPrefix="/my-lists" />

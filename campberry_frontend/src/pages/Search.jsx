@@ -70,6 +70,7 @@ export default function Search() {
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [ratingFilter, setRatingFilter] = useState('')
+  const [impactFilter, setImpactFilter] = useState('')
   const [isFree, setIsFree] = useState(false)
   const [isSelective, setIsSelective] = useState(false)
   const [internationalFilter, setInternationalFilter] = useState(false)
@@ -99,6 +100,7 @@ export default function Search() {
     setSearchQuery((current) => (current === nextState.searchQuery ? current : nextState.searchQuery))
     setTypeFilter((current) => (current === nextState.typeFilter ? current : nextState.typeFilter))
     setRatingFilter((current) => (current === nextState.ratingFilter ? current : nextState.ratingFilter))
+    setImpactFilter((current) => (current === nextState.impactFilter ? current : nextState.impactFilter))
     setIsFree((current) => (current === nextState.isFree ? current : nextState.isFree))
     setIsSelective((current) => (current === nextState.isSelective ? current : nextState.isSelective))
     setInternationalFilter((current) => (current === nextState.internationalFilter ? current : nextState.internationalFilter))
@@ -118,6 +120,7 @@ export default function Search() {
       searchQuery,
       typeFilter,
       ratingFilter,
+      impactFilter,
       isFree,
       isSelective,
       internationalFilter,
@@ -130,7 +133,7 @@ export default function Search() {
       page,
     })
     if (nextParams.toString() !== searchParams.toString()) setSearchParams(nextParams, { replace: true })
-  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, isFree, isSelective, internationalFilter, creditFilter, oneOnOneFilter, seasonFilter, gradesFilter, interestIds, sortBy, page, searchParams, setSearchParams])
+  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isFree, isSelective, internationalFilter, creditFilter, oneOnOneFilter, seasonFilter, gradesFilter, interestIds, sortBy, page, searchParams, setSearchParams])
 
   useEffect(() => {
     if (!isUrlStateReady) return undefined
@@ -138,6 +141,7 @@ export default function Search() {
       search: searchQuery || undefined,
       type: typeFilter || undefined,
       rating: ratingFilter || undefined,
+      impact: impactFilter || undefined,
       isFree: isFree ? true : undefined,
       isSelective: isSelective ? true : undefined,
       season: seasonFilter || undefined,
@@ -207,7 +211,7 @@ export default function Search() {
       })
 
     return () => controller.abort()
-  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, isFree, isSelective, seasonFilter, gradesFilter, interestIds, internationalFilter, creditFilter, oneOnOneFilter, sortBy, page])
+  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isFree, isSelective, seasonFilter, gradesFilter, interestIds, internationalFilter, creditFilter, oneOnOneFilter, sortBy, page])
 
   useEffect(() => {
     getInterests().then(setAllInterests).catch((error) => console.error('Failed to fetch interests', error))
@@ -226,6 +230,7 @@ export default function Search() {
     setSearchQuery('')
     setTypeFilter('')
     setRatingFilter('')
+    setImpactFilter('')
     setIsFree(false)
     setIsSelective(false)
     setSeasonFilter('')
@@ -306,6 +311,14 @@ export default function Search() {
                 <div className="segmented-control">
                   <button className={`segmented-btn ${ratingFilter === 'MOST_RECOMMENDED' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: ratingFilter === 'MOST_RECOMMENDED' ? 'white' : 'transparent', borderColor: ratingFilter === 'MOST_RECOMMENDED' ? 'var(--border)' : 'transparent' }} onClick={() => { setRatingFilter((prev) => prev === 'MOST_RECOMMENDED' ? '' : 'MOST_RECOMMENDED'); setPage(1) }}>Most<br />Recommended</button>
                   <button className={`segmented-btn ${ratingFilter === 'HIGHLY_RECOMMENDED' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: ratingFilter === 'HIGHLY_RECOMMENDED' ? 'white' : 'transparent', borderColor: ratingFilter === 'HIGHLY_RECOMMENDED' ? 'var(--border)' : 'transparent' }} onClick={() => { setRatingFilter((prev) => prev === 'HIGHLY_RECOMMENDED' ? '' : 'HIGHLY_RECOMMENDED'); setPage(1) }}>Highly<br />Recommended</button>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '20px' }}>
+                <div className="filter-section-title">Impact on Admissions</div>
+                <div className="segmented-control">
+                  <button className={`segmented-btn ${impactFilter === 'MOST_HIGH_IMPACT' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: impactFilter === 'MOST_HIGH_IMPACT' ? 'white' : 'transparent', borderColor: impactFilter === 'MOST_HIGH_IMPACT' ? 'var(--border)' : 'transparent' }} onClick={() => { setImpactFilter((prev) => prev === 'MOST_HIGH_IMPACT' ? '' : 'MOST_HIGH_IMPACT'); setPage(1) }}>Most<br />High Impact</button>
+                  <button className={`segmented-btn ${impactFilter === 'HIGH_IMPACT' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: impactFilter === 'HIGH_IMPACT' ? 'white' : 'transparent', borderColor: impactFilter === 'HIGH_IMPACT' ? 'var(--border)' : 'transparent' }} onClick={() => { setImpactFilter((prev) => prev === 'HIGH_IMPACT' ? '' : 'HIGH_IMPACT'); setPage(1) }}>High<br />Impact</button>
                 </div>
               </div>
 

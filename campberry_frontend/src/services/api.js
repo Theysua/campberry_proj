@@ -213,6 +213,18 @@ export const register = (name, email, password) =>
         body: JSON.stringify({ name, email, password }),
       })
 
+export const requestPasswordReset = (email) =>
+  (requireLiveApi(), apiFetch('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }))
+
+export const resetPassword = (token, password) =>
+  (requireLiveApi(), apiFetch('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
+  }))
+
 export const logoutUser = () =>
   isDemoMode
     ? demoLogout()
@@ -251,6 +263,8 @@ export const getInterests = () =>
 
 export const getSavedPrograms = () =>
   isDemoMode ? demoGetSavedPrograms() : apiFetch('/me/saved-programs')
+export const getSavedLists = () =>
+  (requireLiveApi(), apiFetch('/me/saved-lists'))
 export const saveProgram = (programId) =>
   (isDemoMode
     ? demoSaveProgram(programId)
@@ -264,6 +278,15 @@ export const unsaveProgram = (programId) =>
     : apiFetch(`/me/saved-programs/${programId}`, {
         method: 'DELETE',
       }))
+export const saveList = (listId) =>
+  (requireLiveApi(), apiFetch('/me/saved-lists', {
+    method: 'POST',
+    body: JSON.stringify({ listId }),
+  }))
+export const unsaveList = (listId) =>
+  (requireLiveApi(), apiFetch(`/me/saved-lists/${listId}`, {
+    method: 'DELETE',
+  }))
 
 export const getLists = () =>
   isDemoMode ? Promise.resolve(getDemoLists()) : cachedPublicFetch('/lists', DETAIL_CACHE_TTL_MS)

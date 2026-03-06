@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { LockKeyhole, Scale, Star } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { warmSearchBootstrapCache } from '../services/api'
 import { buildSearchPath } from '../utils/searchUrlState'
 
 export default function Home() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [heroSearch, setHeroSearch] = useState('')
 
   useEffect(() => {
@@ -85,7 +86,7 @@ export default function Home() {
   }, [])
 
   const navigateToSearch = (params = {}) => {
-    navigate(buildSearchPath(params))
+    navigate(buildSearchPath(params, location))
   }
 
   const handleHeroSearch = () => {
@@ -227,7 +228,7 @@ export default function Home() {
             <button
               type="button"
               className="rating-card primary-top reveal-scale"
-              onClick={() => navigateToSearch({ sort: 'Rating' })}
+              onClick={() => navigateToSearch({ impact: 'HIGH_IMPACT' })}
               style={{ transitionDelay: '0.1s', textAlign: 'left', width: '100%', cursor: 'pointer' }}
             >
               <h4>Impact on Admissions</h4>
