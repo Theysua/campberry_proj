@@ -1,18 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronDown, Check, MapPin, LocateFixed } from 'lucide-react'
+import { ChevronDown, Check } from 'lucide-react'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { getInterests, getPrograms } from '../services/api'
 import {
   areArraysEqual,
-  areCoordsEqual,
   buildSearchParamsFromState,
   parseSearchStateFromParams,
   sortToApiValue,
 } from '../utils/searchUrlState'
 import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContext'
 
-const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline', 'Distance']
+const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline']
 
 const getProgramLocationMeta = (program) => {
   const sessions = program.sessions || []
@@ -93,19 +92,12 @@ export default function Search() {
   const [ratingFilter, setRatingFilter] = useState('')
   const [isFree, setIsFree] = useState(false)
   const [isSelective, setIsSelective] = useState(false)
-  const [locationInput, setLocationInput] = useState('')
-  const [onlineOnly, setOnlineOnly] = useState(false)
   const [internationalFilter, setInternationalFilter] = useState(false)
   const [creditFilter, setCreditFilter] = useState(false)
   const [oneOnOneFilter, setOneOnOneFilter] = useState(false)
-  const [includeOnline, setIncludeOnline] = useState(true)
   const [seasonFilter, setSeasonFilter] = useState('')
   const [gradesFilter, setGradesFilter] = useState([])
   const [interestIds, setInterestIds] = useState([])
-  const [radiusMiles, setRadiusMiles] = useState('25')
-  const [currentCoords, setCurrentCoords] = useState(null)
-  const [locationStatus, setLocationStatus] = useState('')
-  const [locationError, setLocationError] = useState('')
 
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -114,8 +106,8 @@ export default function Search() {
   const [allInterests, setAllInterests] = useState([])
   const visiblePageItems = getVisiblePageItems(page, totalPages || 1)
   const backTarget = getBackTarget(location, '/', 'Back to Home')
-  const isLocationSearchWithOnline = Boolean((currentCoords || locationInput.trim()) && includeOnline && !onlineOnly)
-  const resultsHeading = isLocationSearchWithOnline ? `${totalPrograms} Results (nearby + online)` : `${totalPrograms} Results`
+  const pageCacheRef = useRef(new Map())
+  const lastRequestKeyRef = useRef('')
 
   useEffect(() => {
     const nextState = parseSearchStateFromParams(searchParams)
@@ -126,21 +118,14 @@ export default function Search() {
     setRatingFilter((current) => (current === nextState.ratingFilter ? current : nextState.ratingFilter))
     setIsFree((current) => (current === nextState.isFree ? current : nextState.isFree))
     setIsSelective((current) => (current === nextState.isSelective ? current : nextState.isSelective))
-    setLocationInput((current) => (current === nextState.locationInput ? current : nextState.locationInput))
-    setOnlineOnly((current) => (current === nextState.onlineOnly ? current : nextState.onlineOnly))
     setInternationalFilter((current) =>
       current === nextState.internationalFilter ? current : nextState.internationalFilter
     )
     setCreditFilter((current) => (current === nextState.creditFilter ? current : nextState.creditFilter))
     setOneOnOneFilter((current) => (current === nextState.oneOnOneFilter ? current : nextState.oneOnOneFilter))
-    setIncludeOnline((current) => (current === nextState.includeOnline ? current : nextState.includeOnline))
     setSeasonFilter((current) => (current === nextState.seasonFilter ? current : nextState.seasonFilter))
     setGradesFilter((current) => (areArraysEqual(current, nextState.gradesFilter) ? current : nextState.gradesFilter))
     setInterestIds((current) => (areArraysEqual(current, nextState.interestIds) ? current : nextState.interestIds))
-    setRadiusMiles((current) => (current === nextState.radiusMiles ? current : nextState.radiusMiles))
-    setCurrentCoords((current) => (areCoordsEqual(current, nextState.currentCoords) ? current : nextState.currentCoords))
-    setLocationStatus((current) => (current === nextState.locationStatus ? current : nextState.locationStatus))
-    setLocationError((current) => (current === nextState.locationError ? current : nextState.locationError))
     setSortBy((current) => (current === nextState.sortBy ? current : nextState.sortBy))
     setPage((current) => (current === nextState.page ? current : nextState.page))
     setIsUrlStateReady(true)
@@ -157,17 +142,12 @@ export default function Search() {
       ratingFilter,
       isFree,
       isSelective,
-      locationInput,
-      onlineOnly,
       internationalFilter,
       creditFilter,
       oneOnOneFilter,
-      includeOnline,
       seasonFilter,
       gradesFilter,
       interestIds,
-      radiusMiles,
-      currentCoords,
       sortBy,
       page,
     })
@@ -182,17 +162,12 @@ export default function Search() {
     ratingFilter,
     isFree,
     isSelective,
-    locationInput,
-    onlineOnly,
     internationalFilter,
     creditFilter,
     oneOnOneFilter,
-    includeOnline,
     seasonFilter,
     gradesFilter,
     interestIds,
-    radiusMiles,
-    currentCoords,
     sortBy,
     page,
     searchParams,
@@ -204,36 +179,73 @@ export default function Search() {
       return
     }
 
-    getPrograms({
+    const queryParams = {
       search: searchQuery || undefined,
       type: typeFilter || undefined,
       rating: ratingFilter || undefined,
       isFree: isFree ? true : undefined,
       isSelective: isSelective ? true : undefined,
-      locationQuery: locationInput || undefined,
       season: seasonFilter || undefined,
-      onlineOnly: onlineOnly ? true : undefined,
-      includeOnline: includeOnline ? 'true' : 'false',
       grades: gradesFilter.length > 0 ? gradesFilter.join(',') : undefined,
       interests: interestIds.length > 0 ? interestIds.join(',') : undefined,
       international: internationalFilter ? true : undefined,
       collegeCredit: creditFilter ? true : undefined,
       oneOnOne: oneOnOneFilter ? true : undefined,
-      lat: currentCoords?.lat,
-      lng: currentCoords?.lng,
-      radiusMiles: currentCoords ? radiusMiles : undefined,
       sort: sortToApiValue(sortBy),
-      page,
       limit: 10,
-    })
-      .then((res) => {
-        setPrograms(res.data || [])
-        if (res.meta) {
-          setTotalPrograms(res.meta.total || 0)
-          setTotalPages(res.meta.totalPages || 1)
-        }
+    }
+    const requestKey = JSON.stringify(queryParams)
+    lastRequestKeyRef.current = requestKey
+
+    const loadPage = async (pageNumber, { prefetch = false } = {}) => {
+      const cacheEntry = pageCacheRef.current.get(requestKey)
+      if (cacheEntry?.pages?.has(pageNumber)) {
+        return cacheEntry.pages.get(pageNumber)
+      }
+
+      const response = await getPrograms({
+        ...queryParams,
+        page: pageNumber,
       })
-      .catch((error) => console.error('Failed to load programs', error))
+
+      const nextCacheEntry = pageCacheRef.current.get(requestKey) || {
+        meta: response.meta || { total: 0, totalPages: 1 },
+        pages: new Map(),
+      }
+
+      nextCacheEntry.meta = response.meta || nextCacheEntry.meta
+      nextCacheEntry.pages.set(pageNumber, response.data || [])
+      pageCacheRef.current.set(requestKey, nextCacheEntry)
+
+      if (!prefetch && lastRequestKeyRef.current === requestKey) {
+        setPrograms(response.data || [])
+        setTotalPrograms(response.meta?.total || 0)
+        setTotalPages(response.meta?.totalPages || 1)
+      }
+
+      return response.data || []
+    }
+
+    const primeResults = async () => {
+      const cached = pageCacheRef.current.get(requestKey)
+      if (cached?.pages?.has(page)) {
+        setPrograms(cached.pages.get(page) || [])
+        setTotalPrograms(cached.meta?.total || 0)
+        setTotalPages(cached.meta?.totalPages || 1)
+      } else {
+        await loadPage(page)
+      }
+
+      const activeCache = pageCacheRef.current.get(requestKey)
+      const nextPage = page + 1
+      if (activeCache?.meta?.totalPages >= nextPage && !activeCache.pages.has(nextPage)) {
+        loadPage(nextPage, { prefetch: true }).catch((error) => {
+          console.error('Failed to prefetch programs', error)
+        })
+      }
+    }
+
+    primeResults().catch((error) => console.error('Failed to load programs', error))
   }, [
     isUrlStateReady,
     searchQuery,
@@ -241,17 +253,12 @@ export default function Search() {
     ratingFilter,
     isFree,
     isSelective,
-    locationInput,
     seasonFilter,
-    onlineOnly,
-    includeOnline,
     gradesFilter,
     interestIds,
     internationalFilter,
     creditFilter,
     oneOnOneFilter,
-    currentCoords,
-    radiusMiles,
     sortBy,
     page,
   ])
@@ -285,51 +292,14 @@ export default function Search() {
     setRatingFilter('')
     setIsFree(false)
     setIsSelective(false)
-    setLocationInput('')
     setSeasonFilter('')
-    setOnlineOnly(false)
-    setIncludeOnline(true)
     setGradesFilter([])
     setInterestIds([])
     setInternationalFilter(false)
     setCreditFilter(false)
     setOneOnOneFilter(false)
-    setRadiusMiles('25')
-    setCurrentCoords(null)
-    setLocationStatus('')
-    setLocationError('')
     setSortBy('Relevancy')
     setPage(1)
-  }
-
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError('This browser does not support geolocation.')
-      return
-    }
-
-    setLocationError('')
-    setLocationStatus('Detecting your location...')
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCurrentCoords({
-          lat: Number(position.coords.latitude.toFixed(6)),
-          lng: Number(position.coords.longitude.toFixed(6)),
-        })
-        setLocationStatus('Using your current location')
-        setPage(1)
-      },
-      () => {
-        setLocationStatus('')
-        setLocationError('Unable to access your location.')
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 300000,
-      }
-    )
   }
 
   return (
@@ -425,93 +395,6 @@ export default function Search() {
                   >
                     Competition
                   </button>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '20px' }}>
-                <div className="filter-section-title">Location</div>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '11px', color: 'var(--text-secondary)' }}>
-                    <MapPin size={14} />
-                  </span>
-                  <input
-                    className="filter-input"
-                    placeholder="City, state, or zip"
-                    style={{ paddingLeft: '36px' }}
-                    type="text"
-                    value={locationInput}
-                    onChange={(event) => {
-                      setLocationInput(event.target.value)
-                      setCurrentCoords(null)
-                      setLocationStatus('')
-                      setLocationError('')
-                      setPage(1)
-                    }}
-                  />
-                </div>
-                <button
-                  className="location-trigger"
-                  onClick={handleUseCurrentLocation}
-                >
-                  <span className="location-trigger-icon">
-                    <LocateFixed size={14} />
-                  </span>
-                  <span>Use My Location</span>
-                </button>
-                {locationStatus && <div style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '8px' }}>{locationStatus}</div>}
-                {locationError && <div style={{ fontSize: '12px', color: '#892233', marginTop: '8px' }}>{locationError}</div>}
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Radius</span>
-                  <select
-                    className="filter-input"
-                    style={{ width: '90px', padding: '6px 10px', background: 'var(--border-light)', border: 'none', borderRadius: 'var(--radius-sm)' }}
-                    value={radiusMiles}
-                    onChange={(event) => {
-                      setRadiusMiles(event.target.value)
-                      setPage(1)
-                    }}
-                    disabled={!currentCoords}
-                  >
-                    <option value="5">5 mi</option>
-                    <option value="10">10 mi</option>
-                    <option value="25">25 mi</option>
-                    <option value="50">50 mi</option>
-                    <option value="100">100 mi</option>
-                  </select>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px', fontSize: '14px', color: 'var(--text-secondary)' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                    Include Online
-                    <input
-                      checked={includeOnline}
-                      onChange={(event) => {
-                        setIncludeOnline(event.target.checked)
-                        if (!event.target.checked) {
-                          setOnlineOnly(false)
-                        }
-                        setPage(1)
-                      }}
-                      style={{ width: '16px', height: '16px', accentColor: 'var(--accent)' }}
-                      type="checkbox"
-                    />
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                    Online Only
-                    <input
-                      checked={onlineOnly}
-                      onChange={(event) => {
-                        setOnlineOnly(event.target.checked)
-                        if (event.target.checked) {
-                          setIncludeOnline(true)
-                        }
-                        setPage(1)
-                      }}
-                      style={{ width: '16px', height: '16px', accentColor: 'var(--accent)' }}
-                      type="checkbox"
-                    />
-                  </label>
                 </div>
               </div>
 
@@ -621,7 +504,7 @@ export default function Search() {
           <div style={{ flex: '1' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
               <h2 style={{ margin: '0', fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>
-                {resultsHeading}
+                {totalPrograms} Results
               </h2>
 
               <button className="mobile-filter-toggle btn-outline" onClick={() => setIsMobileFilterOpen(true)}>

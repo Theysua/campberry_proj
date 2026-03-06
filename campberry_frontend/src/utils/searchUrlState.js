@@ -2,7 +2,6 @@ const SORT_LABEL_BY_API_VALUE = {
   relevancy: 'Relevancy',
   rating: 'Rating',
   deadline: 'Deadline',
-  distance: 'Distance',
 }
 
 const ALLOWED_RADII = new Set(['5', '10', '25', '50', '100'])
@@ -35,8 +34,6 @@ export const sortToApiValue = (sortBy) => {
       return 'rating'
     case 'Deadline':
       return 'deadline'
-    case 'Distance':
-      return 'distance'
     default:
       return 'relevancy'
   }
@@ -44,27 +41,8 @@ export const sortToApiValue = (sortBy) => {
 
 export const parseSearchStateFromParams = (searchParams) => {
   const searchQuery = (searchParams.get('q') || '').trim()
-  const lat = Number(searchParams.get('lat'))
-  const lng = Number(searchParams.get('lng'))
-  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng)
-  const currentCoords = hasCoords
-    ? {
-        lat: Number(lat.toFixed(6)),
-        lng: Number(lng.toFixed(6)),
-      }
-    : null
-
-  const onlineOnly = parseBooleanParam(searchParams.get('onlineOnly'))
-  const includeOnlineParam = searchParams.get('includeOnline')
-  const includeOnline = onlineOnly
-    ? true
-    : includeOnlineParam === null
-      ? true
-      : parseBooleanParam(includeOnlineParam)
-  const radiusMiles = ALLOWED_RADII.has(searchParams.get('radiusMiles'))
-    ? searchParams.get('radiusMiles')
-    : '25'
   const rawPage = Number.parseInt(searchParams.get('page') || '1', 10)
+  const parsedSort = SORT_LABEL_BY_API_VALUE[searchParams.get('sort')] || 'Relevancy'
 
   return {
     searchInput: searchQuery,
@@ -73,20 +51,21 @@ export const parseSearchStateFromParams = (searchParams) => {
     ratingFilter: searchParams.get('rating') || '',
     isFree: parseBooleanParam(searchParams.get('isFree')),
     isSelective: parseBooleanParam(searchParams.get('isSelective')),
-    locationInput: searchParams.get('location') || '',
-    onlineOnly,
+    locationInput: '',
+    onlineOnly: false,
     internationalFilter: parseBooleanParam(searchParams.get('international')),
     creditFilter: parseBooleanParam(searchParams.get('collegeCredit')),
     oneOnOneFilter: parseBooleanParam(searchParams.get('oneOnOne')),
-    includeOnline,
+    includeOnline: true,
     seasonFilter: searchParams.get('season') || '',
     gradesFilter: parseCsvParam(searchParams.get('grades')),
     interestIds: parseCsvParam(searchParams.get('interests')),
-    radiusMiles,
-    currentCoords,
-    locationStatus: currentCoords ? 'Using a location-based search area' : '',
+    radiusMiles: ALLOWED_RADII.has(searchParams.get('radiusMiles')) ? searchParams.get('radiusMiles') : '25',
+    radiusFilterEnabled: false,
+    currentCoords: null,
+    locationStatus: '',
     locationError: '',
-    sortBy: SORT_LABEL_BY_API_VALUE[searchParams.get('sort')] || 'Relevancy',
+    sortBy: parsedSort === 'Distance' ? 'Relevancy' : parsedSort,
     page: Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1,
   }
 }
@@ -107,6 +86,7 @@ export const buildSearchParamsFromState = ({
   gradesFilter,
   interestIds,
   radiusMiles,
+  radiusFilterEnabled,
   currentCoords,
   sortBy,
   page,
@@ -133,16 +113,6 @@ export const buildSearchParamsFromState = ({
     nextParams.set('isSelective', 'true')
   }
 
-  if (locationInput) {
-    nextParams.set('location', locationInput)
-  }
-
-  if (onlineOnly) {
-    nextParams.set('onlineOnly', 'true')
-  } else if (!includeOnline) {
-    nextParams.set('includeOnline', 'false')
-  }
-
   if (internationalFilter) {
     nextParams.set('international', 'true')
   }
@@ -165,12 +135,6 @@ export const buildSearchParamsFromState = ({
 
   if (interestIds.length > 0) {
     nextParams.set('interests', interestIds.join(','))
-  }
-
-  if (currentCoords) {
-    nextParams.set('lat', String(currentCoords.lat))
-    nextParams.set('lng', String(currentCoords.lng))
-    nextParams.set('radiusMiles', radiusMiles)
   }
 
   const apiSortValue = sortToApiValue(sortBy)
