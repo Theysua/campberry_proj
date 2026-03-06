@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { clearAuthToken, getMe, login as apiLogin, logoutUser, setAuthToken } from '../services/api';
+import { clearAuthToken, getMe, login as apiLogin, loginWithGoogle as apiLoginWithGoogle, logoutUser, setAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -34,6 +34,14 @@ export const AuthProvider = ({ children }) => {
         return res;
     };
 
+    const loginWithGoogle = async (credential) => {
+        const res = await apiLoginWithGoogle(credential);
+        setAuthToken(res.accessToken);
+        setUser(res.user);
+        setIsAuthenticated(true);
+        return res;
+    };
+
     const logout = async () => {
         try {
             await logoutUser();
@@ -46,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, loginWithGoogle, logout }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useListContext } from '../context/ListContext';
 
 export default function AddToListModal({ isOpen, onClose, programId }) {
-    const { userLists, createList, addProgramToList } = useListContext();
+    const { userLists, listsLoading, refreshLists, createList, addProgramToList } = useListContext();
     const navigate = useNavigate();
     const [isCreating, setIsCreating] = useState(false);
     const [newListName, setNewListName] = useState('');
     const [newListDescription, setNewListDescription] = useState('');
     const [successList, setSuccessList] = useState(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (!isOpen) {
@@ -16,25 +17,45 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
             setIsCreating(false);
             setNewListName('');
             setNewListDescription('');
+            setError('');
+            return;
         }
-    }, [isOpen]);
+
+        refreshLists().catch(() => {
+            setError('Failed to load your lists.');
+        });
+    }, [isOpen, refreshLists]);
 
     if (!isOpen) return null;
 
     const handleAddToList = async (listId) => {
-        const updatedList = await addProgramToList(programId, listId);
-        setSuccessList(updatedList || userLists.find(l => l.id === listId) || null);
+        setError('');
+        try {
+            const updatedList = await addProgramToList(programId, listId);
+            setSuccessList(updatedList || userLists.find((list) => list.id === listId) || null);
+        } catch (e) {
+            console.error(e);
+            setError('Failed to add this program to the selected list.');
+        }
     };
 
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
-        if (newListName.trim()) {
+        if (!newListName.trim()) {
+            return;
+        }
+
+        setError('');
+        try {
             const newList = await createList(newListName.trim(), newListDescription.trim());
             const updatedList = await addProgramToList(programId, newList.id);
             setSuccessList(updatedList || newList);
             setNewListName('');
             setNewListDescription('');
             setIsCreating(false);
+        } catch (e) {
+            console.error(e);
+            setError('Failed to create a new list.');
         }
     };
 
@@ -49,7 +70,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
             {successList ? (
                 <div className="card" style={{ width: '100%', maxWidth: '400px', margin: '20px', position: 'relative', textAlign: 'center', padding: '40px 24px' }}>
                     <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>✓</div>
                     <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px', color: 'var(--primary)', fontWeight: '800' }}>Added to List!</h2>
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '15px' }}>
                         Successfully saved to <strong>{successList.title}</strong>.
@@ -82,19 +103,25 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                         overflow-y: auto;
                         overflow-x: hidden;
                         margin-bottom: 24px;
-                        padding: 4px; /* padding for subtle shadow */
+                        padding: 4px;
                         margin-left: -4px;
                         margin-right: -4px;
                     }
                 `}</style>
                     <div className="modal-list-container">
-                        {userLists.map(list => {
-                            const isAdded = list.items?.some(item => item.program_id === programId);
+                        {listsLoading && (
+                            <div style={{ padding: '18px 4px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                                Loading your lists...
+                            </div>
+                        )}
+
+                        {!listsLoading && userLists.map((list) => {
+                            const isAdded = list.items?.some((item) => item.program_id === programId);
                             return (
                                 <button
                                     key={list.id}
                                     onClick={() => !isAdded && handleAddToList(list.id)}
-                                    className={isAdded ? "btn-outline modal-list-btn" : "btn modal-list-btn"}
+                                    className={isAdded ? 'btn-outline modal-list-btn' : 'btn modal-list-btn'}
                                     style={{
                                         width: '100%',
                                         boxSizing: 'border-box',
@@ -106,11 +133,21 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                                     disabled={isAdded}
                                 >
                                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', marginRight: '8px' }}>{list.title}</span>
-                                    <span style={{ flexShrink: 0 }}>{isAdded ? '\u2713 Added' : '+ Add'}</span>
+                                    <span style={{ flexShrink: 0 }}>{isAdded ? '✓ Added' : '+ Add'}</span>
                                 </button>
                             );
                         })}
+
+                        {!listsLoading && userLists.length === 0 && !isCreating && (
+                            <div style={{ padding: '18px 4px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                                You do not have any personal lists yet.
+                            </div>
+                        )}
                     </div>
+
+                    {error && (
+                        <div style={{ marginBottom: '16px', color: '#892233', fontSize: '13px' }}>{error}</div>
+                    )}
 
                     {isCreating ? (
                         <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
@@ -119,7 +156,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                                 placeholder="New list name..."
                                 className="form-input"
                                 value={newListName}
-                                onChange={e => setNewListName(e.target.value)}
+                                onChange={(e) => setNewListName(e.target.value)}
                                 autoFocus
                                 required
                             />
@@ -127,7 +164,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                                 placeholder="Description (optional)..."
                                 className="form-input"
                                 value={newListDescription}
-                                onChange={e => setNewListDescription(e.target.value)}
+                                onChange={(e) => setNewListDescription(e.target.value)}
                                 rows={2}
                                 style={{ resize: 'vertical' }}
                             />
@@ -138,7 +175,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                         </form>
                     ) : (
                         <button className="btn-outline" style={{ width: '100%', justifyContent: 'center', borderStyle: 'dashed' }} onClick={() => setIsCreating(true)}>
-                            ＋ Create New List
+                            Create New List
                         </button>
                     )}
                 </div>

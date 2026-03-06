@@ -1,4 +1,19 @@
 import React, { useEffect, useState } from 'react'
+import {
+  BriefcaseBusiness,
+  Code2,
+  Flame,
+  Globe2,
+  LockKeyhole,
+  Microscope,
+  Music4,
+  Palette,
+  Scale,
+  Star,
+  Trophy,
+  University,
+  PenTool,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { buildSearchPath } from '../utils/searchUrlState'
 
@@ -67,6 +82,19 @@ export default function Home() {
     navigateToSearch({ q: heroSearch.trim() || undefined })
   }
 
+  const topSearchItems = [
+    { label: 'Summer', icon: Flame, params: { season: 'Summer' } },
+    { label: 'STEM', icon: Microscope, params: { q: 'STEM' } },
+    { label: 'Business', icon: BriefcaseBusiness, params: { q: 'Business' } },
+    { label: 'Coding', icon: Code2, params: { q: 'Coding' } },
+    { label: 'Writing', icon: PenTool, params: { q: 'Writing' } },
+    { label: 'Arts', icon: Palette, params: { q: 'Arts' } },
+    { label: 'Research', icon: University, params: { q: 'Research' } },
+    { label: 'Sports', icon: Trophy, params: { q: 'Sports' } },
+    { label: 'Music', icon: Music4, params: { q: 'Music' } },
+    { label: 'Hong Kong', icon: Globe2, params: { location: 'Hong Kong' } },
+  ]
+
   return (
     <>
       <div className="page active" id="page-home">
@@ -104,16 +132,12 @@ export default function Home() {
           </div>
 
           <div className="top-searches animate-in delay-4">
-            <span className="top-search-pill" onClick={() => navigateToSearch({ season: 'Summer' })}>Summer</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'STEM' })}>STEM</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Business' })}>Business</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Coding' })}>Coding</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Writing' })}>Writing</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Arts' })}>Arts</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Research' })}>Research</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Sports' })}>Sports</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ q: 'Music' })}>Music</span>
-            <span className="top-search-pill" onClick={() => navigateToSearch({ location: 'Hong Kong' })}>Hong Kong</span>
+            {topSearchItems.map(({ label, icon: Icon, params }) => (
+              <span key={label} className="top-search-pill" onClick={() => navigateToSearch(params)}>
+                <Icon size={16} strokeWidth={2.1} />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -187,15 +211,21 @@ export default function Home() {
           <div className="section-title reveal" style={{ marginBottom: '24px' }}>Why Campberry?</div>
           <div className="feature-grid">
             <div className="feature-card reveal-scale" style={{ background: 'var(--mint)', borderColor: 'var(--mint-dark)' }}>
-              <div className="icon">Privacy</div>
+              <div className="icon" aria-hidden="true">
+                <LockKeyhole size={32} strokeWidth={2.25} />
+              </div>
               <div className="label" style={{ color: 'var(--primary)' }}>100% Data Privacy</div>
             </div>
             <div className="feature-card reveal-scale" style={{ background: 'var(--mint)', borderColor: 'var(--mint-dark)', transitionDelay: '0.1s' }}>
-              <div className="icon">Fair</div>
+              <div className="icon" aria-hidden="true">
+                <Scale size={32} strokeWidth={2.25} />
+              </div>
               <div className="label" style={{ color: 'var(--primary)' }}>Unbiased Algorithms</div>
             </div>
             <div className="feature-card reveal-scale" style={{ background: '#fffde6', borderColor: '#fae09c', transitionDelay: '0.2s' }}>
-              <div className="icon">Star</div>
+              <div className="icon" aria-hidden="true">
+                <Star size={32} strokeWidth={2.25} fill="#facc15" color="#d4a017" />
+              </div>
               <div className="label" style={{ color: '#92400e' }}>Reviews &amp; Rankings</div>
               <div style={{ fontSize: '11px', color: '#92400e', marginTop: '5px' }}>by experts and parents</div>
             </div>

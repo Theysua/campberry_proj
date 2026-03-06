@@ -1,15 +1,16 @@
-import { Loader2, Plus, Sparkles, X } from 'lucide-react'
+import { ArrowRight, Bookmark, Loader2, Plus, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ListCard from '../components/ListCard'
-import { createList, getAuthToken, getMyLists, getLists } from '../services/api'
+import { useListContext } from '../context/ListContext'
+import { getAuthToken, getLists } from '../services/api'
 
 export default function MyLists() {
   const navigate = useNavigate()
+  const { userLists, listsLoading, refreshLists, createList } = useListContext()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [listName, setListName] = useState('')
   const [listDesc, setListDesc] = useState('')
-  const [myLists, setMyLists] = useState([])
   const [loading, setLoading] = useState(true)
 
   const [featuredLists, setFeaturedLists] = useState([])
@@ -23,11 +24,10 @@ export default function MyLists() {
         return
       }
       try {
-        const [userLists, publicLists] = await Promise.all([
-          getMyLists(),
-          getLists() // Import getLists from api
+        const [, publicLists] = await Promise.all([
+          refreshLists(),
+          getLists()
         ]);
-        setMyLists(userLists)
         setFeaturedLists(publicLists.slice(0, 4)) // Take up to 4 public lists
       } catch (err) {
         console.error("Failed to load lists:", err)
@@ -36,7 +36,7 @@ export default function MyLists() {
       }
     }
     checkAuthAndFetch()
-  }, [navigate])
+  }, [navigate, refreshLists])
 
   const handleCreateList = async () => {
     try {
@@ -54,12 +54,37 @@ export default function MyLists() {
       <div className="container max-w-5xl pt-10 px-6">
         <h1 className="text-3xl font-bold text-[#011936] mb-6">My Lists</h1>
 
+        <div className="mb-10">
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-[#011936] mb-1">Saved Programs</h2>
+              <p className="text-slate-500 font-medium text-sm">Programs you bookmarked for quick comparison and follow-up.</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate('/saved-programs')}
+            className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-5 text-left shadow-sm hover:shadow-md transition-shadow flex items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#fff7ed] text-[#892233] flex items-center justify-center">
+                <Bookmark size={20} />
+              </div>
+              <div>
+                <div className="font-bold text-[#011936]">Open Saved Programs</div>
+                <div className="text-sm text-slate-500">Review the programs you saved from search results and detail pages.</div>
+              </div>
+            </div>
+            <ArrowRight size={18} className="text-slate-400 shrink-0" />
+          </button>
+        </div>
+
         {loading ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm mb-12 flex flex-col items-center">
             <Loader2 className="animate-spin text-[#892233]" size={32} />
             <p className="mt-4 text-slate-500 font-medium">Loading your lists...</p>
           </div>
-        ) : myLists.length === 0 ? (
+        ) : userLists.length === 0 ? (
           <div>
             {/* Empty State Card */}
             <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm mb-12 flex flex-col items-center">
@@ -79,7 +104,7 @@ export default function MyLists() {
         ) : (
           <div className="mb-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {myLists.map(list => (
+              {userLists.map(list => (
                 <ListCard key={list.id} list={list} linkPrefix="/my-lists" />
               ))}
               <button

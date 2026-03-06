@@ -14,6 +14,7 @@ import Mission from './pages/Mission'
 import MyListDetail from './pages/MyListDetail'
 import MyLists from './pages/MyLists'
 import ProgramDetail from './pages/ProgramDetail'
+import SavedPrograms from './pages/SavedPrograms'
 import Search from './pages/Search'
 import VerifyEmail from './pages/VerifyEmail'
 import Compare from './pages/Compare'
@@ -46,6 +47,9 @@ function App() {
                 <Route path="/lists/:id" element={<ListDetail />} />
                 <Route path="/my-lists" element={<MyLists />} />
                 <Route path="/my-lists/:id" element={<MyListDetail />} />
+                <Route path="/account/lists" element={<MyLists />} />
+                <Route path="/account/lists/:id" element={<MyListDetail />} />
+                <Route path="/saved-programs" element={<SavedPrograms />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/mission" element={<Mission />} />
                 <Route path="/terms-of-service" element={<LegalPage type="terms" />} />

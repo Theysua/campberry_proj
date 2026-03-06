@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useState, useEffect } from 'react';
 import { getSavedPrograms, saveProgram, unsaveProgram, getMyLists, createList as apiCreateList, addListItem } from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -9,6 +9,26 @@ export const ListProvider = ({ children }) => {
     const [userLists, setUserLists] = useState([]);
     const [savedPrograms, setSavedPrograms] = useState(new Set());
     const [compareList, setCompareList] = useState([]);
+    const [listsLoading, setListsLoading] = useState(false);
+
+    const refreshLists = useCallback(async () => {
+        if (!isAuthenticated) {
+            setUserLists([]);
+            return [];
+        }
+
+        setListsLoading(true);
+        try {
+            const lists = await getMyLists();
+            setUserLists(lists);
+            return lists;
+        } catch (e) {
+            console.error('Failed to refresh user lists', e);
+            throw e;
+        } finally {
+            setListsLoading(false);
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -17,19 +37,18 @@ export const ListProvider = ({ children }) => {
                 setSavedPrograms(new Set(programIds));
             }).catch(console.error);
 
-            getMyLists().then(res => {
-                setUserLists(res);
-            }).catch(console.error);
+            refreshLists().catch(() => {});
         } else {
             setSavedPrograms(new Set());
             setUserLists([]);
+            setListsLoading(false);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, refreshLists]);
 
     const createList = async (name, description = '') => {
         try {
             const newList = await apiCreateList(name, description);
-            setUserLists(prev => [newList, ...prev]);
+            await refreshLists();
             return newList;
         } catch (e) {
             console.error(e);
@@ -40,8 +59,7 @@ export const ListProvider = ({ children }) => {
     const addProgramToList = async (programId, listId) => {
         try {
             await addListItem(listId, programId);
-            const lists = await getMyLists();
-            setUserLists(lists);
+            const lists = await refreshLists();
             return lists.find(list => list.id === listId) || null;
         } catch (e) {
             console.error(e);
@@ -95,7 +113,9 @@ export const ListProvider = ({ children }) => {
     return (
         <ListContext.Provider value={{
             userLists,
+            listsLoading,
             savedPrograms,
+            refreshLists,
             createList,
             addProgramToList,
             toggleSaveProgram,

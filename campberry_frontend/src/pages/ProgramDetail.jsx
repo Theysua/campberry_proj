@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { useListContext } from '../context/ListContext'
 import AddToListModal from '../components/AddToListModal'
@@ -37,6 +38,7 @@ export default function ProgramDetail() {
   useScrollReveal()
 
   const { isProgramSaved, toggleSaveProgram } = useListContext()
+  const { isAuthenticated } = useAuth()
   const [addListOpen, setAddListOpen] = useState(false)
   const [program, setProgram] = useState(null)
   const [copied, setCopied] = useState(false)
@@ -59,6 +61,26 @@ export default function ProgramDetail() {
 
   const isSaved = isProgramSaved(id)
   const expertGuidance = getExpertGuidance(program)
+  const feedbackSummary = program?.feedback_summary || { averageRating: null, ratingCount: 0, commentCount: 0 }
+  const feedbackPreview = Array.isArray(program?.feedback_preview) ? program.feedback_preview : []
+
+  const handleSave = () => {
+    if (!isAuthenticated) {
+      navigate(`/auth?redirect=${encodeURIComponent(`/program/${id}`)}`)
+      return
+    }
+
+    toggleSaveProgram(id)
+  }
+
+  const handleOpenAddList = () => {
+    if (!isAuthenticated) {
+      navigate(`/auth?redirect=${encodeURIComponent(`/program/${id}`)}`)
+      return
+    }
+
+    setAddListOpen(true)
+  }
 
   if (!program) {
     return <div className="page" style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
@@ -93,10 +115,10 @@ export default function ProgramDetail() {
                   <button onClick={handleShare} className="btn-outline">
                     {copied ? 'Copied!' : 'Share'}
                   </button>
-                  <button onClick={() => toggleSaveProgram(id)} className="btn-outline" style={{ color: isSaved ? 'var(--orange)' : 'var(--text)' }}>
+                  <button onClick={handleSave} className="btn-outline" style={{ color: isSaved ? 'var(--orange)' : 'var(--text)' }}>
                     {isSaved ? 'Saved' : 'Save'}
                   </button>
-                  <button className="btn" onClick={() => setAddListOpen(true)}>Add to List</button>
+                  <button className="btn" onClick={handleOpenAddList}>Add to List</button>
                 </div>
               </div>
               <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -174,6 +196,28 @@ export default function ProgramDetail() {
                   </div>
                 ))}
               </div>
+
+              {(feedbackSummary.ratingCount > 0 || feedbackPreview.length > 0) && (
+                <div className="card" style={{ padding: '24px' }}>
+                  <div style={{ margin: '0 0 12px 0', color: 'var(--primary)', fontSize: '16px', fontWeight: '700' }}>Community Feedback</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+                    {feedbackSummary.averageRating ? `${feedbackSummary.averageRating}/5 average rating` : 'Feedback available'}
+                    {` · ${feedbackSummary.ratingCount} ratings · ${feedbackSummary.commentCount} comments`}
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {feedbackPreview.map((review) => (
+                      <div key={review.id} style={{ border: '1px solid var(--border-light)', borderRadius: '16px', padding: '14px', background: '#f8fafc' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px', fontSize: '13px' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--primary)' }}>{review.user?.name || 'Campberry Member'}</span>
+                          <span style={{ color: 'var(--text-secondary)' }}>{review.rating}/5</span>
+                        </div>
+                        <div style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>{review.comment}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

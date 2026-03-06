@@ -1,6 +1,7 @@
 import { ArrowRightLeft, Calendar, Check, Copy, MapPin, Monitor, Plus, Share, Star, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { useListContext } from '../context/ListContext'
 import AddToListModal from './AddToListModal'
 import Badge from './Badge'
@@ -107,6 +108,7 @@ export default function ProgramCard({ program }) {
   const shareRef = useRef(null)
 
   const { toggleSaveProgram, isProgramSaved, toggleCompare, compareList } = useListContext()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
   const id = program.id
@@ -179,11 +181,21 @@ export default function ProgramCard({ program }) {
 
   const handleOpenAddList = (event) => {
     event.stopPropagation()
+    if (!isAuthenticated) {
+      const redirect = encodeURIComponent(window.location.hash?.slice(1) || '/search')
+      navigate(`/auth?redirect=${redirect}`)
+      return
+    }
     setAddListOpen(true)
   }
 
   const handleSaveProgram = (event) => {
     event.stopPropagation()
+    if (!isAuthenticated) {
+      const redirect = encodeURIComponent(window.location.hash?.slice(1) || '/search')
+      navigate(`/auth?redirect=${redirect}`)
+      return
+    }
     toggleSaveProgram(id)
   }
 

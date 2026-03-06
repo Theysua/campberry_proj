@@ -38,9 +38,11 @@ export default function Navbar() {
         </div>
         <div className="nav-links">
           <button onClick={() => navigate('/search')}>Find</button>
+          <button onClick={() => navigate('/lists')}>Lists</button>
           <button onClick={() => navigate('/my-lists')}>My Lists</button>
           {isAuthenticated ? (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginLeft: '16px' }}>
+              <button onClick={() => navigate('/saved-programs')}>Saved</button>
               <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--primary)', cursor: 'default' }}>
                 <span style={{ background: 'var(--mint)', padding: '6px 12px', borderRadius: 'var(--radius-pill)', color: 'var(--primary)', marginRight: '6px', fontSize: '12px' }}>
                   {user?.name.charAt(0)}

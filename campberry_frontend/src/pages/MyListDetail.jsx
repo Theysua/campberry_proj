@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
 import { getMyListById, updateList, deleteList, removeListItem, updateListItem } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, Edit2, Check, X, ArrowUp, ArrowDown, ArrowLeft, Briefcase, Trophy } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ArrowUp, ArrowDown, ArrowLeft, Briefcase, Trophy, Plus } from 'lucide-react';
 
 export default function MyListDetail() {
   const { id } = useParams();
@@ -157,6 +157,13 @@ export default function MyListDetail() {
                   <span className="text-[#892233] bg-red-50 px-2 py-0.5 rounded-md">{list.items?.length || 0}</span>
                 </div>
 
+                <button
+                  onClick={() => navigate('/search')}
+                  className="w-full mt-4 py-2.5 rounded-lg text-sm font-bold text-[#011936] border border-slate-200 hover:border-[#892233]/20 hover:bg-[#f8fafc] transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus size={16} /> Add Programs
+                </button>
+
                 {isOwner && (
                   <button onClick={handleDeleteList} className="w-full mt-6 py-2.5 rounded-lg text-sm font-bold text-red-500 border border-transparent hover:border-red-100 hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
                     <Trash2 size={16} /> Delete List
@@ -167,55 +174,85 @@ export default function MyListDetail() {
           </div>
 
           <div className="flex-1 min-w-0 w-full">
-            <h2 className="text-xl font-bold text-[#011936] mb-6">Programs in this list</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <h2 className="text-xl font-bold text-[#011936]">Programs in this list</h2>
+              <button
+                onClick={() => navigate('/search')}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#011936] text-white hover:bg-slate-800 px-5 py-2.5 text-sm font-bold shadow-sm transition-colors"
+              >
+                <Plus size={16} /> Add Programs
+              </button>
+            </div>
 
             <div className="flex flex-col gap-4">
               {list.items && list.items.length > 0 ? list.items.map((item, index) => (
-                <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 relative group transition-shadow hover:shadow-md cursor-default">
-                  {isOwner && (
-                    <div className="absolute top-4 right-4 flex flex-col items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                      <button disabled={index === 0} onClick={() => handleMove(index, -1)} className="p-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed">
-                        <ArrowUp size={14} />
-                      </button>
-                      <button disabled={index === list.items.length - 1} onClick={() => handleMove(index, 1)} className="p-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed">
-                        <ArrowDown size={14} />
-                      </button>
-                      <button onClick={() => handleRemoveItem(item.id)} className="p-1 rounded-md bg-red-50 hover:bg-red-100 text-red-500 mt-2" title="Remove">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex gap-4 items-center flex-1 cursor-pointer pr-8" onClick={() => navigate(`/program/${item.program_id}`)}>
-                    <div className="text-2xl font-black text-[#f1f5f9] select-none w-8 text-right">#{index + 1}</div>
-                    <div className="w-14 h-14 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center shrink-0 border border-slate-200 text-2xl">
-                      {item.program?.type === 'COMPETITION' ? <Trophy size={22} className="text-slate-500" /> : <Briefcase size={22} className="text-slate-500" />}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#011936] hover:text-[#892233] transition-colors line-clamp-2 pr-4">{item.program?.name}</h3>
-                      <div className="text-sm font-medium text-slate-500 mt-0.5">{item.program?.provider?.name || 'Unknown Provider'}</div>
-                    </div>
-                  </div>
-
-                  <div className="w-full md:w-5/12 bg-slate-50 rounded-xl p-4 border border-slate-100 relative mt-4 md:mt-0 md:min-h-[100px] flex flex-col justify-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Counselor&apos;s Note</div>
-
-                    {editingItemId === item.id ? (
-                      <div className="flex flex-col gap-2 relative z-20">
-                        <textarea className="w-full text-sm p-2 border border-[#892233] focus:ring-1 focus:ring-[#892233] outline-none bg-white rounded-lg h-24 resize-none font-medium text-[#011936]" autoFocus placeholder="Add your reason why this program is a good fit..." value={editCommentary} onChange={(event) => setEditCommentary(event.target.value)} />
-                        <div className="flex justify-end gap-2 mt-1">
-                          <button onClick={() => setEditingItemId(null)} className="text-slate-400 hover:text-slate-600 font-bold text-xs px-2 py-1">Cancel</button>
-                          <button onClick={() => handleSaveCommentary(item)} className="text-white hover:bg-slate-800 bg-slate-900 rounded-md font-bold text-xs px-4 py-1.5 shadow-sm">Save Note</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-[#011936] font-medium leading-relaxed group/comment relative pr-6">
-                        {item.author_commentary ? `"${item.author_commentary}"` : <span className="text-slate-400 italic font-normal">No notes added.</span>}
-                        {isOwner && (
-                          <button onClick={() => startEditCommentary(item)} className="absolute top-0 right-0 -mr-2 text-slate-300 hover:text-[#892233] p-1 opacity-100 md:opacity-0 group-hover/comment:opacity-100 transition-opacity bg-white/50 rounded-md">
-                            <Edit2 size={12} />
-                          </button>
+                <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative group transition-shadow hover:shadow-md cursor-default">
+                  <div className="flex flex-col xl:flex-row gap-5 xl:items-stretch">
+                    <div className="flex gap-4 items-center flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/program/${item.program_id}`)}>
+                      <div className="text-2xl font-black text-[#f1f5f9] select-none w-8 text-right shrink-0">#{index + 1}</div>
+                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
+                        {item.program?.logo_url ? (
+                          <img
+                            src={item.program.logo_url}
+                            alt={`${item.program?.name || 'Program'} logo`}
+                            className="w-full h-full object-contain p-2"
+                          />
+                        ) : item.program?.type === 'COMPETITION' ? (
+                          <Trophy size={24} className="text-slate-500" />
+                        ) : (
+                          <Briefcase size={24} className="text-slate-500" />
                         )}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-bold text-[#011936] hover:text-[#892233] transition-colors line-clamp-2">{item.program?.name}</h3>
+                        <div className="text-sm font-medium text-slate-500 mt-0.5 line-clamp-1">{item.program?.provider?.name || 'Unknown Provider'}</div>
+                      </div>
+                    </div>
+
+                    <div className="w-full xl:w-[340px] bg-slate-50 rounded-xl p-4 border border-slate-100 relative flex flex-col justify-center">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">My Note</div>
+
+                      {editingItemId === item.id ? (
+                        <div className="flex flex-col gap-2">
+                          <textarea
+                            className="w-full text-sm p-2 border border-[#892233] focus:ring-1 focus:ring-[#892233] outline-none bg-white rounded-lg h-24 resize-none font-medium text-[#011936]"
+                            autoFocus
+                            placeholder="Add your own note about why this program matters to you..."
+                            value={editCommentary}
+                            onChange={(event) => setEditCommentary(event.target.value)}
+                          />
+                          <div className="flex justify-end gap-2 mt-1">
+                            <button onClick={() => setEditingItemId(null)} className="text-slate-400 hover:text-slate-600 font-bold text-xs px-2 py-1">Cancel</button>
+                            <button onClick={() => handleSaveCommentary(item)} className="text-white hover:bg-slate-800 bg-slate-900 rounded-md font-bold text-xs px-4 py-1.5 shadow-sm">Save Note</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-[#011936] font-medium leading-relaxed relative pr-8">
+                          {item.author_commentary ? item.author_commentary : <span className="text-slate-400 italic font-normal">No personal notes yet.</span>}
+                          {isOwner && (
+                            <button
+                              onClick={() => startEditCommentary(item)}
+                              className="absolute top-0 right-0 text-slate-300 hover:text-[#892233] p-1 transition-colors bg-white/70 rounded-md"
+                              title={item.author_commentary ? 'Edit note' : 'Add note'}
+                            >
+                              <Edit2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {isOwner && (
+                      <div className="xl:w-[52px] shrink-0 flex xl:flex-col items-center justify-center gap-2 xl:border-l xl:border-slate-100 xl:pl-4">
+                        <button disabled={index === 0} onClick={() => handleMove(index, -1)} className="p-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <ArrowUp size={14} />
+                        </button>
+                        <button disabled={index === list.items.length - 1} onClick={() => handleMove(index, 1)} className="p-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed">
+                        <ArrowDown size={14} />
+                        </button>
+                        <button onClick={() => handleRemoveItem(item.id)} className="p-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-500 xl:mt-2" title="Remove">
+                        <Trash2 size={14} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -223,7 +260,9 @@ export default function MyListDetail() {
               )) : (
                 <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-16 flex flex-col items-center justify-center text-center mt-2">
                   <div className="text-slate-400 mb-4 font-bold text-lg">No programs tracked in this list</div>
-                  <button onClick={() => navigate('/search')} className="bg-[#011936] text-white hover:bg-slate-800 px-6 py-2.5 rounded-full font-bold text-sm shadow-sm transition-colors">Explore Programs</button>
+                  <button onClick={() => navigate('/search')} className="bg-[#011936] text-white hover:bg-slate-800 px-6 py-2.5 rounded-full font-bold text-sm shadow-sm transition-colors inline-flex items-center gap-2">
+                    <Plus size={16} /> Add Programs
+                  </button>
                 </div>
               )}
             </div>

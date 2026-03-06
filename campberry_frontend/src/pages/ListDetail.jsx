@@ -70,6 +70,9 @@ export default function ListDetail() {
     )
   }
 
+  const feedbackSummary = list.feedback_summary || { averageRating: null, ratingCount: 0, commentCount: 0 }
+  const feedbackPreview = Array.isArray(list.feedback_preview) ? list.feedback_preview : []
+
   return (
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in relative z-0">
       <div className="container max-w-3xl pt-8">
@@ -88,15 +91,45 @@ export default function ListDetail() {
             <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded flex items-center justify-center font-bold text-xs uppercase scale-110">
               {list.author?.name?.substring(0, 2) || 'SC'}
             </div>
-            From <span className="font-semibold text-blue-600 cursor-pointer">{list.author?.name || 'Unknown Author'}</span>
+            From <span className="font-semibold text-blue-600">{list.author?.name || 'Unknown Author'}</span>
           </div>
           <div className="text-xs text-slate-400 mb-5">
             Updated {new Date(list.updated_at).toLocaleDateString()}
           </div>
 
           {list.description && (
-            <div className="text-slate-700 leading-relaxed bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-2">
+            <div className="text-slate-700 leading-relaxed whitespace-pre-line bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-2">
               {list.description}
+            </div>
+          )}
+
+          {(feedbackSummary.ratingCount > 0 || feedbackPreview.length > 0) && (
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-4">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#892233] mb-1">Community Feedback</div>
+                  <h2 className="text-lg font-bold text-[#011936]">
+                    {feedbackSummary.averageRating ? `${feedbackSummary.averageRating}/5 average rating` : 'Feedback available'}
+                  </h2>
+                </div>
+                <div className="text-sm text-slate-500">
+                  {feedbackSummary.ratingCount} ratings · {feedbackSummary.commentCount} comments
+                </div>
+              </div>
+
+              {feedbackPreview.length > 0 && (
+                <div className="space-y-3">
+                  {feedbackPreview.map((review) => (
+                    <div key={review.id} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <div className="flex items-center justify-between gap-3 text-sm mb-1">
+                        <span className="font-semibold text-[#011936]">{review.user?.name || 'Campberry Member'}</span>
+                        <span className="text-slate-500">{review.rating}/5</span>
+                      </div>
+                      <div className="text-sm text-slate-600 leading-relaxed">{review.comment}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import { ArrowLeft, Loader2, MousePointerClick, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ProgramCard from '../components/ProgramCard'
-import { getSavedPrograms } from '../services/api'
+import { getAuthToken, getSavedPrograms } from '../services/api'
 
 export default function SavedPrograms() {
   const navigate = useNavigate()
@@ -11,11 +11,15 @@ export default function SavedPrograms() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (!getAuthToken()) {
+      navigate('/auth?redirect=/saved-programs', { replace: true })
+      return
+    }
+
     const fetchSavedPrograms = async () => {
       try {
         const data = await getSavedPrograms()
-        // Format to match ProgramCard trpcData expectation
-        const formatted = data.map(item => ({
+        const formatted = data.map((item) => ({
           ...item.program,
           trpcData: {
             ...item.program,
@@ -30,8 +34,9 @@ export default function SavedPrograms() {
         setLoading(false)
       }
     }
+
     fetchSavedPrograms()
-  }, [])
+  }, [navigate])
 
   if (loading) {
     return (
@@ -53,15 +58,14 @@ export default function SavedPrograms() {
   return (
     <div className="bg-[#f4f7f9] min-h-screen pb-20 animate-fade-in relative z-0">
       <div className="container max-w-6xl pt-8 px-6">
-        
         <div className="mb-8">
           <button onClick={() => navigate('/my-lists')} className="flex items-center gap-2 text-[#892233] hover:text-[#780000] font-bold text-sm transition-colors mb-6">
             <ArrowLeft size={16} /> My Lists
           </button>
-          
+
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold text-[#011936] leading-tight flex items-center gap-3">
-              <span className="text-[#892233]">☆</span> Saved Programs
+              <span className="text-[#892233]">★</span> Saved Programs
             </h1>
           </div>
           <p className="text-slate-500 font-medium">Programs you have favorited for quick access.</p>
@@ -75,7 +79,7 @@ export default function SavedPrograms() {
               </div>
               <h3 className="text-lg font-bold text-[#011936] mb-2">No saved programs yet</h3>
               <p className="text-slate-500 text-sm font-medium mb-6 max-w-sm mx-auto">
-                Click the "Save" button on any program to add it to this list.
+                Click the &quot;Save&quot; button on any program to add it to this list.
               </p>
               <Link to="/search" className="btn primary px-6 shadow-md hover:shadow-lg transition-all animate-fade-in hover:-translate-y-0.5 font-bold flex items-center gap-2">
                 <Search size={16} /> Look for Programs
@@ -91,7 +95,6 @@ export default function SavedPrograms() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   )

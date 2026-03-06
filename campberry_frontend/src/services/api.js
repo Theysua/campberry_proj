@@ -91,6 +91,12 @@ export const login = (email, password) =>
     body: JSON.stringify({ email, password }),
   })
 
+export const loginWithGoogle = (credential) =>
+  apiFetch('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ credential }),
+  })
+
 export const register = (name, email, password) =>
   apiFetch('/auth/register', {
     method: 'POST',
@@ -113,6 +119,12 @@ export const getPrograms = (params = {}) => {
 }
 
 export const getProgramById = (id) => apiFetch(`/programs/${id}`)
+export const getProgramFeedback = (id) => apiFetch(`/programs/${id}/feedback`)
+export const submitProgramFeedback = (programId, rating, comment = '') =>
+  apiFetch(`/me/programs/${programId}/feedback`, {
+    method: 'POST',
+    body: JSON.stringify({ rating, comment }),
+  })
 export const getInterests = () => apiFetch('/interests')
 
 export const getSavedPrograms = () => apiFetch('/me/saved-programs')
@@ -128,6 +140,12 @@ export const unsaveProgram = (programId) =>
 
 export const getLists = () => apiFetch('/lists')
 export const getListById = (id) => apiFetch(`/lists/${id}`)
+export const getListFeedback = (id) => apiFetch(`/lists/${id}/feedback`)
+export const submitListFeedback = (listId, rating, comment = '') =>
+  apiFetch(`/me/lists/${listId}/feedback`, {
+    method: 'POST',
+    body: JSON.stringify({ rating, comment }),
+  })
 export const getMyLists = () => apiFetch('/me/lists')
 export const getMyListById = (id) => apiFetch(`/me/lists/${id}`)
 export const createList = (title, description, isPublic = false) =>
