@@ -6,11 +6,11 @@ export default function Badge({ type }) {
     'inline-flex items-center justify-center rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-[0.08em] shadow-sm'
 
   if (type === 'MOST') {
-    return <span className={`${baseClassName} bg-[#892233] text-white`}>Experts&apos; Choice</span>
+    return <span className={`${baseClassName} bg-[#892233] text-white`}>Most Recommended</span>
   }
   
   if (type === 'HIGHLY') {
-    return <span className={`${baseClassName} bg-[#ff751f] text-white`}>Experts&apos; Choice</span>
+    return <span className={`${baseClassName} bg-[#ff751f] text-white`}>Highly Recommended</span>
   }
 
   if (type === 'IMPACT_MOST') {

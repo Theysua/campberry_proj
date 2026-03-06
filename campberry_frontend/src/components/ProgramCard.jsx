@@ -117,7 +117,6 @@ export default function ProgramCard({ program }) {
   const title = program.title || program.name || trpcData?.name || 'Untitled Program'
   const org = program.org || program.provider?.name || trpcData?.provider?.name || 'Unknown Organization'
   const logo = (typeof program.logo === 'string' ? program.logo : program.logo?.url) || program.logo_url || trpcData?.logo?.url
-  const score = program.score || '1.00'
   const sessions = trpcData?.sessions || program.sessions || []
   const deadlines = trpcData?.deadlines || program.deadlines || []
   const recommendedBadge = getExpertsChoiceBadge(program, trpcData)
@@ -245,7 +244,6 @@ export default function ProgramCard({ program }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] text-[#892233] font-bold mb-1 uppercase tracking-wider">Score: {score}</div>
         <h3 className="text-lg font-bold text-[#011936] group-hover:text-[#892233] transition-colors truncate">
           <Link to={detailPath}>{title}</Link>
         </h3>
