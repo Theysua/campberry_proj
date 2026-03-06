@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useListContext } from '../context/ListContext';
 
-export default function AddToListModal({ isOpen, onClose, programId }) {
+export default function AddToListModal({ isOpen, onClose, programId, preferredListId = '', preferredListTitle = '' }) {
     const { userLists, listsLoading, refreshLists, createList, addProgramToList } = useListContext();
     const navigate = useNavigate();
     const [isCreating, setIsCreating] = useState(false);
@@ -25,6 +25,18 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
             setError('Failed to load your lists.');
         });
     }, [isOpen, refreshLists]);
+
+    const sortedLists = [...userLists].sort((left, right) => {
+        if (left.id === preferredListId) {
+            return -1;
+        }
+
+        if (right.id === preferredListId) {
+            return 1;
+        }
+
+        return 0;
+    });
 
     if (!isOpen) return null;
 
@@ -115,7 +127,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                             </div>
                         )}
 
-                        {!listsLoading && userLists.map((list) => {
+                        {!listsLoading && sortedLists.map((list) => {
                             const isAdded = list.items?.some((item) => item.program_id === programId);
                             return (
                                 <button
@@ -144,6 +156,12 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                             </div>
                         )}
                     </div>
+
+                    {preferredListId && !listsLoading && (
+                        <div style={{ marginBottom: '16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            Current destination: <strong>{preferredListTitle || 'selected list flow'}</strong>
+                        </div>
+                    )}
 
                     {error && (
                         <div style={{ marginBottom: '16px', color: '#892233', fontSize: '13px' }}>{error}</div>

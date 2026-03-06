@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useListContext } from '../context/ListContext';
 import useScrollReveal from '../hooks/useScrollReveal';
 import { ArrowLeft, Briefcase, Check, Trophy, X } from 'lucide-react';
 import { getProgramById } from '../services/api';
+import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContext';
 
 const formatSessionDate = (session) => {
     if (!session?.start_date) {
@@ -21,14 +22,16 @@ const formatSessionDate = (session) => {
 export default function Compare() {
     const { compareList, toggleCompare, clearCompare } = useListContext();
     const navigate = useNavigate();
+    const location = useLocation();
     useScrollReveal();
 
     const [detailedPrograms, setDetailedPrograms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const backTarget = getBackTarget(location, '/search', 'Back to Search');
 
     useEffect(() => {
         if (compareList.length === 0) {
-            navigate('/search');
+            navigate(backTarget.path, { replace: true });
             return;
         }
 
@@ -50,7 +53,7 @@ export default function Compare() {
         };
 
         fetchDetails();
-    }, [compareList, navigate]);
+    }, [backTarget.path, compareList, navigate]);
 
     if (loading) {
         return <div className="page" style={{ padding: '40px', textAlign: 'center' }}>Loading Comparison...</div>;
@@ -61,8 +64,8 @@ export default function Compare() {
             <div className="container" style={{ maxWidth: '1400px', minHeight: '60vh' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                     <div>
-                        <button className="btn-outline" onClick={() => navigate('/search')} style={{ marginBottom: '16px', fontSize: '13px', padding: '6px 18px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <ArrowLeft size={14} /> Back to Search
+                        <button className="btn-outline" onClick={() => navigate(backTarget.path)} style={{ marginBottom: '16px', fontSize: '13px', padding: '6px 18px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <ArrowLeft size={14} /> {backTarget.label}
                         </button>
                         <h1 style={{ margin: 0, fontSize: '32px', color: 'var(--primary)', fontWeight: '800' }}>Compare Programs</h1>
                     </div>
@@ -91,7 +94,7 @@ export default function Compare() {
                                 <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', color: 'var(--primary)' }}>{program.name}</h3>
                                 <div style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500' }}>{program.provider?.name || program.provider}</div>
                                 <div style={{ marginTop: '16px' }}>
-                                    <button className="btn" style={{ width: '100%' }} onClick={() => navigate(`/program/${program.id}`)}>View Details</button>
+                                    <button className="btn" style={{ width: '100%' }} onClick={() => navigate(buildProgramDetailPath(program.id, location))}>View Details</button>
                                 </div>
                             </div>
 

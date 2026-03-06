@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { register } from '../services/api';
+import { isDemoMode, register } from '../services/api';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export default function Auth() {
   }, [isAuthenticated, navigate, redirectTarget]);
 
   useEffect(() => {
-    if (!isLogin || !googleClientId || !googleButtonRef.current) {
+    if (!isLogin || !googleClientId || !googleButtonRef.current || isDemoMode) {
       return;
     }
 
@@ -105,6 +105,12 @@ export default function Auth() {
               </a>
             </p>
 
+            {isDemoMode && (
+              <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-alt)', border: '1px solid var(--border)', borderRadius: '14px', padding: '12px 14px' }}>
+                Demo mode is enabled on GitHub Pages. Public browsing works, but sign-in and personal lists will unlock after the backend is deployed.
+              </div>
+            )}
+
             {error && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>{error}</div>}
 
             <form onSubmit={handleSubmit}>
@@ -127,7 +133,7 @@ export default function Auth() {
               <button type="submit" className="btn" style={{ width: '100%', padding: '16px', fontSize: '16px', justifyContent: 'center', marginBottom: '16px' }}>
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </button>
-              {isLogin && googleClientId && (
+              {isLogin && googleClientId && !isDemoMode && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0' }}>
                     <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>

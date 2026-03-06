@@ -1,11 +1,12 @@
 import { ArrowRightLeft, Calendar, Check, Copy, MapPin, Monitor, Plus, Share, Star, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useListContext } from '../context/ListContext'
 import AddToListModal from './AddToListModal'
 import Badge from './Badge'
 import Pill from './Pill'
+import { buildAuthRedirectPath, buildProgramDetailPath, readNavigationContext, replaceSearchParams } from '../utils/navigationContext'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -110,6 +111,7 @@ export default function ProgramCard({ program }) {
   const { toggleSaveProgram, isProgramSaved, toggleCompare, compareList } = useListContext()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const routeLocation = useLocation()
 
   const id = program.id
   const title = program.title || program.name || trpcData?.name || 'Untitled Program'
@@ -131,7 +133,7 @@ export default function ProgramCard({ program }) {
 
   const firstSession = sessions[0]
   const firstSessionLocationType = firstSession?.locationType || firstSession?.location_type
-  const location =
+  const locationLabel =
     program.location ||
     firstSession?.location?.name ||
     firstSession?.location_name ||
@@ -139,6 +141,8 @@ export default function ProgramCard({ program }) {
 
   const dates = getDateLabel(program, sessions)
   const deadline = getDeadlineLabel(program, deadlines)
+  const navigationContext = readNavigationContext(routeLocation.search)
+  const detailPath = buildProgramDetailPath(id, routeLocation)
 
   const deadlineColors = {
     passed: 'text-slate-400 line-through',
@@ -156,6 +160,32 @@ export default function ProgramCard({ program }) {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  useEffect(() => {
+    if (!isAuthenticated || navigationContext.actionProgramId !== id) {
+      return
+    }
+
+    if (navigationContext.postLoginAction === 'save') {
+      const applySave = async () => {
+        try {
+          if (!isSaved) {
+            await toggleSaveProgram(id)
+          }
+        } finally {
+          navigate(replaceSearchParams(routeLocation, {}, ['postLoginAction', 'actionProgramId']), { replace: true })
+        }
+      }
+
+      applySave().catch((error) => console.error(error))
+      return
+    }
+
+    if (navigationContext.postLoginAction === 'add-to-list') {
+      setAddListOpen(true)
+      navigate(replaceSearchParams(routeLocation, {}, ['postLoginAction', 'actionProgramId']), { replace: true })
+    }
+  }, [id, isAuthenticated, isSaved, navigate, navigationContext.actionProgramId, navigationContext.postLoginAction, routeLocation, toggleSaveProgram])
 
   const handleShare = async () => {
     const url = new URL(`${import.meta.env.BASE_URL}program/${id}`, window.location.origin).toString()
@@ -176,14 +206,13 @@ export default function ProgramCard({ program }) {
       return
     }
 
-    navigate(`/program/${id}`)
+    navigate(detailPath)
   }
 
   const handleOpenAddList = (event) => {
     event.stopPropagation()
     if (!isAuthenticated) {
-      const redirect = encodeURIComponent(window.location.hash?.slice(1) || '/search')
-      navigate(`/auth?redirect=${redirect}`)
+      navigate(buildAuthRedirectPath(routeLocation, { postLoginAction: 'add-to-list', actionProgramId: id }))
       return
     }
     setAddListOpen(true)
@@ -192,8 +221,7 @@ export default function ProgramCard({ program }) {
   const handleSaveProgram = (event) => {
     event.stopPropagation()
     if (!isAuthenticated) {
-      const redirect = encodeURIComponent(window.location.hash?.slice(1) || '/search')
-      navigate(`/auth?redirect=${redirect}`)
+      navigate(buildAuthRedirectPath(routeLocation, { postLoginAction: 'save', actionProgramId: id }))
       return
     }
     toggleSaveProgram(id)
@@ -219,7 +247,7 @@ export default function ProgramCard({ program }) {
       <div className="flex-1 min-w-0">
         <div className="text-[10px] text-[#892233] font-bold mb-1 uppercase tracking-wider">Score: {score}</div>
         <h3 className="text-lg font-bold text-[#011936] group-hover:text-[#892233] transition-colors truncate">
-          <Link to={`/program/${id}`}>{title}</Link>
+          <Link to={detailPath}>{title}</Link>
         </h3>
         <div className="text-xs text-slate-500 mb-2 truncate font-medium">{org}</div>
 
@@ -234,7 +262,7 @@ export default function ProgramCard({ program }) {
           </div>
           <div className="flex items-center gap-1.5 truncate">
             <MapPin size={12} className="text-[#892233]" />
-            <span className="truncate">{location}</span>
+            <span className="truncate">{locationLabel}</span>
           </div>
           <div className={`flex items-center gap-1.5 md:col-span-2 ${deadlineColors[deadline.status]}`}>
             <Monitor size={12} />
@@ -289,7 +317,13 @@ export default function ProgramCard({ program }) {
         </div>
       </div>
 
-      <AddToListModal isOpen={addListOpen} onClose={() => setAddListOpen(false)} programId={id} />
+      <AddToListModal
+        isOpen={addListOpen}
+        onClose={() => setAddListOpen(false)}
+        programId={id}
+        preferredListId={navigationContext.targetListId}
+        preferredListTitle={navigationContext.targetListTitle}
+      />
     </div>
   )
 }

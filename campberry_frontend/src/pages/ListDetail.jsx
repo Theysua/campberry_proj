@@ -1,12 +1,14 @@
 import { ArrowLeft, Loader2, Share } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ProgramCard from '../components/ProgramCard'
 import { getListById } from '../services/api'
+import { getBackTarget } from '../utils/navigationContext'
 
 export default function ListDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [list, setList] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -61,11 +63,13 @@ export default function ListDetail() {
     )
   }
 
+  const backTarget = getBackTarget(location, '/lists', 'Back to Lists')
+
   if (error || !list) {
     return (
       <div className="bg-[#f8fafc] min-h-screen py-20 text-center">
         <h2 className="text-xl font-bold text-slate-700 mb-4">{error || 'List not found'}</h2>
-        <button onClick={() => navigate(-1)} className="text-blue-600 hover:underline">Go back</button>
+        <button onClick={() => navigate(backTarget.path)} className="text-blue-600 hover:underline">{backTarget.label}</button>
       </div>
     )
   }
@@ -77,8 +81,8 @@ export default function ListDetail() {
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in relative z-0">
       <div className="container max-w-3xl pt-8">
         <div className="flex justify-between items-center mb-8">
-          <button onClick={() => navigate(-1)} className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm">
-            <ArrowLeft size={14} /> Back
+          <button onClick={() => navigate(backTarget.path)} className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm">
+            <ArrowLeft size={14} /> {backTarget.label}
           </button>
           <button className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm" onClick={handleShare}>
             <Share size={14} /> {copied ? 'Copied' : 'Share'}

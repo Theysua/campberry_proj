@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
 import { getMyListById, updateList, deleteList, removeListItem, updateListItem } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Trash2, Edit2, Check, X, ArrowUp, ArrowDown, ArrowLeft, Briefcase, Trophy, Plus } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ArrowUp, ArrowDown, ArrowLeft, Briefcase, Trophy, Plus, FilePenLine } from 'lucide-react';
+import { buildCurrentPath, buildProgramDetailPath, withSearchParams } from '../utils/navigationContext';
 
 export default function MyListDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   useScrollReveal();
   const { user } = useAuth();
 
@@ -118,13 +120,25 @@ export default function MyListDetail() {
     }
   };
 
+  const searchPath = withSearchParams('/search', {
+    returnTo: buildCurrentPath(location),
+    returnLabel: 'Back to My List',
+    targetListId: list.id,
+    targetListTitle: list.title,
+  });
+
   return (
     <div className="bg-[#f4f7f9] min-h-screen pb-20 animate-fade-in relative z-0" id="page-mylistdetail">
       <div className="container max-w-5xl pt-10 px-6 mx-auto">
         <div className="flex flex-col md:flex-row gap-10 items-start">
           <div className="w-full md:w-80 shrink-0 sticky top-32 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 z-10">
-            <button className="text-slate-500 mb-6 hover:text-[#011936] font-bold text-sm transition-colors" onClick={() => navigate('/my-lists')}>
-              <span className="inline-flex items-center gap-2"><ArrowLeft size={14} /> Back to My Lists</span>
+            <button
+              className="text-slate-500 mb-6 hover:text-[#011936] font-bold text-sm transition-colors"
+              onClick={() => (isEditingList ? setIsEditingList(false) : navigate('/my-lists'))}
+            >
+              <span className="inline-flex items-center gap-2">
+                <ArrowLeft size={14} /> {isEditingList ? 'Finish Editing' : 'Back to My Lists'}
+              </span>
             </button>
 
             {isEditingList && isOwner ? (
@@ -143,26 +157,23 @@ export default function MyListDetail() {
                 </div>
               </div>
             ) : (
-              <div className="mb-6 relative group">
-                <h1 className="text-2xl font-bold text-[#011936] mb-3 leading-snug pr-8">{list.title}</h1>
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold text-[#011936] mb-3 leading-snug">{list.title}</h1>
                 <p className="text-sm text-slate-500 mb-4 pb-4 border-b border-slate-100">{list.description || 'No description'}</p>
-                {isOwner && (
-                  <button className="absolute top-0 right-0 p-1 text-slate-300 hover:text-[#892233] opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsEditingList(true)}>
-                    <Edit2 size={16} />
-                  </button>
-                )}
 
                 <div className="flex justify-between items-center py-2 text-sm font-bold text-[#011936]">
                   <span>Total Programs</span>
                   <span className="text-[#892233] bg-red-50 px-2 py-0.5 rounded-md">{list.items?.length || 0}</span>
                 </div>
 
-                <button
-                  onClick={() => navigate('/search')}
-                  className="w-full mt-4 py-2.5 rounded-lg text-sm font-bold text-[#011936] border border-slate-200 hover:border-[#892233]/20 hover:bg-[#f8fafc] transition-colors flex items-center justify-center gap-2"
-                >
-                  <Plus size={16} /> Add Programs
-                </button>
+                {isOwner && (
+                  <button
+                    onClick={() => setIsEditingList(true)}
+                    className="w-full mt-4 py-2.5 rounded-lg text-sm font-bold text-[#011936] border border-slate-200 hover:border-[#892233]/20 hover:bg-[#f8fafc] transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FilePenLine size={16} /> Edit List Details
+                  </button>
+                )}
 
                 {isOwner && (
                   <button onClick={handleDeleteList} className="w-full mt-6 py-2.5 rounded-lg text-sm font-bold text-red-500 border border-transparent hover:border-red-100 hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
@@ -177,7 +188,7 @@ export default function MyListDetail() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <h2 className="text-xl font-bold text-[#011936]">Programs in this list</h2>
               <button
-                onClick={() => navigate('/search')}
+                onClick={() => navigate(searchPath)}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#011936] text-white hover:bg-slate-800 px-5 py-2.5 text-sm font-bold shadow-sm transition-colors"
               >
                 <Plus size={16} /> Add Programs
@@ -188,7 +199,7 @@ export default function MyListDetail() {
               {list.items && list.items.length > 0 ? list.items.map((item, index) => (
                 <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative group transition-shadow hover:shadow-md cursor-default">
                   <div className="flex flex-col xl:flex-row gap-5 xl:items-stretch">
-                    <div className="flex gap-4 items-center flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/program/${item.program_id}`)}>
+                    <div className="flex gap-4 items-center flex-1 min-w-0 cursor-pointer" onClick={() => navigate(buildProgramDetailPath(item.program_id, location))}>
                       <div className="text-2xl font-black text-[#f1f5f9] select-none w-8 text-right shrink-0">#{index + 1}</div>
                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
                         {item.program?.logo_url ? (
@@ -260,7 +271,7 @@ export default function MyListDetail() {
               )) : (
                 <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-16 flex flex-col items-center justify-center text-center mt-2">
                   <div className="text-slate-400 mb-4 font-bold text-lg">No programs tracked in this list</div>
-                  <button onClick={() => navigate('/search')} className="bg-[#011936] text-white hover:bg-slate-800 px-6 py-2.5 rounded-full font-bold text-sm shadow-sm transition-colors inline-flex items-center gap-2">
+                  <button onClick={() => navigate(searchPath)} className="bg-[#011936] text-white hover:bg-slate-800 px-6 py-2.5 rounded-full font-bold text-sm shadow-sm transition-colors inline-flex items-center gap-2">
                     <Plus size={16} /> Add Programs
                   </button>
                 </div>

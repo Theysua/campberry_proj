@@ -1,14 +1,17 @@
 import { ArrowLeft, Loader2, MousePointerClick, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import ProgramCard from '../components/ProgramCard'
 import { getAuthToken, getSavedPrograms } from '../services/api'
+import { getBackTarget } from '../utils/navigationContext'
 
 export default function SavedPrograms() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const backTarget = getBackTarget(location, '/', 'Back')
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -23,8 +26,8 @@ export default function SavedPrograms() {
           ...item.program,
           trpcData: {
             ...item.program,
-            logo: { url: item.program.logo_url }
-          }
+            logo: { url: item.program.logo_url },
+          },
         }))
         setPrograms(formatted)
       } catch (err) {
@@ -50,7 +53,7 @@ export default function SavedPrograms() {
     return (
       <div className="bg-[#f4f7f9] min-h-screen py-20 text-center">
         <h2 className="text-xl font-bold text-slate-700 mb-4">{error}</h2>
-        <button onClick={() => navigate('/my-lists')} className="text-[#892233] hover:underline">Go back to My Lists</button>
+        <button onClick={() => navigate(backTarget.path)} className="text-[#892233] hover:underline">{backTarget.label}</button>
       </div>
     )
   }
@@ -59,13 +62,13 @@ export default function SavedPrograms() {
     <div className="bg-[#f4f7f9] min-h-screen pb-20 animate-fade-in relative z-0">
       <div className="container max-w-6xl pt-8 px-6">
         <div className="mb-8">
-          <button onClick={() => navigate('/my-lists')} className="flex items-center gap-2 text-[#892233] hover:text-[#780000] font-bold text-sm transition-colors mb-6">
-            <ArrowLeft size={16} /> My Lists
+          <button onClick={() => navigate(backTarget.path)} className="flex items-center gap-2 text-[#892233] hover:text-[#780000] font-bold text-sm transition-colors mb-6">
+            <ArrowLeft size={16} /> {backTarget.label}
           </button>
 
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold text-[#011936] leading-tight flex items-center gap-3">
-              <span className="text-[#892233]">★</span> Saved Programs
+              <span className="text-[#892233]">Saved</span> Programs
             </h1>
           </div>
           <p className="text-slate-500 font-medium">Programs you have favorited for quick access.</p>

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { useListContext } from '../context/ListContext'
 import AddToListModal from '../components/AddToListModal'
 import { getProgramById } from '../services/api'
+import { buildAuthRedirectPath, getBackTarget, readNavigationContext, replaceSearchParams } from '../utils/navigationContext'
 
 const formatDateRange = (startDate, endDate) => {
   if (!startDate) {
@@ -35,6 +36,7 @@ const getExpertGuidance = (program) => {
 export default function ProgramDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   useScrollReveal()
 
   const { isProgramSaved, toggleSaveProgram } = useListContext()
@@ -59,14 +61,42 @@ export default function ProgramDetail() {
       .catch((error) => console.error(error))
   }, [id])
 
+  useEffect(() => {
+    const context = readNavigationContext(location.search)
+    if (!isAuthenticated || context.actionProgramId !== id) {
+      return
+    }
+
+    if (context.postLoginAction === 'save') {
+      const applySave = async () => {
+        try {
+          if (!isProgramSaved(id)) {
+            await toggleSaveProgram(id)
+          }
+        } finally {
+          navigate(replaceSearchParams(location, {}, ['postLoginAction', 'actionProgramId']), { replace: true })
+        }
+      }
+
+      applySave().catch((error) => console.error(error))
+      return
+    }
+
+    if (context.postLoginAction === 'add-to-list') {
+      setAddListOpen(true)
+      navigate(replaceSearchParams(location, {}, ['postLoginAction', 'actionProgramId']), { replace: true })
+    }
+  }, [id, isAuthenticated, isProgramSaved, location, navigate, toggleSaveProgram])
+
   const isSaved = isProgramSaved(id)
   const expertGuidance = getExpertGuidance(program)
   const feedbackSummary = program?.feedback_summary || { averageRating: null, ratingCount: 0, commentCount: 0 }
   const feedbackPreview = Array.isArray(program?.feedback_preview) ? program.feedback_preview : []
+  const backTarget = getBackTarget(location, '/search', 'Back to Search')
 
   const handleSave = () => {
     if (!isAuthenticated) {
-      navigate(`/auth?redirect=${encodeURIComponent(`/program/${id}`)}`)
+      navigate(buildAuthRedirectPath(location, { postLoginAction: 'save', actionProgramId: id }))
       return
     }
 
@@ -75,7 +105,7 @@ export default function ProgramDetail() {
 
   const handleOpenAddList = () => {
     if (!isAuthenticated) {
-      navigate(`/auth?redirect=${encodeURIComponent(`/program/${id}`)}`)
+      navigate(buildAuthRedirectPath(location, { postLoginAction: 'add-to-list', actionProgramId: id }))
       return
     }
 
@@ -90,8 +120,8 @@ export default function ProgramDetail() {
     <>
       <div className="page" id="page-program">
         <div className="container">
-          <button className="btn-outline" onClick={() => navigate('/search')} style={{ marginBottom: '24px', fontSize: '13px', padding: '6px 18px' }}>
-            Back to Search
+          <button className="btn-outline" onClick={() => navigate(backTarget.path)} style={{ marginBottom: '24px', fontSize: '13px', padding: '6px 18px' }}>
+            {backTarget.label}
           </button>
           <div className="card program-header" style={{ marginBottom: '24px', padding: '32px' }}>
             <div style={{ width: '100px', height: '100px', background: program.logo_url ? '#ffffff' : 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', flexShrink: '0' }}>
@@ -222,7 +252,13 @@ export default function ProgramDetail() {
           </div>
         </div>
       </div>
-      <AddToListModal isOpen={addListOpen} onClose={() => setAddListOpen(false)} programId={id} />
+      <AddToListModal
+        isOpen={addListOpen}
+        onClose={() => setAddListOpen(false)}
+        programId={id}
+        preferredListId={backTarget.targetListId}
+        preferredListTitle={backTarget.targetListTitle}
+      />
     </>
   )
 }

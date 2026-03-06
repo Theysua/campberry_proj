@@ -1,11 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useListContext } from '../context/ListContext';
 import { X } from 'lucide-react';
+import { buildCurrentPath, getDefaultBackLabel, withSearchParams } from '../utils/navigationContext';
 
 export default function CompareBar() {
     const { compareList, clearCompare, toggleCompare } = useListContext();
     const navigate = useNavigate();
+    const location = useLocation();
 
     if (compareList.length === 0) return null;
 
@@ -57,7 +59,14 @@ export default function CompareBar() {
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
-                <button className="btn" onClick={() => navigate('/compare')} disabled={compareList.length < 2}>
+                <button
+                    className="btn"
+                    onClick={() => navigate(withSearchParams('/compare', {
+                        returnTo: buildCurrentPath(location),
+                        returnLabel: getDefaultBackLabel(location.pathname),
+                    }))}
+                    disabled={compareList.length < 2}
+                >
                     Compare Now
                 </button>
                 <button className="btn-outline" onClick={clearCompare}>

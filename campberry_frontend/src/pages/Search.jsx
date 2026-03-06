@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, Check, MapPin, LocateFixed } from 'lucide-react'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { getInterests, getPrograms } from '../services/api'
@@ -10,6 +10,7 @@ import {
   parseSearchStateFromParams,
   sortToApiValue,
 } from '../utils/searchUrlState'
+import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContext'
 
 const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline', 'Distance']
 
@@ -53,6 +54,7 @@ const getVisiblePageItems = (currentPage, totalPages) => {
 
 export default function Search() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   useScrollReveal()
 
@@ -88,6 +90,7 @@ export default function Search() {
   const [totalPrograms, setTotalPrograms] = useState(0)
   const [allInterests, setAllInterests] = useState([])
   const visiblePageItems = getVisiblePageItems(page, totalPages || 1)
+  const backTarget = getBackTarget(location, '/', 'Back to Home')
 
   useEffect(() => {
     const nextState = parseSearchStateFromParams(searchParams)
@@ -307,8 +310,8 @@ export default function Search() {
   return (
     <div className="page" id="page-search">
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 24px 40px 24px' }}>
-        <button className="btn-outline" onClick={() => navigate('/')} style={{ marginBottom: '20px', fontSize: '13px', padding: '6px 18px' }}>
-          ← Back
+        <button className="btn-outline" onClick={() => navigate(backTarget.path)} style={{ marginBottom: '20px', fontSize: '13px', padding: '6px 18px' }}>
+          {backTarget.label}
         </button>
 
         <div className="hero-search" style={{ margin: '0 0 30px 0', maxWidth: '100%' }}>
@@ -640,7 +643,7 @@ export default function Search() {
                   <div
                     key={program.id || index}
                     className={`card program-card ${index % 2 === 0 ? 'accent-top' : 'primary-top'}`}
-                    onClick={() => navigate(`/program/${program.id}`)}
+                    onClick={() => navigate(buildProgramDetailPath(program.id, location, { returnLabel: 'Back to Results' }))}
                     style={{ cursor: 'pointer' }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
