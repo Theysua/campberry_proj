@@ -5,6 +5,23 @@ import {
   getDemoProgramById,
   getDemoPrograms,
 } from '../mocks/demoData'
+import {
+  demoAddListItem,
+  demoCreateList,
+  demoDeleteList,
+  demoGetMe,
+  demoGetMyListById,
+  demoGetMyLists,
+  demoGetSavedPrograms,
+  demoLogin,
+  demoLogout,
+  demoRegister,
+  demoRemoveListItem,
+  demoSaveProgram,
+  demoUnsaveProgram,
+  demoUpdateList,
+  demoUpdateListItem,
+} from '../mocks/demoPrivateData'
 
 const API_BASE =
   import.meta.env.VITE_API_URL ||
@@ -105,7 +122,7 @@ export const apiFetch = async (endpoint, options = {}, allowRetry = true) => {
 
 export const login = (email, password) =>
   isDemoMode
-    ? Promise.reject(new Error('Demo mode: sign-in will be available after the backend goes live.'))
+    ? demoLogin(email, password)
     : apiFetch('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
@@ -121,7 +138,7 @@ export const loginWithGoogle = (credential) =>
 
 export const register = (name, email, password) =>
   isDemoMode
-    ? Promise.reject(new Error('Demo mode: account creation will be available after the backend goes live.'))
+    ? demoRegister(name, email, password)
     : apiFetch('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ name, email, password }),
@@ -129,14 +146,14 @@ export const register = (name, email, password) =>
 
 export const logoutUser = () =>
   isDemoMode
-    ? Promise.resolve()
+    ? demoLogout()
     : apiFetch('/auth/logout', {
         method: 'POST',
       })
 
 export const getMe = () =>
   isDemoMode
-    ? Promise.reject(new Error('Demo mode'))
+    ? demoGetMe()
     : apiFetch('/me')
 
 export const getPrograms = (params = {}) => {
@@ -163,16 +180,21 @@ export const submitProgramFeedback = (programId, rating, comment = '') =>
 export const getInterests = () =>
   isDemoMode ? Promise.resolve(getDemoInterests()) : apiFetch('/interests')
 
-export const getSavedPrograms = () => (requireLiveApi(), apiFetch('/me/saved-programs'))
+export const getSavedPrograms = () =>
+  isDemoMode ? demoGetSavedPrograms() : apiFetch('/me/saved-programs')
 export const saveProgram = (programId) =>
-  (requireLiveApi(), apiFetch('/me/saved-programs', {
-    method: 'POST',
-    body: JSON.stringify({ programId }),
-  }))
+  (isDemoMode
+    ? demoSaveProgram(programId)
+    : apiFetch('/me/saved-programs', {
+        method: 'POST',
+        body: JSON.stringify({ programId }),
+      }))
 export const unsaveProgram = (programId) =>
-  (requireLiveApi(), apiFetch(`/me/saved-programs/${programId}`, {
-    method: 'DELETE',
-  }))
+  (isDemoMode
+    ? demoUnsaveProgram(programId)
+    : apiFetch(`/me/saved-programs/${programId}`, {
+        method: 'DELETE',
+      }))
 
 export const getLists = () =>
   isDemoMode ? Promise.resolve(getDemoLists()) : apiFetch('/lists')
@@ -185,33 +207,45 @@ export const submitListFeedback = (listId, rating, comment = '') =>
     method: 'POST',
     body: JSON.stringify({ rating, comment }),
   }))
-export const getMyLists = () => (requireLiveApi(), apiFetch('/me/lists'))
-export const getMyListById = (id) => (requireLiveApi(), apiFetch(`/me/lists/${id}`))
+export const getMyLists = () => (isDemoMode ? demoGetMyLists() : apiFetch('/me/lists'))
+export const getMyListById = (id) => (isDemoMode ? demoGetMyListById(id) : apiFetch(`/me/lists/${id}`))
 export const createList = (title, description, isPublic = false) =>
-  (requireLiveApi(), apiFetch('/me/lists', {
-    method: 'POST',
-    body: JSON.stringify({ title, description, isPublic }),
-  }))
+  (isDemoMode
+    ? demoCreateList(title, description, isPublic)
+    : apiFetch('/me/lists', {
+        method: 'POST',
+        body: JSON.stringify({ title, description, isPublic }),
+      }))
 export const updateList = (id, title, description, isPublic) =>
-  (requireLiveApi(), apiFetch(`/me/lists/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ title, description, isPublic }),
-  }))
+  (isDemoMode
+    ? demoUpdateList(id, title, description, isPublic)
+    : apiFetch(`/me/lists/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ title, description, isPublic }),
+      }))
 export const deleteList = (id) =>
-  (requireLiveApi(), apiFetch(`/me/lists/${id}`, {
-    method: 'DELETE',
-  }))
+  (isDemoMode
+    ? demoDeleteList(id)
+    : apiFetch(`/me/lists/${id}`, {
+        method: 'DELETE',
+      }))
 export const addListItem = (listId, programId, commentary = '') =>
-  (requireLiveApi(), apiFetch(`/me/lists/${listId}/items`, {
-    method: 'POST',
-    body: JSON.stringify({ programId, commentary }),
-  }))
+  (isDemoMode
+    ? demoAddListItem(listId, programId, commentary)
+    : apiFetch(`/me/lists/${listId}/items`, {
+        method: 'POST',
+        body: JSON.stringify({ programId, commentary }),
+      }))
 export const updateListItem = (listId, itemId, commentary, displayOrder) =>
-  (requireLiveApi(), apiFetch(`/me/lists/${listId}/items/${itemId}`, {
-    method: 'PUT',
-    body: JSON.stringify({ commentary, displayOrder }),
-  }))
+  (isDemoMode
+    ? demoUpdateListItem(listId, itemId, commentary, displayOrder)
+    : apiFetch(`/me/lists/${listId}/items/${itemId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ commentary, displayOrder }),
+      }))
 export const removeListItem = (listId, itemId) =>
-  (requireLiveApi(), apiFetch(`/me/lists/${listId}/items/${itemId}`, {
-    method: 'DELETE',
-  }))
+  (isDemoMode
+    ? demoRemoveListItem(listId, itemId)
+    : apiFetch(`/me/lists/${listId}/items/${itemId}`, {
+        method: 'DELETE',
+      }))

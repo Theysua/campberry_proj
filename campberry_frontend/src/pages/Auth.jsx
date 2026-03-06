@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isDemoMode, register } from '../services/api';
+import { DEMO_TEST_ACCOUNT } from '../mocks/demoPrivateData';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -92,6 +93,14 @@ export default function Auth() {
     }
   };
 
+  const fillDemoCredentials = () => {
+    setIsLogin(true);
+    setEmail(DEMO_TEST_ACCOUNT.email);
+    setPassword(DEMO_TEST_ACCOUNT.password);
+    setName(DEMO_TEST_ACCOUNT.name);
+    setError('');
+  };
+
   return (
     <div className="page" id="page-auth">
       <div className="auth-container">
@@ -107,7 +116,22 @@ export default function Auth() {
 
             {isDemoMode && (
               <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-alt)', border: '1px solid var(--border)', borderRadius: '14px', padding: '12px 14px' }}>
-                Demo mode is enabled on GitHub Pages. Public browsing works, but sign-in and personal lists will unlock after the backend is deployed.
+                <div style={{ fontWeight: 700, color: 'var(--primary)', marginBottom: '6px' }}>Demo mode is enabled on GitHub Pages.</div>
+                <div style={{ marginBottom: '10px' }}>
+                  You can test private features with the preset account below. Data is stored locally in your browser for demo purposes.
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '12px', lineHeight: 1.7, marginBottom: '10px' }}>
+                  <div>Email: {DEMO_TEST_ACCOUNT.email}</div>
+                  <div>Password: {DEMO_TEST_ACCOUNT.password}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={fillDemoCredentials}
+                  className="btn-outline"
+                  style={{ padding: '8px 12px', fontSize: '12px' }}
+                >
+                  Use Demo Account
+                </button>
               </div>
             )}
 
