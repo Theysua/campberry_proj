@@ -137,6 +137,22 @@ export default function Auth() {
 
             {error && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>{error}</div>}
 
+            {isLogin && googleClientId && !isDemoMode && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', margin: '0 0 20px 0' }}>
+                  <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
+                  <span style={{ padding: '0 12px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>CONTINUE WITH</span>
+                  <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
+                </div>
+                <div ref={googleButtonRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', minHeight: '44px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', margin: '0 0 24px 0' }}>
+                  <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
+                  <span style={{ padding: '0 12px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>OR USE EMAIL</span>
+                  <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
+                </div>
+              </>
+            )}
+
             <form onSubmit={handleSubmit}>
               {!isLogin && (
                 <div style={{ marginBottom: '20px' }}>
@@ -157,16 +173,6 @@ export default function Auth() {
               <button type="submit" className="btn" style={{ width: '100%', padding: '16px', fontSize: '16px', justifyContent: 'center', marginBottom: '16px' }}>
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </button>
-              {isLogin && googleClientId && !isDemoMode && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0' }}>
-                    <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
-                    <span style={{ padding: '0 12px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>OR</span>
-                    <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
-                  </div>
-                  <div ref={googleButtonRef} style={{ display: 'flex', justifyContent: 'center' }} />
-                </>
-              )}
             </form>
           </div>
         </div>
