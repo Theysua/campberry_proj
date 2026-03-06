@@ -32,6 +32,8 @@ model RefreshToken {
   created_at DateTime @default(now())
   user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
+  @@index([expires_at])
   @@map("refresh_tokens")
 }
 
@@ -49,15 +51,12 @@ model Program {
   eligibility_info      String?
   experts_choice_rating String?
   impact_rating         String?
-  // Note: SQLite doesn't directly support String[]. If this becomes an issue we might need a relation, but Prisma handles it via JSON.
-  // Wait, Prisma SQLite does not support scalar lists (like Int[]). We will change eligible_grades to a String (comma separated) for MVP.
   eligible_grades       String?
   only_us_citizens      Boolean?           @default(false)
   only_us_residents     Boolean?           @default(false)
   allows_international  Boolean?           @default(true)
   offers_college_credit Boolean?           @default(false)
   is_one_on_one         Boolean?           @default(false)
-  // SQLite does not support Json. We map trpc_data to String.
   trpc_data             String?
   created_at            DateTime           @default(now())
   updated_at            DateTime           @updatedAt
@@ -68,6 +67,15 @@ model Program {
   sessions              Session[]
   saved_by              UserSavedProgram[]
 
+  @@index([provider_id])
+  @@index([type])
+  @@index([experts_choice_rating])
+  @@index([impact_rating])
+  @@index([is_highly_selective])
+  @@index([allows_international])
+  @@index([offers_college_credit])
+  @@index([is_one_on_one])
+  @@index([created_at])
   @@map("programs")
 }
 
@@ -94,6 +102,7 @@ model ProgramInterest {
   program     Program  @relation(fields: [program_id], references: [id])
 
   @@id([program_id, interest_id])
+  @@index([interest_id, program_id])
   @@map("program_interests")
 }
 
@@ -108,6 +117,11 @@ model Session {
   location_lng  Float?
   program       Program   @relation(fields: [program_id], references: [id])
 
+  @@index([program_id])
+  @@index([location_type, program_id])
+  @@index([location_name])
+  @@index([location_lat, location_lng])
+  @@index([start_date, end_date])
   @@map("sessions")
 }
 
@@ -118,6 +132,7 @@ model Deadline {
   date        DateTime
   program     Program  @relation(fields: [program_id], references: [id])
 
+  @@index([program_id, date])
   @@map("deadlines")
 }
 
@@ -132,6 +147,8 @@ model List {
   items       ListItem[]
   author      User       @relation(fields: [author_id], references: [id])
 
+  @@index([author_id, updated_at])
+  @@index([is_public, updated_at])
   @@map("lists")
 }
 
@@ -145,6 +162,8 @@ model ListItem {
   list              List     @relation(fields: [list_id], references: [id])
   program           Program? @relation(fields: [program_id], references: [id])
 
+  @@index([list_id, display_order])
+  @@index([program_id])
   @@map("list_items")
 }
 
@@ -156,5 +175,6 @@ model UserSavedProgram {
   user       User     @relation(fields: [user_id], references: [id])
 
   @@id([user_id, program_id])
+  @@index([program_id])
   @@map("user_saved_programs")
 }

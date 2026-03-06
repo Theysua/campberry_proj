@@ -8,13 +8,19 @@ export default function CreateListModal({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (name.trim()) {
-            createList(name.trim(), description.trim());
+        if (!name.trim()) {
+            return;
+        }
+
+        try {
+            await createList(name.trim(), description.trim());
             setName('');
             setDescription('');
             onClose();
+        } catch (error) {
+            console.error('Failed to create list', error);
         }
     };
 
@@ -45,7 +51,7 @@ export default function CreateListModal({ isOpen, onClose }) {
                             placeholder="e.g. Summer 2026 Targets"
                             className="form-input"
                             value={name}
-                            onChange={e => setName(e.target.value)}
+                            onChange={(event) => setName(event.target.value)}
                             required
                             autoFocus
                             style={{ width: '100%' }}
@@ -60,7 +66,7 @@ export default function CreateListModal({ isOpen, onClose }) {
                             placeholder="What kind of programs are you looking for?"
                             className="form-input"
                             value={description}
-                            onChange={e => setDescription(e.target.value)}
+                            onChange={(event) => setDescription(event.target.value)}
                             rows={4}
                             style={{ width: '100%', resize: 'vertical' }}
                         />

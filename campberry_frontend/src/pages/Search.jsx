@@ -26,6 +26,31 @@ const getProgramLocationLabel = (program) => {
   return firstSession.location_name || 'Location TBD'
 }
 
+const getVisiblePageItems = (currentPage, totalPages) => {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1)
+  }
+
+  const items = [1]
+  const windowStart = Math.max(2, currentPage - 1)
+  const windowEnd = Math.min(totalPages - 1, currentPage + 1)
+
+  if (windowStart > 2) {
+    items.push('start-ellipsis')
+  }
+
+  for (let pageNumber = windowStart; pageNumber <= windowEnd; pageNumber += 1) {
+    items.push(pageNumber)
+  }
+
+  if (windowEnd < totalPages - 1) {
+    items.push('end-ellipsis')
+  }
+
+  items.push(totalPages)
+  return items
+}
+
 export default function Search() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -62,6 +87,7 @@ export default function Search() {
   const [programs, setPrograms] = useState([])
   const [totalPrograms, setTotalPrograms] = useState(0)
   const [allInterests, setAllInterests] = useState([])
+  const visiblePageItems = getVisiblePageItems(page, totalPages || 1)
 
   useEffect(() => {
     const nextState = parseSearchStateFromParams(searchParams)
@@ -673,25 +699,31 @@ export default function Search() {
               >
                 ← Previous
               </button>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {Array.from({ length: totalPages || 1 }, (_, index) => index + 1).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    onClick={() => setPage(pageNumber)}
-                    className={page === pageNumber ? 'btn' : 'btn-outline'}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      padding: '0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 'var(--radius-md)',
-                    }}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
+              <div className="pagination-pages">
+                {visiblePageItems.map((item) =>
+                  typeof item === 'number' ? (
+                    <button
+                      key={item}
+                      onClick={() => setPage(item)}
+                      className={page === item ? 'btn' : 'btn-outline'}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        padding: '0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 'var(--radius-md)',
+                      }}
+                    >
+                      {item}
+                    </button>
+                  ) : (
+                    <span key={item} className="pagination-ellipsis">
+                      ...
+                    </span>
+                  )
+                )}
               </div>
               <button
                 onClick={() => setPage((currentPage) => Math.min(totalPages, currentPage + 1))}

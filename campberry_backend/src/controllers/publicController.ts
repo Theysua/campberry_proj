@@ -55,7 +55,7 @@ const getMonthRange = (startDate?: Date | null, endDate?: Date | null) => {
   return months;
 };
 
-const matchesSeason = (sessions: any[], season?: string) => {
+const matchesSeason = (sessions: Array<{ start_date?: Date | null; end_date?: Date | null }>, season?: string) => {
   if (!season) {
     return true;
   }
@@ -87,13 +87,21 @@ const matchesGrades = (eligibleGrades?: string | null, selectedGrades?: number[]
   return selectedGrades.some((grade) => availableGrades.includes(grade));
 };
 
-const hasOnlineSession = (sessions: any[]) =>
+const hasOnlineSession = (sessions: Array<{ location_type?: string | null }>) =>
   sessions.some((session) => session.location_type === 'ONLINE');
 
-const hasPhysicalSession = (sessions: any[]) =>
+const hasPhysicalSession = (sessions: Array<{ location_type?: string | null }>) =>
   sessions.some((session) => session.location_type !== 'ONLINE');
 
-const getProgramDistanceMiles = (sessions: any[], lat?: number, lng?: number) => {
+const getProgramDistanceMiles = (
+  sessions: Array<{
+    location_type?: string | null;
+    location_lat?: number | null;
+    location_lng?: number | null;
+  }>,
+  lat?: number,
+  lng?: number
+) => {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return null;
   }
@@ -118,7 +126,10 @@ const getProgramDistanceMiles = (sessions: any[], lat?: number, lng?: number) =>
   return minDistance;
 };
 
-const matchesLocationText = (sessions: any[], locationText?: string) => {
+const matchesLocationText = (
+  sessions: Array<{ location_name?: string | null }>,
+  locationText?: string
+) => {
   if (!locationText) {
     return false;
   }
@@ -133,7 +144,11 @@ const matchesLocationText = (sessions: any[], locationText?: string) => {
   );
 };
 
-const getRatingScore = (program: any) => {
+const getRatingScore = (program: {
+  experts_choice_rating?: string | null;
+  impact_rating?: string | null;
+  is_highly_selective?: boolean | null;
+}) => {
   let score = 0;
   if (program.experts_choice_rating === 'MOST_RECOMMENDED') {
     score += 100;
@@ -154,7 +169,7 @@ const getRatingScore = (program: any) => {
   return score;
 };
 
-const getNextDeadlineTime = (deadlines: any[]) => {
+const getNextDeadlineTime = (deadlines: Array<{ date: Date }>) => {
   const now = Date.now();
   const futureDeadlines = deadlines
     .map((deadline) => new Date(deadline.date).getTime())
@@ -164,7 +179,17 @@ const getNextDeadlineTime = (deadlines: any[]) => {
   return futureDeadlines[0] ?? Number.POSITIVE_INFINITY;
 };
 
-const getRelevanceScore = (program: any, search?: string) => {
+const getRelevanceScore = (
+  program: {
+    name?: string | null;
+    description?: string | null;
+    provider?: { name?: string | null } | null;
+    experts_choice_rating?: string | null;
+    impact_rating?: string | null;
+    is_highly_selective?: boolean | null;
+  },
+  search?: string
+) => {
   if (!search) {
     return getRatingScore(program);
   }
@@ -196,6 +221,124 @@ const getRelevanceScore = (program: any, search?: string) => {
 
 const canUseDistance = (lat?: number, lng?: number) =>
   Number.isFinite(lat) && Number.isFinite(lng);
+
+const getBoundingBox = (lat: number, lng: number, radiusMiles: number) => {
+  const latDelta = radiusMiles / 69;
+  const cosLat = Math.cos(toRadians(lat));
+  const lngDelta = radiusMiles / (69 * Math.max(Math.abs(cosLat), 0.01));
+
+  return {
+    minLat: lat - latDelta,
+    maxLat: lat + latDelta,
+    minLng: lng - lngDelta,
+    maxLng: lng + lngDelta,
+  };
+};
+
+const PHYSICAL_SESSION_CLAUSE = {
+  OR: [
+    { location_type: { not: 'ONLINE' } },
+    { location_type: null },
+  ],
+};
+
+const buildSessionFilterClause = ({
+  onlineOnlyPrograms,
+  includeOnlinePrograms,
+  latitude,
+  longitude,
+  distanceRadius,
+  locationText,
+}: {
+  onlineOnlyPrograms: boolean;
+  includeOnlinePrograms: boolean;
+  latitude?: number;
+  longitude?: number;
+  distanceRadius?: number;
+  locationText?: string;
+}) => {
+  if (onlineOnlyPrograms) {
+    return {
+      sessions: {
+        some: {
+          location_type: 'ONLINE',
+        },
+      },
+    };
+  }
+
+  if (canUseDistance(latitude, longitude) && Number.isFinite(distanceRadius)) {
+    const bounds = getBoundingBox(latitude as number, longitude as number, distanceRadius as number);
+    const physicalMatch = {
+      sessions: {
+        some: {
+          AND: [
+            PHYSICAL_SESSION_CLAUSE,
+            { location_lat: { gte: bounds.minLat, lte: bounds.maxLat } },
+            { location_lng: { gte: bounds.minLng, lte: bounds.maxLng } },
+          ],
+        },
+      },
+    };
+
+    if (!includeOnlinePrograms) {
+      return physicalMatch;
+    }
+
+    return {
+      OR: [
+        physicalMatch,
+        {
+          sessions: {
+            some: {
+              location_type: 'ONLINE',
+            },
+          },
+        },
+      ],
+    };
+  }
+
+  if (locationText) {
+    const physicalMatch = {
+      sessions: {
+        some: {
+          location_name: {
+            contains: locationText,
+            mode: 'insensitive' as const,
+          },
+        },
+      },
+    };
+
+    if (!includeOnlinePrograms) {
+      return physicalMatch;
+    }
+
+    return {
+      OR: [
+        physicalMatch,
+        {
+          sessions: {
+            some: {
+              location_type: 'ONLINE',
+            },
+          },
+        },
+      ],
+    };
+  }
+
+  if (!includeOnlinePrograms) {
+    return {
+      sessions: {
+        some: PHYSICAL_SESSION_CLAUSE,
+      },
+    };
+  }
+
+  return null;
+};
 
 export const getPrograms = async (req: Request, res: Response) => {
   try {
@@ -291,18 +434,18 @@ export const getPrograms = async (req: Request, res: Response) => {
     if (isFree === 'true') {
       andClauses.push({
         OR: [
-        {
-          cost_info: {
-            contains: 'free',
-            mode: 'insensitive',
+          {
+            cost_info: {
+              contains: 'free',
+              mode: 'insensitive',
+            },
           },
-        },
-        {
-          cost_info: {
-            contains: 'fully funded',
-            mode: 'insensitive',
+          {
+            cost_info: {
+              contains: 'fully funded',
+              mode: 'insensitive',
+            },
           },
-        },
         ],
       });
     }
@@ -330,28 +473,57 @@ export const getPrograms = async (req: Request, res: Response) => {
       }
     }
 
+    const sessionClause = buildSessionFilterClause({
+      onlineOnlyPrograms,
+      includeOnlinePrograms,
+      latitude,
+      longitude,
+      distanceRadius,
+      locationText: typeof locationText === 'string' ? locationText.trim() : undefined,
+    });
+
+    if (sessionClause) {
+      andClauses.push(sessionClause);
+    }
+
     if (andClauses.length > 0) {
       whereClause.AND = andClauses;
     }
 
-    const programs = await prisma.program.findMany({
+    const candidatePrograms = await prisma.program.findMany({
       where: whereClause,
-      include: {
-        provider: true,
-        deadlines: true,
-        sessions: true,
-        interests: {
-          include: {
-            interest: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        eligible_grades: true,
+        experts_choice_rating: true,
+        impact_rating: true,
+        is_highly_selective: true,
+        provider: {
+          select: {
+            name: true,
+          },
+        },
+        deadlines: {
+          select: {
+            date: true,
+          },
+        },
+        sessions: {
+          select: {
+            start_date: true,
+            end_date: true,
+            location_type: true,
+            location_name: true,
+            location_lat: true,
+            location_lng: true,
           },
         },
       },
-      orderBy: {
-        created_at: 'desc',
-      },
     });
 
-    let filteredPrograms = programs
+    const filteredPrograms = candidatePrograms
       .map((program) => ({
         ...program,
         distance_miles: getProgramDistanceMiles(program.sessions, latitude, longitude),
@@ -407,13 +579,59 @@ export const getPrograms = async (req: Request, res: Response) => {
     });
 
     const total = filteredPrograms.length;
-    const paginatedPrograms = filteredPrograms.slice(
-      (pageNumber - 1) * limitNumber,
-      pageNumber * limitNumber
-    );
+    const paginatedIds = filteredPrograms
+      .slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber)
+      .map((program) => program.id);
+
+    if (paginatedIds.length === 0) {
+      res.json({
+        data: [],
+        meta: {
+          page: pageNumber,
+          limit: limitNumber,
+          total,
+          totalPages: Math.max(1, Math.ceil(total / limitNumber)),
+        },
+      });
+      return;
+    }
+
+    const paginatedPrograms = await prisma.program.findMany({
+      where: {
+        id: {
+          in: paginatedIds,
+        },
+      },
+      include: {
+        provider: true,
+        deadlines: true,
+        sessions: true,
+        interests: {
+          include: {
+            interest: true,
+          },
+        },
+      },
+    });
+
+    const paginatedProgramMap = new Map(paginatedPrograms.map((program) => [program.id, program]));
+    const candidateMap = new Map(filteredPrograms.map((program) => [program.id, program]));
+    const orderedPrograms = paginatedIds
+      .map((id) => {
+        const fullProgram = paginatedProgramMap.get(id);
+        if (!fullProgram) {
+          return null;
+        }
+
+        return {
+          ...fullProgram,
+          distance_miles: candidateMap.get(id)?.distance_miles ?? null,
+        };
+      })
+      .filter(Boolean);
 
     res.json({
-      data: paginatedPrograms,
+      data: orderedPrograms,
       meta: {
         page: pageNumber,
         limit: limitNumber,

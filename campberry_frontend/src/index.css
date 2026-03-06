@@ -1388,8 +1388,28 @@ details[open] .chevron {
 .pagination {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
     margin-top: 40px;
     gap: 6px;
+}
+
+.pagination-pages {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    max-width: min(100%, 420px);
+}
+
+.pagination-ellipsis {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-weight: 700;
 }
 
 .pagination button {

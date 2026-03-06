@@ -11,15 +11,15 @@ export default function ListDetail() {
   const [list, setList] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const fetchList = async () => {
       try {
         const data = await getListById(id)
-        
-        // Map data to expected ProgramCard format (trpcData)
+
         if (data.items) {
-          data.items = data.items.map(item => ({
+          data.items = data.items.map((item) => ({
             ...item,
             program: {
               ...item.program,
@@ -30,7 +30,7 @@ export default function ListDetail() {
             }
           }))
         }
-        
+
         setList(data)
       } catch (err) {
         console.error(err)
@@ -39,8 +39,19 @@ export default function ListDetail() {
         setLoading(false)
       }
     }
+
     fetchList()
   }, [id])
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy list URL', err)
+    }
+  }
 
   if (loading) {
     return (
@@ -53,7 +64,7 @@ export default function ListDetail() {
   if (error || !list) {
     return (
       <div className="bg-[#f8fafc] min-h-screen py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-700 mb-4">{error || "List not found"}</h2>
+        <h2 className="text-xl font-bold text-slate-700 mb-4">{error || 'List not found'}</h2>
         <button onClick={() => navigate(-1)} className="text-blue-600 hover:underline">Go back</button>
       </div>
     )
@@ -62,23 +73,15 @@ export default function ListDetail() {
   return (
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in relative z-0">
       <div className="container max-w-3xl pt-8">
-        
-        {/* Top bar */}
         <div className="flex justify-between items-center mb-8">
           <button onClick={() => navigate(-1)} className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm">
             <ArrowLeft size={14} /> Back
           </button>
-          <div className="flex gap-2">
-            <button className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm">
-              <Share size={14} /> Share
-            </button>
-            <button className="btn sm flex items-center gap-1.5 shadow-md">
-               Save List
-            </button>
-          </div>
+          <button className="btn outline sm text-slate-600 border-slate-300 hover:bg-slate-100 bg-white shadow-sm" onClick={handleShare}>
+            <Share size={14} /> {copied ? 'Copied' : 'Share'}
+          </button>
         </div>
 
-        {/* List Info */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#011936] leading-tight mb-2">{list.title}</h1>
           <div className="text-sm text-slate-600 mb-1 flex items-center gap-2">
@@ -90,7 +93,7 @@ export default function ListDetail() {
           <div className="text-xs text-slate-400 mb-5">
             Updated {new Date(list.updated_at).toLocaleDateString()}
           </div>
-          
+
           {list.description && (
             <div className="text-slate-700 leading-relaxed bg-white p-6 rounded-xl border border-slate-200 shadow-sm mt-2">
               {list.description}
@@ -110,17 +113,17 @@ export default function ListDetail() {
               No programs have been added to this list yet.
             </div>
           ) : (
-            list.items.map((item, index) => (
+            list.items.map((item) => (
               <div key={item.id}>
                 <ProgramCard program={item.program} />
-                
+
                 {item.author_commentary && (
                   <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-5 mt-4 ml-6 shadow-sm relative">
-                    <div className="absolute -left-3 top-6 w-3 h-[2px] bg-blue-200"></div>
-                    <div className="absolute -left-[18px] top-0 bottom-6 w-[2px] bg-blue-200"></div>
-                    
+                    <div className="absolute -left-3 top-6 w-3 h-[2px] bg-blue-200" />
+                    <div className="absolute -left-[18px] top-0 bottom-6 w-[2px] bg-blue-200" />
+
                     <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <span className="text-sm">💬</span> Author's Commentary
+                      Author&apos;s Commentary
                     </div>
                     <p className="text-sm text-slate-700 italic leading-relaxed">
                       "{item.author_commentary}"
@@ -131,7 +134,6 @@ export default function ListDetail() {
             ))
           )}
         </div>
-
       </div>
     </div>
   )
