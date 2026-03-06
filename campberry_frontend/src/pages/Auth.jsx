@@ -16,6 +16,7 @@ export default function Auth() {
   const redirectTarget = useMemo(() => searchParams.get('redirect') || '/my-lists', [searchParams]);
   const googleButtonRef = useRef(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const [googleState, setGoogleState] = useState('idle');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -29,7 +30,32 @@ export default function Auth() {
     }
 
     let cancelled = false;
-    let intervalId = null;
+
+    const ensureGoogleScript = () =>
+      new Promise((resolve, reject) => {
+        if (window.google?.accounts?.id) {
+          resolve();
+          return;
+        }
+
+        const existingScript = document.querySelector('script[data-google-gsi="true"]');
+        if (existingScript) {
+          existingScript.addEventListener('load', () => resolve(), { once: true });
+          existingScript.addEventListener('error', () => reject(new Error('Failed to load Google sign-in.')), {
+            once: true,
+          });
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.dataset.googleGsi = 'true';
+        script.addEventListener('load', () => resolve(), { once: true });
+        script.addEventListener('error', () => reject(new Error('Failed to load Google sign-in.')), { once: true });
+        document.body.appendChild(script);
+      });
 
     const initializeGoogleButton = () => {
       if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) {
@@ -56,22 +82,26 @@ export default function Auth() {
         width: 320,
         text: 'signin_with',
       });
+      setGoogleState('ready');
       return true;
     };
 
-    if (!initializeGoogleButton()) {
-      intervalId = window.setInterval(() => {
-        if (initializeGoogleButton() && intervalId) {
-          window.clearInterval(intervalId);
+    setGoogleState('loading');
+    ensureGoogleScript()
+      .then(() => {
+        if (!cancelled && !initializeGoogleButton()) {
+          throw new Error('Google sign-in is unavailable right now.');
         }
-      }, 250);
-    }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setGoogleState('error');
+          setError((current) => current || err.message || 'Google sign-in is unavailable right now.');
+        }
+      });
 
     return () => {
       cancelled = true;
-      if (intervalId) {
-        window.clearInterval(intervalId);
-      }
     };
   }, [googleClientId, isLogin, loginWithGoogle, navigate, redirectTarget]);
 
@@ -144,7 +174,14 @@ export default function Auth() {
                   <span style={{ padding: '0 12px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>CONTINUE WITH</span>
                   <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
                 </div>
-                <div ref={googleButtonRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', minHeight: '44px' }} />
+                <div style={{ marginBottom: '20px' }}>
+                  <div ref={googleButtonRef} style={{ display: 'flex', justifyContent: 'center', minHeight: '44px' }} />
+                  {googleState !== 'ready' && (
+                    <div style={{ marginTop: '8px', textAlign: 'center', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {googleState === 'error' ? 'Google sign-in is temporarily unavailable.' : 'Loading Google sign-in...'}
+                    </div>
+                  )}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', margin: '0 0 24px 0' }}>
                   <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
                   <span style={{ padding: '0 12px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>OR USE EMAIL</span>
