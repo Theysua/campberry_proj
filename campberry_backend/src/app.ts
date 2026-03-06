@@ -5,10 +5,36 @@ import authRoutes from './routes/authRoutes';
 import protectedRoutes from './routes/protectedRoutes';
 import publicRoutes from './routes/publicRoutes';
 
+const parseAllowedOrigins = () => {
+  const rawOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.CORS_ALLOWED_ORIGINS,
+    'http://localhost:5173',
+  ]
+    .filter(Boolean)
+    .flatMap((value) => String(value).split(','))
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return [...new Set(rawOrigins)];
+};
+
 export const createApp = () => {
   const app = express();
+  const allowedOrigins = parseAllowedOrigins();
 
-  app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+  app.set('trust proxy', 1);
+  app.use(cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS origin not allowed: ${origin}`));
+    },
+    credentials: true,
+  }));
   app.use(express.json());
   app.use(cookieParser());
 

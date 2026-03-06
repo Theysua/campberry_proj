@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
+import type { CookieOptions } from 'express';
 import prisma from '../db';
 import { parseOrRespond } from '../validation/parse';
 import {
@@ -20,16 +21,32 @@ const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID || '';
 const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:5173';
 const canExposeDevEmailPreview = () => process.env.NODE_ENV !== 'production';
+const isProduction = () => process.env.NODE_ENV === 'production';
+
+const getCookieOptions = (): CookieOptions => {
+  const requestedSameSite = String(process.env.COOKIE_SAME_SITE || (isProduction() ? 'none' : 'lax')).toLowerCase();
+  const sameSite =
+    requestedSameSite === 'strict' || requestedSameSite === 'lax' || requestedSameSite === 'none'
+      ? requestedSameSite
+      : (isProduction() ? 'none' : 'lax');
+  const secure =
+    process.env.COOKIE_SECURE !== undefined
+      ? process.env.COOKIE_SECURE === 'true'
+      : sameSite === 'none' || isProduction();
+
+  return {
+    httpOnly: true,
+    secure,
+    sameSite,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/api/v1/auth',
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
+  };
+};
 
 // Helper to set cookie
 const setRefreshTokenCookie = (res: Response, token: string) => {
-  res.cookie('refreshToken', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: '/api/v1/auth',
-  });
+  res.cookie('refreshToken', token, getCookieOptions());
 };
 
 const issueSession = async (
@@ -255,7 +272,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
       });
     }
 
-    res.clearCookie('refreshToken', { path: '/api/v1/auth' });
+    res.clearCookie('refreshToken', getCookieOptions());
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error(error);
