@@ -396,11 +396,13 @@ export default function Search() {
                   />
                 </div>
                 <button
-                  className="btn-outline"
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '10px', fontSize: '13px' }}
+                  className="location-trigger"
                   onClick={handleUseCurrentLocation}
                 >
-                  <LocateFixed size={14} /> Use My Location
+                  <span className="location-trigger-icon">
+                    <LocateFixed size={14} />
+                  </span>
+                  <span>Use My Location</span>
                 </button>
                 {locationStatus && <div style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '8px' }}>{locationStatus}</div>}
                 {locationError && <div style={{ fontSize: '12px', color: '#892233', marginTop: '8px' }}>{locationError}</div>}

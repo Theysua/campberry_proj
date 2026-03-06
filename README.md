@@ -93,6 +93,18 @@ npm run build
 npm run preview
 ```
 
+### Deploy Frontend to GitHub Pages
+
+The repository includes a GitHub Actions workflow that deploys only `campberry_frontend` to GitHub Pages.
+
+Before using it, add a repository variable named `VITE_API_URL` that points to your public backend API base, for example:
+
+```text
+https://your-backend.example.com/api/v1
+```
+
+Without `VITE_API_URL`, the GitHub Pages site will build and deploy, but API-backed features such as search, auth, lists, and saved programs will not work in production.
+
 ---
 
 ## 🎨 Design System

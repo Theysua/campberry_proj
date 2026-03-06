@@ -1,4 +1,14 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:3001/api/v1' : '')
+
+const requireApiBase = () => {
+  if (API_BASE) {
+    return API_BASE
+  }
+
+  throw new Error('API is not configured. Set VITE_API_URL for production builds.')
+}
 
 export const getAuthToken = () => localStorage.getItem('campberry_token')
 
@@ -25,7 +35,7 @@ const defaultHeaders = () => {
 }
 
 const refreshAccessToken = async () => {
-  const response = await fetch(`${API_BASE}/auth/refresh`, {
+  const response = await fetch(`${requireApiBase()}/auth/refresh`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -52,7 +62,7 @@ const shouldAttemptRefresh = (endpoint) =>
   !endpoint.startsWith('/auth/refresh')
 
 export const apiFetch = async (endpoint, options = {}, allowRetry = true) => {
-  const url = `${API_BASE}${endpoint}`
+  const url = `${requireApiBase()}${endpoint}`
   const response = await fetch(url, {
     credentials: 'include',
     ...options,
