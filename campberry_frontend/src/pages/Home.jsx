@@ -24,14 +24,17 @@ export default function Home() {
       timeoutId = window.setTimeout(warmSearchCache, 900)
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible')
-          observer.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' })
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    )
 
     document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((element) => {
       if (!element.classList.contains('visible')) {
@@ -53,9 +56,8 @@ export default function Home() {
     const hero = document.getElementById('hero-section')
     const handleHeroMouseMove = (event) => {
       const rect = hero.getBoundingClientRect()
-      const x = (event.clientX - rect.left) / rect.width - 0.5
-      const y = (event.clientY - rect.top) / rect.height - 0.5
-
+      const x = event.clientX / rect.width - rect.left / rect.width - 0.5
+      const y = event.clientY / rect.height - rect.top / rect.height - 0.5
       const orbs = hero.querySelectorAll('.hero-orb')
       orbs.forEach((orb, index) => {
         const speed = (index + 1) * 12
@@ -100,7 +102,7 @@ export default function Home() {
     { label: 'Research', emoji: '🔎', params: { q: 'Research' } },
     { label: 'Sports', emoji: '⚽', params: { q: 'Sports' } },
     { label: 'Music', emoji: '🎵', params: { q: 'Music' } },
-    { label: 'Hong Kong', emoji: '🌍', params: { location: 'Hong Kong' } },
+    { label: 'Hong Kong', emoji: '🌍', params: { q: 'Hong Kong' } },
   ]
 
   return (
@@ -111,8 +113,14 @@ export default function Home() {
           <div className="hero-orb hero-orb-2"></div>
           <div className="hero-orb hero-orb-3"></div>
           <div className="hero-orb hero-orb-4"></div>
-          <h1 className="animate-in"><span className="gradient-text">Find Your Dream Program</span></h1>
-          <p className="animate-in delay-1">Discover extracurriculars that matter.<br />Curated, ranked, and reviewed by experts.</p>
+          <h1 className="animate-in">
+            <span className="gradient-text">Find Your Dream Program</span>
+          </h1>
+          <p className="animate-in delay-1">
+            Discover extracurriculars that matter.
+            <br />
+            Curated, ranked, and reviewed by experts.
+          </p>
           <div className="hero-search animate-in delay-2">
             <input
               placeholder="Search over 1,000 opportunities..."
@@ -164,12 +172,14 @@ export default function Home() {
         <div style={{ maxWidth: '1200px', margin: '48px auto', padding: '0 24px' }}>
           <div className="reveal" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div className="section-title">Hot Programs</div>
-            <span onClick={() => navigate('/lists')} style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '600', cursor: 'pointer', transition: 'letter-spacing 0.3s' }}>See All Lists &rarr;</span>
+            <span onClick={() => navigate('/lists')} style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '600', cursor: 'pointer', transition: 'letter-spacing 0.3s' }}>
+              See All Lists &rarr;
+            </span>
           </div>
           <div className="hot-row">
             <div className="hot-card reveal-scale" onClick={() => navigate('/lists')} style={{ borderTop: 'none' }}>
               <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '4px', background: 'var(--accent-gradient)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0' }}></div>
-              <h4>Counselors' Top Picks</h4>
+              <h4>Counselors&apos; Top Picks</h4>
               <div className="meta">By School Counseling Group</div>
             </div>
             <div className="hot-card reveal-scale" onClick={() => navigate('/lists')} style={{ borderTop: 'none', transitionDelay: '0.1s' }}>
@@ -191,29 +201,42 @@ export default function Home() {
 
         <div style={{ maxWidth: '1200px', margin: '48px auto', padding: '0 24px' }}>
           <div className="reveal" style={{ marginBottom: '24px' }}>
-            <div className="section-title">Campberry Ratings
-              <span style={{ background: 'var(--yellow)', color: 'var(--text)', fontSize: '11px', padding: '4px 12px', borderRadius: 'var(--radius-pill)', fontWeight: '700', letterSpacing: '0.03em' }}>NEW</span>
+            <div className="section-title">
+              Campberry Ratings
+              <span style={{ background: 'var(--yellow)', color: 'var(--text)', fontSize: '11px', padding: '4px 12px', borderRadius: 'var(--radius-pill)', fontWeight: '700', letterSpacing: '0.03em' }}>
+                NEW
+              </span>
             </div>
             <div className="section-subtitle">Find the best opportunities ranked for quality and cost by our expert community.</div>
           </div>
           <div className="rating-grid">
-            <div className="rating-card accent-top reveal-scale">
-              <h4>Experts' Choice</h4>
+            <button
+              type="button"
+              className="rating-card accent-top reveal-scale"
+              onClick={() => navigateToSearch({ rating: 'MOST_RECOMMENDED' })}
+              style={{ textAlign: 'left', width: '100%', cursor: 'pointer' }}
+            >
+              <h4>Experts&apos; Choice</h4>
               <div className="desc">Top-tier programs selected by consultants.</div>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
                 <span className="badge-most">MOST RECOMMENDED</span>
                 <span className="badge-highly">HIGHLY RECOMMENDED</span>
               </div>
-              <div className="link">Explore Experts' Choice &rarr;</div>
-            </div>
-            <div className="rating-card primary-top reveal-scale" style={{ transitionDelay: '0.1s' }}>
+              <div className="link">Explore Experts&apos; Choice &rarr;</div>
+            </button>
+            <button
+              type="button"
+              className="rating-card primary-top reveal-scale"
+              onClick={() => navigateToSearch({ sort: 'Rating' })}
+              style={{ transitionDelay: '0.1s', textAlign: 'left', width: '100%', cursor: 'pointer' }}
+            >
               <h4>Impact on Admissions</h4>
               <div className="desc">Proven effectiveness in elite college review.</div>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
                 <span className="badge-impact">High Impact</span>
               </div>
               <div className="link">See High-Impact Programs &rarr;</div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -246,7 +269,7 @@ export default function Home() {
               <p>New: 200+ competitions</p>
             </div>
             <div className="cta-block reveal-scale" style={{ background: 'linear-gradient(135deg, var(--orange) 0%, var(--yellow) 100%)', transitionDelay: '0.1s' }}>
-              <h3 style={{ color: 'var(--navy)' }}>Save Time and Don't Miss Out</h3>
+              <h3 style={{ color: 'var(--navy)' }}>Save Time and Don&apos;t Miss Out</h3>
               <p style={{ color: 'var(--navy)' }}>Search powered by AI</p>
             </div>
           </div>
