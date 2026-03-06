@@ -14,17 +14,40 @@ import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContex
 
 const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline', 'Distance']
 
-const getProgramLocationLabel = (program) => {
-  const firstSession = program.sessions?.[0]
-  if (!firstSession) {
-    return 'Location TBD'
+const getProgramLocationMeta = (program) => {
+  const sessions = program.sessions || []
+  if (sessions.length === 0) {
+    return {
+      label: 'Location TBD',
+      hasOnline: false,
+      hasPhysical: false,
+    }
   }
 
-  if (firstSession.location_type === 'ONLINE') {
-    return 'Online'
+  const hasOnline = sessions.some((session) => session.location_type === 'ONLINE')
+  const firstPhysicalSession = sessions.find((session) => session.location_type !== 'ONLINE')
+
+  if (hasOnline && firstPhysicalSession) {
+    return {
+      label: 'Online + In Person',
+      hasOnline: true,
+      hasPhysical: true,
+    }
   }
 
-  return firstSession.location_name || 'Location TBD'
+  if (hasOnline) {
+    return {
+      label: 'Online',
+      hasOnline: true,
+      hasPhysical: false,
+    }
+  }
+
+  return {
+    label: firstPhysicalSession?.location_name || 'Location TBD',
+    hasOnline: false,
+    hasPhysical: Boolean(firstPhysicalSession),
+  }
 }
 
 const getVisiblePageItems = (currentPage, totalPages) => {
@@ -91,6 +114,8 @@ export default function Search() {
   const [allInterests, setAllInterests] = useState([])
   const visiblePageItems = getVisiblePageItems(page, totalPages || 1)
   const backTarget = getBackTarget(location, '/', 'Back to Home')
+  const isLocationSearchWithOnline = Boolean((currentCoords || locationInput.trim()) && includeOnline && !onlineOnly)
+  const resultsHeading = isLocationSearchWithOnline ? `${totalPrograms} Results (nearby + online)` : `${totalPrograms} Results`
 
   useEffect(() => {
     const nextState = parseSearchStateFromParams(searchParams)
@@ -596,7 +621,7 @@ export default function Search() {
           <div style={{ flex: '1' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
               <h2 style={{ margin: '0', fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>
-                {totalPrograms} Results
+                {resultsHeading}
               </h2>
 
               <button className="mobile-filter-toggle btn-outline" onClick={() => setIsMobileFilterOpen(true)}>
@@ -635,9 +660,11 @@ export default function Search() {
 
             <div className="l1-grid">
               {programs.map((program, index) => {
-                const locationLabel = getProgramLocationLabel(program)
+                const locationMeta = getProgramLocationMeta(program)
                 const distanceLabel =
-                  typeof program.distance_miles === 'number' ? `${program.distance_miles.toFixed(1)} mi away` : null
+                  typeof program.distance_miles === 'number' && !locationMeta.hasOnline
+                    ? `${program.distance_miles.toFixed(1)} mi away`
+                    : null
 
                 return (
                   <div
@@ -669,7 +696,7 @@ export default function Search() {
                     </div>
 
                     <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-                      <span>{locationLabel}</span>
+                      <span>{locationMeta.label}</span>
                       {distanceLabel && <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{distanceLabel}</span>}
                     </div>
 
