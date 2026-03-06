@@ -1,23 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, Check, MapPin, LocateFixed } from 'lucide-react'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { getInterests, getPrograms } from '../services/api'
+import {
+  areArraysEqual,
+  areCoordsEqual,
+  buildSearchParamsFromState,
+  parseSearchStateFromParams,
+  sortToApiValue,
+} from '../utils/searchUrlState'
 
 const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline', 'Distance']
-
-const sortToApiValue = (sortBy) => {
-  switch (sortBy) {
-    case 'Rating':
-      return 'rating'
-    case 'Deadline':
-      return 'deadline'
-    case 'Distance':
-      return 'distance'
-    default:
-      return 'relevancy'
-  }
-}
 
 const getProgramLocationLabel = (program) => {
   const firstSession = program.sessions?.[0]
@@ -34,11 +28,13 @@ const getProgramLocationLabel = (program) => {
 
 export default function Search() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   useScrollReveal()
 
   const [sortOpen, setSortOpen] = useState(false)
   const [sortBy, setSortBy] = useState('Relevancy')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const [isUrlStateReady, setIsUrlStateReady] = useState(false)
   const sortRef = useRef(null)
 
   const [searchInput, setSearchInput] = useState('')
@@ -68,6 +64,92 @@ export default function Search() {
   const [allInterests, setAllInterests] = useState([])
 
   useEffect(() => {
+    const nextState = parseSearchStateFromParams(searchParams)
+
+    setSearchInput((current) => (current === nextState.searchInput ? current : nextState.searchInput))
+    setSearchQuery((current) => (current === nextState.searchQuery ? current : nextState.searchQuery))
+    setTypeFilter((current) => (current === nextState.typeFilter ? current : nextState.typeFilter))
+    setRatingFilter((current) => (current === nextState.ratingFilter ? current : nextState.ratingFilter))
+    setIsFree((current) => (current === nextState.isFree ? current : nextState.isFree))
+    setIsSelective((current) => (current === nextState.isSelective ? current : nextState.isSelective))
+    setLocationInput((current) => (current === nextState.locationInput ? current : nextState.locationInput))
+    setOnlineOnly((current) => (current === nextState.onlineOnly ? current : nextState.onlineOnly))
+    setInternationalFilter((current) =>
+      current === nextState.internationalFilter ? current : nextState.internationalFilter
+    )
+    setCreditFilter((current) => (current === nextState.creditFilter ? current : nextState.creditFilter))
+    setOneOnOneFilter((current) => (current === nextState.oneOnOneFilter ? current : nextState.oneOnOneFilter))
+    setIncludeOnline((current) => (current === nextState.includeOnline ? current : nextState.includeOnline))
+    setSeasonFilter((current) => (current === nextState.seasonFilter ? current : nextState.seasonFilter))
+    setGradesFilter((current) => (areArraysEqual(current, nextState.gradesFilter) ? current : nextState.gradesFilter))
+    setInterestIds((current) => (areArraysEqual(current, nextState.interestIds) ? current : nextState.interestIds))
+    setRadiusMiles((current) => (current === nextState.radiusMiles ? current : nextState.radiusMiles))
+    setCurrentCoords((current) => (areCoordsEqual(current, nextState.currentCoords) ? current : nextState.currentCoords))
+    setLocationStatus((current) => (current === nextState.locationStatus ? current : nextState.locationStatus))
+    setLocationError((current) => (current === nextState.locationError ? current : nextState.locationError))
+    setSortBy((current) => (current === nextState.sortBy ? current : nextState.sortBy))
+    setPage((current) => (current === nextState.page ? current : nextState.page))
+    setIsUrlStateReady(true)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!isUrlStateReady) {
+      return
+    }
+
+    const nextParams = buildSearchParamsFromState({
+      searchQuery,
+      typeFilter,
+      ratingFilter,
+      isFree,
+      isSelective,
+      locationInput,
+      onlineOnly,
+      internationalFilter,
+      creditFilter,
+      oneOnOneFilter,
+      includeOnline,
+      seasonFilter,
+      gradesFilter,
+      interestIds,
+      radiusMiles,
+      currentCoords,
+      sortBy,
+      page,
+    })
+
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true })
+    }
+  }, [
+    isUrlStateReady,
+    searchQuery,
+    typeFilter,
+    ratingFilter,
+    isFree,
+    isSelective,
+    locationInput,
+    onlineOnly,
+    internationalFilter,
+    creditFilter,
+    oneOnOneFilter,
+    includeOnline,
+    seasonFilter,
+    gradesFilter,
+    interestIds,
+    radiusMiles,
+    currentCoords,
+    sortBy,
+    page,
+    searchParams,
+    setSearchParams,
+  ])
+
+  useEffect(() => {
+    if (!isUrlStateReady) {
+      return
+    }
+
     getPrograms({
       search: searchQuery || undefined,
       type: typeFilter || undefined,
@@ -99,6 +181,7 @@ export default function Search() {
       })
       .catch((error) => console.error('Failed to load programs', error))
   }, [
+    isUrlStateReady,
     searchQuery,
     typeFilter,
     ratingFilter,
@@ -137,7 +220,7 @@ export default function Search() {
   }, [])
 
   const handleSearchClick = () => {
-    setSearchQuery(searchInput)
+    setSearchQuery(searchInput.trim())
     setPage(1)
   }
 
@@ -198,7 +281,7 @@ export default function Search() {
   return (
     <div className="page" id="page-search">
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 24px 40px 24px' }}>
-        <button className="btn-outline" onClick={() => navigate('/home')} style={{ marginBottom: '20px', fontSize: '13px', padding: '6px 18px' }}>
+        <button className="btn-outline" onClick={() => navigate('/')} style={{ marginBottom: '20px', fontSize: '13px', padding: '6px 18px' }}>
           ← Back
         </button>
 
@@ -307,6 +390,7 @@ export default function Search() {
                       setLocationInput(event.target.value)
                       setCurrentCoords(null)
                       setLocationStatus('')
+                      setLocationError('')
                       setPage(1)
                     }}
                   />
