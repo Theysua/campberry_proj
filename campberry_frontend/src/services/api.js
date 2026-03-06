@@ -154,13 +154,13 @@ const writeCachedValue = (endpoint, data, ttlMs) => {
   }
 }
 
-const cachedPublicFetch = async (endpoint, ttlMs) => {
+const cachedPublicFetch = async (endpoint, ttlMs, options = {}) => {
   const cached = readCachedValue(endpoint)
   if (cached) {
     return cached
   }
 
-  const data = await apiFetch(endpoint)
+  const data = await apiFetch(endpoint, options)
   writeCachedValue(endpoint, data, ttlMs)
   return data
 }
@@ -225,7 +225,7 @@ export const getMe = () =>
     ? demoGetMe()
     : apiFetch('/me')
 
-export const getPrograms = (params = {}) => {
+export const getPrograms = (params = {}, options = {}) => {
   if (isDemoMode) {
     return Promise.resolve(getDemoPrograms(params))
   }
@@ -234,7 +234,7 @@ export const getPrograms = (params = {}) => {
     Object.entries(params).filter(([, value]) => value !== undefined && value !== '' && value !== null && value !== false)
   ).toString()
 
-  return cachedPublicFetch(`/programs${query ? `?${query}` : ''}`, PROGRAMS_CACHE_TTL_MS)
+  return cachedPublicFetch(`/programs${query ? `?${query}` : ''}`, PROGRAMS_CACHE_TTL_MS, options)
 }
 
 export const getProgramById = (id) =>

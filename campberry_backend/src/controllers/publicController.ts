@@ -3,6 +3,37 @@ import prisma from '../db';
 import { parseOrRespond } from '../validation/parse';
 import { searchProgramsQuerySchema } from '../validation/schemas';
 
+const PUBLIC_RESPONSE_CACHE = new Map<string, { expiresAt: number; payload: unknown }>();
+const PROGRAMS_CACHE_TTL_MS = 60 * 1000;
+const INTERESTS_CACHE_TTL_MS = 10 * 60 * 1000;
+
+const getCachedResponse = <T>(key: string): T | null => {
+  const cached = PUBLIC_RESPONSE_CACHE.get(key);
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    PUBLIC_RESPONSE_CACHE.delete(key);
+    return null;
+  }
+
+  return cached.payload as T;
+};
+
+const setCachedResponse = (key: string, payload: unknown, ttlMs: number) => {
+  PUBLIC_RESPONSE_CACHE.set(key, {
+    payload,
+    expiresAt: Date.now() + ttlMs,
+  });
+};
+
+const sendCachedJson = (res: Response, payload: unknown, maxAgeSeconds: number, cacheState: 'HIT' | 'MISS') => {
+  res.setHeader('Cache-Control', `public, max-age=${maxAgeSeconds}, stale-while-revalidate=${maxAgeSeconds * 5}`);
+  res.setHeader('X-Campberry-Cache', cacheState);
+  res.json(payload);
+};
+
 const SEASON_MONTHS: Record<string, number[]> = {
   SPRING: [1, 2, 3, 4, 5],
   SUMMER: [6, 7, 8],
@@ -439,6 +470,13 @@ const buildSessionFilterClause = ({
 
 export const getPrograms = async (req: Request, res: Response) => {
   try {
+    const cacheKey = `programs:${req.originalUrl}`;
+    const cachedPayload = getCachedResponse<any>(cacheKey);
+    if (cachedPayload) {
+      sendCachedJson(res, cachedPayload, 60, 'HIT');
+      return;
+    }
+
     const parsedQuery = parseOrRespond(searchProgramsQuerySchema, req.query, res);
     if (!parsedQuery) {
       return;
@@ -681,7 +719,7 @@ export const getPrograms = async (req: Request, res: Response) => {
       .map((program) => program.id);
 
     if (paginatedIds.length === 0) {
-      res.json({
+      const payload = {
         data: [],
         meta: {
           page: pageNumber,
@@ -689,7 +727,9 @@ export const getPrograms = async (req: Request, res: Response) => {
           total,
           totalPages: Math.max(1, Math.ceil(total / limitNumber)),
         },
-      });
+      };
+      setCachedResponse(cacheKey, payload, PROGRAMS_CACHE_TTL_MS);
+      sendCachedJson(res, payload, 60, 'MISS');
       return;
     }
 
@@ -727,7 +767,7 @@ export const getPrograms = async (req: Request, res: Response) => {
       })
       .filter(Boolean);
 
-    res.json({
+    const payload = {
       data: orderedPrograms,
       meta: {
         page: pageNumber,
@@ -735,7 +775,10 @@ export const getPrograms = async (req: Request, res: Response) => {
         total,
         totalPages: Math.max(1, Math.ceil(total / limitNumber)),
       },
-    });
+    };
+
+    setCachedResponse(cacheKey, payload, PROGRAMS_CACHE_TTL_MS);
+    sendCachedJson(res, payload, 60, 'MISS');
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch programs' });
@@ -880,10 +923,18 @@ export const getListFeedback = async (req: Request, res: Response) => {
 
 export const getInterests = async (_req: Request, res: Response) => {
   try {
+    const cacheKey = 'interests';
+    const cachedPayload = getCachedResponse<any[]>(cacheKey);
+    if (cachedPayload) {
+      sendCachedJson(res, cachedPayload, 600, 'HIT');
+      return;
+    }
+
     const interests = await prisma.interest.findMany({
       orderBy: { name: 'asc' },
     });
-    res.json(interests);
+    setCachedResponse(cacheKey, interests, INTERESTS_CACHE_TTL_MS);
+    sendCachedJson(res, interests, 600, 'MISS');
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch interests' });
