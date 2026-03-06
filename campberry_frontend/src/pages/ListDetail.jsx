@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ProgramCard from '../components/ProgramCard'
 import { getListById } from '../services/api'
+import { getListCoverImage } from '../utils/listCoverImages'
 import { getBackTarget } from '../utils/navigationContext'
 
 export default function ListDetail() {
@@ -76,6 +77,7 @@ export default function ListDetail() {
 
   const feedbackSummary = list.feedback_summary || { averageRating: null, ratingCount: 0, commentCount: 0 }
   const feedbackPreview = Array.isArray(list.feedback_preview) ? list.feedback_preview : []
+  const cover = getListCoverImage(list.title)
 
   return (
     <div className="bg-[#f8fafc] min-h-screen pb-20 animate-fade-in relative z-0">
@@ -90,6 +92,17 @@ export default function ListDetail() {
         </div>
 
         <div className="mb-8">
+          {cover && (
+            <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm mb-6">
+              <img
+                src={cover.imageUrl}
+                alt={cover.alt}
+                className="w-full h-64 object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          )}
           <h1 className="text-3xl font-bold text-[#011936] leading-tight mb-2">{list.title}</h1>
           <div className="text-sm text-slate-600 mb-1 flex items-center gap-2">
             <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded flex items-center justify-center font-bold text-xs uppercase scale-110">

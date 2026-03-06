@@ -1,14 +1,27 @@
 import { UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getListCoverImage } from '../utils/listCoverImages'
 
 export default function ListCard({ list, linkPrefix = '/lists' }) {
   const { id, title, author, authorRole, width = 'w-[280px]' } = list
 
   const displayAuthorName = typeof author === 'object' ? author?.name : author
   const displayAuthorRole = typeof author === 'object' ? author?.role : authorRole
+  const cover = getListCoverImage(title)
 
   return (
     <Link to={`${linkPrefix}/${id}`} className={`card flex flex-col ${width} shrink-0 hover:-translate-y-1 !p-5 group`}>
+      {cover && (
+        <div className="mb-4 -mx-5 -mt-5 overflow-hidden rounded-t-[22px] border-b border-slate-200">
+          <img
+            src={cover.imageUrl}
+            alt={cover.alt}
+            loading="lazy"
+            decoding="async"
+            className="h-36 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        </div>
+      )}
       <h3 className="text-[14px] font-bold text-[#011936] group-hover:text-[#892233] transition-colors leading-snug mb-5 flex-1 break-words">
         {title}
       </h3>
