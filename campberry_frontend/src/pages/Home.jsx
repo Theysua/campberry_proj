@@ -1,19 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import {
-  BriefcaseBusiness,
-  Code2,
-  Flame,
-  Globe2,
-  LockKeyhole,
-  Microscope,
-  Music4,
-  Palette,
-  Scale,
-  Star,
-  Trophy,
-  University,
-  PenTool,
-} from 'lucide-react'
+import { LockKeyhole, Scale, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { buildSearchPath } from '../utils/searchUrlState'
 
@@ -83,16 +69,16 @@ export default function Home() {
   }
 
   const topSearchItems = [
-    { label: 'Summer', icon: Flame, params: { season: 'Summer' } },
-    { label: 'STEM', icon: Microscope, params: { q: 'STEM' } },
-    { label: 'Business', icon: BriefcaseBusiness, params: { q: 'Business' } },
-    { label: 'Coding', icon: Code2, params: { q: 'Coding' } },
-    { label: 'Writing', icon: PenTool, params: { q: 'Writing' } },
-    { label: 'Arts', icon: Palette, params: { q: 'Arts' } },
-    { label: 'Research', icon: University, params: { q: 'Research' } },
-    { label: 'Sports', icon: Trophy, params: { q: 'Sports' } },
-    { label: 'Music', icon: Music4, params: { q: 'Music' } },
-    { label: 'Hong Kong', icon: Globe2, params: { location: 'Hong Kong' } },
+    { label: 'Summer', emoji: '🌞', params: { season: 'Summer' } },
+    { label: 'STEM', emoji: '🔬', params: { q: 'STEM' } },
+    { label: 'Business', emoji: '💼', params: { q: 'Business' } },
+    { label: 'Coding', emoji: '💻', params: { q: 'Coding' } },
+    { label: 'Writing', emoji: '✍️', params: { q: 'Writing' } },
+    { label: 'Arts', emoji: '🎨', params: { q: 'Arts' } },
+    { label: 'Research', emoji: '🔎', params: { q: 'Research' } },
+    { label: 'Sports', emoji: '⚽', params: { q: 'Sports' } },
+    { label: 'Music', emoji: '🎵', params: { q: 'Music' } },
+    { label: 'Hong Kong', emoji: '🌍', params: { location: 'Hong Kong' } },
   ]
 
   return (
@@ -132,9 +118,11 @@ export default function Home() {
           </div>
 
           <div className="top-searches animate-in delay-4">
-            {topSearchItems.map(({ label, icon: Icon, params }) => (
+            {topSearchItems.map(({ label, emoji, params }) => (
               <span key={label} className="top-search-pill" onClick={() => navigateToSearch(params)}>
-                <Icon size={16} strokeWidth={2.1} />
+                <span role="img" aria-hidden="true" style={{ fontSize: '15px', lineHeight: 1 }}>
+                  {emoji}
+                </span>
                 {label}
               </span>
             ))}
