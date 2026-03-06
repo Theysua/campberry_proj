@@ -1,8 +1,209 @@
 import { Request, Response } from 'express';
 import prisma from '../db';
+import { parseOrRespond } from '../validation/parse';
+import { searchProgramsQuerySchema } from '../validation/schemas';
+
+const SEASON_MONTHS: Record<string, number[]> = {
+  SPRING: [1, 2, 3, 4, 5],
+  SUMMER: [6, 7, 8],
+  FALL: [9, 10, 11],
+};
+
+const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+const haversineMiles = (
+  originLat: number,
+  originLng: number,
+  destinationLat: number,
+  destinationLng: number
+) => {
+  const earthRadiusMiles = 3958.8;
+  const dLat = toRadians(destinationLat - originLat);
+  const dLng = toRadians(destinationLng - originLng);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(originLat)) *
+      Math.cos(toRadians(destinationLat)) *
+      Math.sin(dLng / 2) ** 2;
+
+  return 2 * earthRadiusMiles * Math.asin(Math.sqrt(a));
+};
+
+const getMonthRange = (startDate?: Date | null, endDate?: Date | null) => {
+  if (!startDate && !endDate) {
+    return [];
+  }
+
+  const start = startDate ?? endDate;
+  const end = endDate ?? startDate;
+
+  if (!start || !end) {
+    return [];
+  }
+
+  const months: number[] = [];
+  const cursor = new Date(start);
+  cursor.setDate(1);
+  const finalDate = new Date(end);
+  finalDate.setDate(1);
+
+  while (cursor <= finalDate) {
+    months.push(cursor.getMonth() + 1);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  return months;
+};
+
+const matchesSeason = (sessions: any[], season?: string) => {
+  if (!season) {
+    return true;
+  }
+
+  const allowedMonths = SEASON_MONTHS[String(season).toUpperCase()];
+  if (!allowedMonths) {
+    return true;
+  }
+
+  return sessions.some((session) =>
+    getMonthRange(session.start_date, session.end_date).some((month) =>
+      allowedMonths.includes(month)
+    )
+  );
+};
+
+const parseGradeList = (eligibleGrades?: string | null) =>
+  String(eligibleGrades || '')
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => Number.isInteger(value));
+
+const matchesGrades = (eligibleGrades?: string | null, selectedGrades?: number[]) => {
+  if (!selectedGrades || selectedGrades.length === 0) {
+    return true;
+  }
+
+  const availableGrades = parseGradeList(eligibleGrades);
+  return selectedGrades.some((grade) => availableGrades.includes(grade));
+};
+
+const hasOnlineSession = (sessions: any[]) =>
+  sessions.some((session) => session.location_type === 'ONLINE');
+
+const hasPhysicalSession = (sessions: any[]) =>
+  sessions.some((session) => session.location_type !== 'ONLINE');
+
+const getProgramDistanceMiles = (sessions: any[], lat?: number, lng?: number) => {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  let minDistance: number | null = null;
+
+  for (const session of sessions) {
+    if (
+      session.location_type === 'ONLINE' ||
+      typeof session.location_lat !== 'number' ||
+      typeof session.location_lng !== 'number'
+    ) {
+      continue;
+    }
+
+    const distance = haversineMiles(lat as number, lng as number, session.location_lat, session.location_lng);
+    if (minDistance === null || distance < minDistance) {
+      minDistance = distance;
+    }
+  }
+
+  return minDistance;
+};
+
+const matchesLocationText = (sessions: any[], locationText?: string) => {
+  if (!locationText) {
+    return false;
+  }
+
+  const normalized = locationText.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  return sessions.some((session) =>
+    String(session.location_name || '').toLowerCase().includes(normalized)
+  );
+};
+
+const getRatingScore = (program: any) => {
+  let score = 0;
+  if (program.experts_choice_rating === 'MOST_RECOMMENDED') {
+    score += 100;
+  } else if (program.experts_choice_rating === 'HIGHLY_RECOMMENDED') {
+    score += 70;
+  }
+
+  if (program.impact_rating === 'MOST_HIGH_IMPACT') {
+    score += 50;
+  } else if (program.impact_rating === 'HIGH_IMPACT') {
+    score += 30;
+  }
+
+  if (program.is_highly_selective) {
+    score += 10;
+  }
+
+  return score;
+};
+
+const getNextDeadlineTime = (deadlines: any[]) => {
+  const now = Date.now();
+  const futureDeadlines = deadlines
+    .map((deadline) => new Date(deadline.date).getTime())
+    .filter((time) => time >= now)
+    .sort((a, b) => a - b);
+
+  return futureDeadlines[0] ?? Number.POSITIVE_INFINITY;
+};
+
+const getRelevanceScore = (program: any, search?: string) => {
+  if (!search) {
+    return getRatingScore(program);
+  }
+
+  const query = search.trim().toLowerCase();
+  const programName = String(program.name || '').toLowerCase();
+  const providerName = String(program.provider?.name || '').toLowerCase();
+  const description = String(program.description || '').toLowerCase();
+
+  let score = 0;
+  if (programName === query) {
+    score += 200;
+  } else if (programName.startsWith(query)) {
+    score += 120;
+  } else if (programName.includes(query)) {
+    score += 80;
+  }
+
+  if (providerName.includes(query)) {
+    score += 40;
+  }
+
+  if (description.includes(query)) {
+    score += 10;
+  }
+
+  return score + getRatingScore(program);
+};
+
+const canUseDistance = (lat?: number, lng?: number) =>
+  Number.isFinite(lat) && Number.isFinite(lng);
 
 export const getPrograms = async (req: Request, res: Response) => {
   try {
+    const parsedQuery = parseOrRespond(searchProgramsQuerySchema, req.query, res);
+    if (!parsedQuery) {
+      return;
+    }
+
     const {
       search,
       interests,
@@ -11,6 +212,7 @@ export const getPrograms = async (req: Request, res: Response) => {
       isSelective,
       rating,
       zip,
+      locationQuery,
       season,
       onlineOnly,
       includeOnline,
@@ -18,22 +220,60 @@ export const getPrograms = async (req: Request, res: Response) => {
       international,
       collegeCredit,
       oneOnOne,
+      lat,
+      lng,
+      radiusMiles,
+      sort,
       page = 1,
       limit = 10,
-    } = req.query;
+    } = parsedQuery;
 
-    const pageNumber = Number(page);
-    const limitNumber = Number(limit);
-    const skip = (pageNumber - 1) * limitNumber;
+    const pageNumber = Math.max(1, Number(page) || 1);
+    const limitNumber = Math.max(1, Number(limit) || 10);
+    const selectedGrades = grades
+      ? grades
+          .split(',')
+          .map((value) => Number(value.trim()))
+          .filter((value) => Number.isInteger(value))
+      : [];
 
-    // Building the where clause based on query params
+    const latitude = lat;
+    const longitude = lng;
+    const distanceRadius = radiusMiles;
+    const locationText = locationQuery || zip;
+    const includeOnlinePrograms = includeOnline !== 'false';
+    const onlineOnlyPrograms = onlineOnly === 'true';
+    const sortKey = sort || 'relevancy';
+
     const whereClause: any = {};
+    const andClauses: any[] = [];
 
     if (search) {
-      whereClause.name = {
-        contains: String(search),
-        mode: 'insensitive',
-      };
+      const query = String(search).trim();
+      andClauses.push({
+        OR: [
+          {
+            name: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+          {
+            provider: {
+              name: {
+                contains: query,
+                mode: 'insensitive',
+              },
+            },
+          },
+          {
+            description: {
+              contains: query,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      });
     }
 
     if (type) {
@@ -49,22 +289,22 @@ export const getPrograms = async (req: Request, res: Response) => {
     }
 
     if (isFree === 'true') {
-      // According to frontend filters, free maps roughly to cost_info containing 'free' or 0
-      whereClause.cost_info = {
-        contains: 'free',
-        mode: 'insensitive'
-      };
-    }
-
-    if (season) {
-      whereClause.sessions = {
-        some: {
-          name: {
-            contains: String(season),
-            mode: 'insensitive'
-          }
-        }
-      };
+      andClauses.push({
+        OR: [
+        {
+          cost_info: {
+            contains: 'free',
+            mode: 'insensitive',
+          },
+        },
+        {
+          cost_info: {
+            contains: 'fully funded',
+            mode: 'insensitive',
+          },
+        },
+        ],
+      });
     }
 
     if (international === 'true') {
@@ -79,90 +319,108 @@ export const getPrograms = async (req: Request, res: Response) => {
       whereClause.is_one_on_one = true;
     }
 
-    if (zip) {
-      whereClause.sessions = {
-        ...(whereClause.sessions || {}),
-        some: {
-          ...(whereClause.sessions?.some || {}),
-          location_name: {
-            contains: String(zip),
-            mode: 'insensitive'
-          }
-        }
-      };
-    }
-
-    if (onlineOnly === 'true') {
-      whereClause.sessions = {
-        ...(whereClause.sessions || {}),
-        some: {
-          ...(whereClause.sessions?.some || {}),
-          location_type: 'ONLINE'
-        }
-      };
-    } else if (includeOnline !== 'true') {
-      // Exclude online programs
-      whereClause.sessions = {
-        ...(whereClause.sessions || {}),
-        none: {
-          location_type: 'ONLINE'
-        }
-      };
-    }
-
-    if (grades && typeof grades === 'string') {
-      const selectedGrades = grades.split(',').map(g => parseInt(g.trim())).filter(g => !isNaN(g));
-      if (selectedGrades.length > 0) {
-        whereClause.AND = [
-          ...(whereClause.AND || []),
-          {
-            OR: selectedGrades.map(g => ({
-              eligible_grades: { contains: String(g) }
-            }))
-          }
-        ];
-      }
-    }
-
     if (interests && typeof interests === 'string') {
-      const interestIds = interests.split(',').map(Number).filter(n => !isNaN(n));
+      const interestIds = interests.split(',').map(Number).filter((value) => !Number.isNaN(value));
       if (interestIds.length > 0) {
         whereClause.interests = {
           some: {
-            interest_id: { in: interestIds }
-          }
+            interest_id: { in: interestIds },
+          },
         };
       }
     }
 
-    // Default fetch with new filters
+    if (andClauses.length > 0) {
+      whereClause.AND = andClauses;
+    }
+
     const programs = await prisma.program.findMany({
       where: whereClause,
       include: {
         provider: true,
+        deadlines: true,
+        sessions: true,
         interests: {
           include: {
-            interest: true
-          }
-        }
+            interest: true,
+          },
+        },
       },
-      skip,
-      take: limitNumber,
-      orderBy: { created_at: 'desc' }
+      orderBy: {
+        created_at: 'desc',
+      },
     });
 
-    const total = await prisma.program.count({ where: whereClause });
+    let filteredPrograms = programs
+      .map((program) => ({
+        ...program,
+        distance_miles: getProgramDistanceMiles(program.sessions, latitude, longitude),
+      }))
+      .filter((program) => matchesGrades(program.eligible_grades, selectedGrades))
+      .filter((program) => matchesSeason(program.sessions, typeof season === 'string' ? season : undefined))
+      .filter((program) => {
+        const hasOnline = hasOnlineSession(program.sessions);
+        const hasPhysical = hasPhysicalSession(program.sessions);
+
+        if (onlineOnlyPrograms) {
+          return hasOnline;
+        }
+
+        if (!includeOnlinePrograms && !hasPhysical) {
+          return false;
+        }
+
+        if (canUseDistance(latitude, longitude) && Number.isFinite(distanceRadius)) {
+          const physicalMatch =
+            typeof program.distance_miles === 'number' &&
+            program.distance_miles <= (distanceRadius as number);
+          return physicalMatch || (includeOnlinePrograms && hasOnline);
+        }
+
+        if (locationText) {
+          const physicalMatch = matchesLocationText(program.sessions, locationText);
+          return physicalMatch || (includeOnlinePrograms && hasOnline);
+        }
+
+        return includeOnlinePrograms || hasPhysical;
+      });
+
+    filteredPrograms.sort((left, right) => {
+      if (sortKey === 'rating') {
+        return getRatingScore(right) - getRatingScore(left);
+      }
+
+      if (sortKey === 'deadline') {
+        return getNextDeadlineTime(left.deadlines) - getNextDeadlineTime(right.deadlines);
+      }
+
+      if (sortKey === 'distance' && canUseDistance(latitude, longitude)) {
+        const leftDistance = left.distance_miles ?? Number.POSITIVE_INFINITY;
+        const rightDistance = right.distance_miles ?? Number.POSITIVE_INFINITY;
+        return leftDistance - rightDistance;
+      }
+
+      return (
+        getRelevanceScore(right, typeof search === 'string' ? search : undefined) -
+        getRelevanceScore(left, typeof search === 'string' ? search : undefined)
+      );
+    });
+
+    const total = filteredPrograms.length;
+    const paginatedPrograms = filteredPrograms.slice(
+      (pageNumber - 1) * limitNumber,
+      pageNumber * limitNumber
+    );
 
     res.json({
-      data: programs,
+      data: paginatedPrograms,
       meta: {
         page: pageNumber,
         limit: limitNumber,
         total,
-        totalPages: Math.ceil(total / limitNumber)
-      }
+        totalPages: Math.max(1, Math.ceil(total / limitNumber)),
+      },
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch programs' });
@@ -179,9 +437,9 @@ export const getProgramById = async (req: Request, res: Response) => {
         sessions: true,
         deadlines: true,
         interests: {
-          include: { interest: true }
-        }
-      }
+          include: { interest: true },
+        },
+      },
     });
 
     if (!program) {
@@ -195,15 +453,19 @@ export const getProgramById = async (req: Request, res: Response) => {
   }
 };
 
-export const getLists = async (req: Request, res: Response) => {
+export const getLists = async (_req: Request, res: Response) => {
   try {
     const lists = await prisma.list.findMany({
       where: { is_public: true },
       include: {
         author: {
-          select: { name: true, role: true }
-        }
-      }
+          select: { name: true, role: true },
+        },
+        _count: {
+          select: { items: true },
+        },
+      },
+      orderBy: { updated_at: 'desc' },
     });
     res.json(lists);
   } catch (error) {
@@ -215,21 +477,24 @@ export const getLists = async (req: Request, res: Response) => {
 export const getListById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const list = await prisma.list.findUnique({
-      where: { id: String(id) },
+    const list = await prisma.list.findFirst({
+      where: {
+        id: String(id),
+        is_public: true,
+      },
       include: {
         author: {
-          select: { name: true }
+          select: { name: true, role: true },
         },
         items: {
           include: {
             program: {
-              include: { provider: true }
-            }
+              include: { provider: true },
+            },
           },
-          orderBy: { display_order: 'asc' }
-        }
-      }
+          orderBy: { display_order: 'asc' },
+        },
+      },
     });
 
     if (!list) {
@@ -243,9 +508,11 @@ export const getListById = async (req: Request, res: Response) => {
   }
 };
 
-export const getInterests = async (req: Request, res: Response) => {
+export const getInterests = async (_req: Request, res: Response) => {
   try {
-    const interests = await prisma.interest.findMany();
+    const interests = await prisma.interest.findMany({
+      orderBy: { name: 'asc' },
+    });
     res.json(interests);
   } catch (error) {
     console.error(error);

@@ -2,6 +2,12 @@ import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../db';
+import { parseOrRespond } from '../validation/parse';
+import {
+  loginBodySchema,
+  registerBodySchema,
+  verifyEmailBodySchema,
+} from '../validation/schemas';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'campberry_super_secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'campberry_refresh_super_secret';
@@ -19,7 +25,12 @@ const setRefreshTokenCookie = (res: Response, token: string) => {
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, password, role } = req.body;
+    const parsedBody = parseOrRespond(registerBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { name, email, password } = parsedBody;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -37,7 +48,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         name,
         email,
         password_hash,
-        role: role || 'STUDENT',
+        role: 'STUDENT',
         is_verified: false,
       },
     });
@@ -51,7 +62,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const parsedBody = parseOrRespond(loginBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { email, password } = parsedBody;
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -150,7 +166,12 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 
 export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { verificationToken } = req.body;
+    const parsedBody = parseOrRespond(verifyEmailBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const verificationToken = parsedBody.verificationToken || parsedBody.token;
     // Stubbed logic: we'll pretend the token contains user ID for now
     // In reality, you would map token->userId in DB or verify JWT.
     // For MVP, if token exists, we consider it valid.

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
-import { getListById, updateList, deleteList, removeListItem, updateListItem } from '../services/api';
-import { useAuthContext } from '../context/AuthContext';
+import { getMyListById, updateList, deleteList, removeListItem, updateListItem } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Trash2, Edit2, Check, X, ArrowUp, ArrowDown } from 'lucide-react';
 
 export default function MyListDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   useScrollReveal();
-  const { user } = useAuthContext();
+  const { user } = useAuth();
 
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function MyListDetail() {
 
   const fetchList = () => {
     setLoading(true);
-    getListById(id)
+    getMyListById(id)
       .then(res => {
         setList(res);
         setEditTitle(res.title);

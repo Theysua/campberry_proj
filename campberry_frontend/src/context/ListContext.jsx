@@ -40,11 +40,12 @@ export const ListProvider = ({ children }) => {
     const addProgramToList = async (programId, listId) => {
         try {
             await addListItem(listId, programId);
-            // Refresh lists after adding
             const lists = await getMyLists();
             setUserLists(lists);
+            return lists.find(list => list.id === listId) || null;
         } catch (e) {
             console.error(e);
+            throw e;
         }
     };
 

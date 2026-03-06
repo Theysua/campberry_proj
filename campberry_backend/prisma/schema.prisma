@@ -104,6 +104,8 @@ model Session {
   end_date      DateTime?
   location_type String?
   location_name String?
+  location_lat  Float?
+  location_lng  Float?
   program       Program   @relation(fields: [program_id], references: [id])
 
   @@map("sessions")

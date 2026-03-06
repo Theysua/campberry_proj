@@ -8,117 +8,157 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Start seeding from detailed_programs.json...');
 
-  // Use process.cwd() instead of __dirname to avoid typescript complaints in some setups
   const dataPath = path.join(process.cwd(), '../campberry_frontend/src/data/detailed_programs.json');
   const rawData = fs.readFileSync(dataPath, 'utf8');
   const programsData = JSON.parse(rawData);
 
-  console.log(`Found ${programsData.length} programs to insert.`);
+  console.log(`Found ${programsData.length} programs to sync.`);
 
   for (const item of programsData) {
-    const p = item.trpcData;
-    if (!p) continue;
-
-    // 1. Check or Create Provider
-    const providerObj = p.provider;
-    let providerId;
-    if (providerObj?.name) {
-      const provider = await prisma.provider.upsert({
-        where: { name: providerObj.name },
-        update: {},
-        create: { name: providerObj.name },
-      });
-      providerId = provider.id;
-    } else {
-      const provider = await prisma.provider.upsert({
-        where: { name: 'Unknown Provider' },
-        update: {},
-        create: { name: 'Unknown Provider' },
-      });
-      providerId = provider.id;
+    const programData = item.trpcData;
+    if (!programData?.id) {
+      continue;
     }
 
-    // 2. Handle Interests (ensure they exist and collect their IDs to link)
-    const interestLinks: any = [];
-    if (p.interests && p.interests.length > 0) {
-      for (const i of p.interests) {
-        if (!i.name) continue;
-        const interest = await prisma.interest.upsert({
-          where: { name: i.name },
-          update: {},
-          create: { name: i.name },
-        });
-        interestLinks.push({ interest_id: interest.id });
-      }
-    }
+    const providerName = programData.provider?.name || 'Unknown Provider';
+    const provider = await prisma.provider.upsert({
+      where: { name: providerName },
+      update: {},
+      create: { name: providerName },
+    });
 
-    // 3. Create Program
-    const createdProgram = await prisma.program.create({
-      data: {
-        id: p.id,
-        name: p.name || item.title || 'Unknown Program',
-        description: p.description,
-        type: p.type === 'COMPETITION' ? 'COMPETITION' : 'PROGRAM',
-        url: p.url || item.url,
-        logo_url: p.logo?.url,
-        provider_id: providerId,
-        is_highly_selective: p.isHighlySelective || false,
-        cost_info: p.costInfo,
-        admission_info: p.admissionInfo,
-        eligibility_info: p.eligibilityInfo,
-        experts_choice_rating: p.expertsChoiceRating === 'MOST_RECOMMENDED' ? 'MOST_RECOMMENDED' : p.expertsChoiceRating === 'HIGHLY_RECOMMENDED' ? 'HIGHLY_RECOMMENDED' : null,
-        impact_rating: p.impactOnAdmissionsRating === 'MOST_HIGH_IMPACT' ? 'MOST_HIGH_IMPACT' : p.impactOnAdmissionsRating === 'HIGH_IMPACT' ? 'HIGH_IMPACT' : null,
-        eligible_grades: p.eligibleGrades ? p.eligibleGrades.join(',') : '',
-        only_us_citizens: p.onlyUsCitizens || false,
-        only_us_residents: p.onlyUsResidents || false,
-        allows_international: p.allowsInternational ?? true,
-        trpc_data: JSON.stringify(p),
+    const syncedProgram = await prisma.program.upsert({
+      where: { id: programData.id },
+      update: {
+        name: programData.name || item.title || 'Unknown Program',
+        description: programData.description,
+        type: programData.type === 'COMPETITION' ? 'COMPETITION' : 'PROGRAM',
+        url: programData.url || item.url,
+        logo_url: programData.logo?.url,
+        provider_id: provider.id,
+        is_highly_selective: programData.isHighlySelective || false,
+        cost_info: programData.costInfo,
+        admission_info: programData.admissionInfo,
+        eligibility_info: programData.eligibilityInfo,
+        experts_choice_rating:
+          programData.expertsChoiceRating === 'MOST_RECOMMENDED'
+            ? 'MOST_RECOMMENDED'
+            : programData.expertsChoiceRating === 'HIGHLY_RECOMMENDED'
+              ? 'HIGHLY_RECOMMENDED'
+              : null,
+        impact_rating:
+          programData.impactOnAdmissionsRating === 'MOST_HIGH_IMPACT'
+            ? 'MOST_HIGH_IMPACT'
+            : programData.impactOnAdmissionsRating === 'HIGH_IMPACT'
+              ? 'HIGH_IMPACT'
+              : null,
+        eligible_grades: programData.eligibleGrades ? programData.eligibleGrades.join(',') : '',
+        only_us_citizens: programData.onlyUsCitizens || false,
+        only_us_residents: programData.onlyUsResidents || false,
+        allows_international: programData.allowsInternational ?? true,
+        offers_college_credit: programData.offersCollegeCredit || false,
+        is_one_on_one: programData.isOneOnOne || false,
+        trpc_data: JSON.stringify(programData),
+      },
+      create: {
+        id: programData.id,
+        name: programData.name || item.title || 'Unknown Program',
+        description: programData.description,
+        type: programData.type === 'COMPETITION' ? 'COMPETITION' : 'PROGRAM',
+        url: programData.url || item.url,
+        logo_url: programData.logo?.url,
+        provider_id: provider.id,
+        is_highly_selective: programData.isHighlySelective || false,
+        cost_info: programData.costInfo,
+        admission_info: programData.admissionInfo,
+        eligibility_info: programData.eligibilityInfo,
+        experts_choice_rating:
+          programData.expertsChoiceRating === 'MOST_RECOMMENDED'
+            ? 'MOST_RECOMMENDED'
+            : programData.expertsChoiceRating === 'HIGHLY_RECOMMENDED'
+              ? 'HIGHLY_RECOMMENDED'
+              : null,
+        impact_rating:
+          programData.impactOnAdmissionsRating === 'MOST_HIGH_IMPACT'
+            ? 'MOST_HIGH_IMPACT'
+            : programData.impactOnAdmissionsRating === 'HIGH_IMPACT'
+              ? 'HIGH_IMPACT'
+              : null,
+        eligible_grades: programData.eligibleGrades ? programData.eligibleGrades.join(',') : '',
+        only_us_citizens: programData.onlyUsCitizens || false,
+        only_us_residents: programData.onlyUsResidents || false,
+        allows_international: programData.allowsInternational ?? true,
+        offers_college_credit: programData.offersCollegeCredit || false,
+        is_one_on_one: programData.isOneOnOne || false,
+        trpc_data: JSON.stringify(programData),
       },
     });
 
-    // 4. Link Interests
-    if (interestLinks.length > 0) {
-      for (const link of interestLinks) {
+    await prisma.programInterest.deleteMany({
+      where: { program_id: syncedProgram.id },
+    });
+    await prisma.session.deleteMany({
+      where: { program_id: syncedProgram.id },
+    });
+    await prisma.deadline.deleteMany({
+      where: { program_id: syncedProgram.id },
+    });
+
+    if (programData.interests?.length) {
+      for (const interestData of programData.interests) {
+        if (!interestData.name) {
+          continue;
+        }
+
+        const interest = await prisma.interest.upsert({
+          where: { name: interestData.name },
+          update: {},
+          create: { name: interestData.name },
+        });
+
         await prisma.programInterest.create({
           data: {
-            program_id: createdProgram.id,
-            interest_id: link.interest_id
-          }
+            program_id: syncedProgram.id,
+            interest_id: interest.id,
+          },
         });
       }
     }
 
-    // 5. Create Sessions
-    if (p.sessions && p.sessions.length > 0) {
-      for (const sess of p.sessions) {
-        await prisma.session.create({
-          data: {
-            program_id: createdProgram.id,
-            start_date: sess.startDate ? new Date(sess.startDate) : null,
-            end_date: sess.endDate ? new Date(sess.endDate) : null,
-            location_type: sess.locationType === 'ONLINE' ? 'ONLINE' : sess.locationType === 'LOCAL' ? 'LOCAL' : 'IN_PERSON',
-            location_name: sess.location?.name || null
-          }
-        });
-      }
+    if (programData.sessions?.length) {
+      await prisma.session.createMany({
+        data: programData.sessions.map((session: any) => ({
+          program_id: syncedProgram.id,
+          start_date: session.startDate ? new Date(session.startDate) : null,
+          end_date: session.endDate ? new Date(session.endDate) : null,
+          location_type:
+            session.locationType === 'ONLINE'
+              ? 'ONLINE'
+              : session.locationType === 'LOCAL'
+                ? 'LOCAL'
+                : 'IN_PERSON',
+          location_name: session.location?.name || null,
+          location_lat:
+            typeof session.location?.latitude === 'number' ? session.location.latitude : null,
+          location_lng:
+            typeof session.location?.longitude === 'number' ? session.location.longitude : null,
+        })),
+      });
     }
 
-    // 6. Create Deadlines
-    if (p.deadlines && p.deadlines.length > 0) {
-      for (const d of p.deadlines) {
-        if (!d.date) continue;
-        await prisma.deadline.create({
-          data: {
-            program_id: createdProgram.id,
-            description: d.description || 'Deadline',
-            date: new Date(d.date)
-          }
-        });
-      }
+    if (programData.deadlines?.length) {
+      await prisma.deadline.createMany({
+        data: programData.deadlines
+          .filter((deadline: any) => deadline.date)
+          .map((deadline: any) => ({
+            program_id: syncedProgram.id,
+            description: deadline.description || 'Deadline',
+            date: new Date(deadline.date),
+          })),
+      });
     }
   }
 
-  // Ensure one consistent user profile for testing
   const passwordHash = await bcrypt.hash('password123', 10);
   await prisma.user.upsert({
     where: { email: 'counselor@campberry.com' },
@@ -128,6 +168,7 @@ async function main() {
       name: 'Jane Counselor',
       password_hash: passwordHash,
       role: 'COUNSELOR',
+      is_verified: true,
     },
   });
 
@@ -138,8 +179,8 @@ main()
   .then(async () => {
     await prisma.$disconnect();
   })
-  .catch(async (e) => {
-    console.error(e);
+  .catch(async (error) => {
+    console.error(error);
     await prisma.$disconnect();
     process.exit(1);
   });

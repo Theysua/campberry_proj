@@ -21,18 +21,17 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
 
     if (!isOpen) return null;
 
-    const handleAddToList = (listId) => {
-        addProgramToList(programId, listId);
-        const list = userLists.find(l => l.id === listId);
-        setSuccessList(list);
+    const handleAddToList = async (listId) => {
+        const updatedList = await addProgramToList(programId, listId);
+        setSuccessList(updatedList || userLists.find(l => l.id === listId) || null);
     };
 
-    const handleCreateSubmit = (e) => {
+    const handleCreateSubmit = async (e) => {
         e.preventDefault();
         if (newListName.trim()) {
-            const newList = createList(newListName.trim(), newListDescription.trim());
-            addProgramToList(programId, newList.id);
-            setSuccessList(newList);
+            const newList = await createList(newListName.trim(), newListDescription.trim());
+            const updatedList = await addProgramToList(programId, newList.id);
+            setSuccessList(updatedList || newList);
             setNewListName('');
             setNewListDescription('');
             setIsCreating(false);
@@ -53,7 +52,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
                     <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px', color: 'var(--primary)', fontWeight: '800' }}>Added to List!</h2>
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '15px' }}>
-                        Successfully saved to <strong>{successList.name}</strong>.
+                        Successfully saved to <strong>{successList.title}</strong>.
                     </p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                         <button className="btn-outline" style={{ flex: 1, padding: '10px 16px', justifyContent: 'center' }} onClick={onClose}>Keep Browsing</button>
@@ -90,7 +89,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                 `}</style>
                     <div className="modal-list-container">
                         {userLists.map(list => {
-                            const isAdded = list.programs.includes(programId);
+                            const isAdded = list.items?.some(item => item.program_id === programId);
                             return (
                                 <button
                                     key={list.id}
@@ -106,7 +105,7 @@ export default function AddToListModal({ isOpen, onClose, programId }) {
                                     }}
                                     disabled={isAdded}
                                 >
-                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', marginRight: '8px' }}>{list.name}</span>
+                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left', marginRight: '8px' }}>{list.title}</span>
                                     <span style={{ flexShrink: 0 }}>{isAdded ? '\u2713 Added' : '+ Add'}</span>
                                 </button>
                             );

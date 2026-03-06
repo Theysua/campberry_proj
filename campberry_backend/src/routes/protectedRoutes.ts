@@ -4,6 +4,7 @@ import {
     createList,
     deleteList,
     getMe,
+    getMyListById,
     getMyLists,
     getSavedPrograms,
     removeListItem,
@@ -26,6 +27,7 @@ router.delete('/saved-programs/:programId', (req: AuthRequest, res: Response) =>
 
 // Lists
 router.get('/lists', (req: AuthRequest, res: Response) => { getMyLists(req, res); });
+router.get('/lists/:id', (req: AuthRequest, res: Response) => { getMyListById(req, res); });
 
 // Note: Additional protected routes for Lists creation/updating can be implemented later as needed.
 router.post('/lists', (req: AuthRequest, res: Response) => { createList(req, res); });

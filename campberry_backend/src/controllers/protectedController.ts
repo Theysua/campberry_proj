@@ -1,18 +1,46 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import prisma from '../db';
 import { AuthRequest } from '../middleware/authMiddleware';
+import { parseOrRespond } from '../validation/parse';
+import {
+  addListItemBodySchema,
+  createListBodySchema,
+  saveProgramBodySchema,
+  updateListBodySchema,
+  updateListItemBodySchema,
+} from '../validation/schemas';
+
+const canManagePublicLists = (role?: string) => ['COUNSELOR', 'ADMIN'].includes(String(role || ''));
+
+const ensureAuthenticated = (req: AuthRequest, res: Response) => {
+  if (!req.user?.id) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return null;
+  }
+
+  return req.user;
+};
 
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, name: true, email: true, role: true, created_at: true }
+    const profile = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        created_at: true,
+        is_verified: true,
+      },
     });
 
-    res.json(user);
+    res.json(profile);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch user profile' });
@@ -21,20 +49,22 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 
 export const getSavedPrograms = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const savedPrograms = await prisma.userSavedProgram.findMany({
-      where: { user_id: userId },
+      where: { user_id: user.id },
       include: {
         program: {
-          include: { provider: true }
-        }
+          include: { provider: true, deadlines: true, sessions: true, interests: { include: { interest: true } } },
+        },
       },
-      orderBy: { saved_at: 'desc' }
+      orderBy: { saved_at: 'desc' },
     });
 
-    res.json(savedPrograms.map((sp: any) => ({ savedAt: sp.saved_at, program: sp.program })));
+    res.json(savedPrograms.map((item) => ({ savedAt: item.saved_at, program: item.program })));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch saved programs' });
@@ -43,39 +73,64 @@ export const getSavedPrograms = async (req: AuthRequest, res: Response) => {
 
 export const saveProgram = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
-    const { programId } = req.body;
+    const parsedBody = parseOrRespond(saveProgramBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { programId } = parsedBody;
+
+    const program = await prisma.program.findUnique({ where: { id: String(programId) } });
+    if (!program) {
+      return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const existing = await prisma.userSavedProgram.findUnique({
+      where: {
+        user_id_program_id: {
+          user_id: user.id,
+          program_id: String(programId),
+        },
+      },
+    });
+
+    if (existing) {
+      return res.status(200).json(existing);
+    }
 
     const saved = await prisma.userSavedProgram.create({
       data: {
-        user_id: userId,
-        program_id: programId
-      }
+        user_id: user.id,
+        program_id: String(programId),
+      },
     });
 
     res.status(201).json(saved);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to save program (might already be saved)' });
+    res.status(500).json({ error: 'Failed to save program' });
   }
 };
 
 export const unsaveProgram = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const { programId } = req.params;
 
-    await prisma.userSavedProgram.delete({
+    await prisma.userSavedProgram.deleteMany({
       where: {
-        user_id_program_id: {
-          user_id: userId,
-          program_id: String(programId)
-        }
-      }
+        user_id: user.id,
+        program_id: String(programId),
+      },
     });
 
     res.json({ message: 'Program unsaved successfully' });
@@ -87,20 +142,28 @@ export const unsaveProgram = async (req: AuthRequest, res: Response) => {
 
 export const getMyLists = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const lists = await prisma.list.findMany({
-      where: { author_id: userId },
+      where: { author_id: user.id },
       include: {
         author: {
-          select: { name: true, role: true }
+          select: { name: true, role: true },
+        },
+        items: {
+          select: {
+            id: true,
+            program_id: true,
+          },
         },
         _count: {
-          select: { items: true }
-        }
+          select: { items: true },
+        },
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
     });
 
     res.json(lists);
@@ -110,24 +173,72 @@ export const getMyLists = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getMyListById = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
+
+    const { id } = req.params;
+    const list = await prisma.list.findFirst({
+      where: {
+        id: String(id),
+        author_id: user.id,
+      },
+      include: {
+        author: {
+          select: { id: true, name: true, role: true },
+        },
+        items: {
+          include: {
+            program: {
+              include: {
+                provider: true,
+              },
+            },
+          },
+          orderBy: { display_order: 'asc' },
+        },
+      },
+    });
+
+    if (!list) {
+      return res.status(404).json({ error: 'List not found' });
+    }
+
+    res.json(list);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch your list' });
+  }
+};
+
 export const createList = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
-    const { title, description, isPublic = false } = req.body;
+    const parsedBody = parseOrRespond(createListBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
 
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
+    const { title, description, isPublic = false } = parsedBody;
+
+    if (isPublic && !canManagePublicLists(user.role)) {
+      return res.status(403).json({ error: 'Only counselors and admins can create public lists' });
     }
 
     const list = await prisma.list.create({
       data: {
-        title,
-        description,
-        is_public: isPublic,
-        author_id: userId
-      }
+        title: String(title).trim(),
+        description: description ? String(description).trim() : null,
+        is_public: Boolean(isPublic),
+        author_id: user.id,
+      },
     });
 
     res.status(201).json(list);
@@ -139,24 +250,35 @@ export const createList = async (req: AuthRequest, res: Response) => {
 
 export const updateList = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const id = String(req.params.id);
-    const { title, description, isPublic } = req.body;
+    const parsedBody = parseOrRespond(updateListBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { title, description, isPublic } = parsedBody;
 
     const list = await prisma.list.findUnique({ where: { id } });
-    if (!list || list.author_id !== userId) {
+    if (!list || list.author_id !== user.id) {
       return res.status(403).json({ error: 'Unauthorized to modify this list' });
+    }
+
+    if (isPublic === true && !canManagePublicLists(user.role)) {
+      return res.status(403).json({ error: 'Only counselors and admins can publish public lists' });
     }
 
     const updatedList = await prisma.list.update({
       where: { id },
       data: {
-        ...(title !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(isPublic !== undefined && { is_public: isPublic })
-      }
+        ...(title !== undefined && { title: String(title).trim() }),
+        ...(description !== undefined && { description: description ? String(description).trim() : null }),
+        ...(isPublic !== undefined && { is_public: Boolean(isPublic) }),
+      },
     });
 
     res.json(updatedList);
@@ -168,32 +290,53 @@ export const updateList = async (req: AuthRequest, res: Response) => {
 
 export const addListItem = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const listId = String(req.params.listId);
-    const { programId, commentary } = req.body;
+    const parsedBody = parseOrRespond(addListItemBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
 
-    // Verify ownership
+    const { programId, commentary } = parsedBody;
+
     const list = await prisma.list.findUnique({ where: { id: listId } });
-    if (!list || list.author_id !== userId) {
+    if (!list || list.author_id !== user.id) {
       return res.status(403).json({ error: 'List not found or unauthorized' });
     }
 
-    // Get current max order
+    const program = await prisma.program.findUnique({ where: { id: String(programId) } });
+    if (!program) {
+      return res.status(404).json({ error: 'Program not found' });
+    }
+
+    const existingItem = await prisma.listItem.findFirst({
+      where: {
+        list_id: listId,
+        program_id: String(programId),
+      },
+    });
+
+    if (existingItem) {
+      return res.status(200).json(existingItem);
+    }
+
     const maxOrder = await prisma.listItem.aggregate({
       where: { list_id: listId },
-      _max: { display_order: true }
+      _max: { display_order: true },
     });
     const nextOrder = (maxOrder?._max?.display_order || 0) + 1;
 
     const listItem = await prisma.listItem.create({
       data: {
         list_id: listId,
-        program_id: programId,
-        author_commentary: commentary || null,
-        display_order: nextOrder
-      }
+        program_id: String(programId),
+        author_commentary: commentary ? String(commentary) : null,
+        display_order: nextOrder,
+      },
     });
 
     res.status(201).json(listItem);
@@ -205,19 +348,21 @@ export const addListItem = async (req: AuthRequest, res: Response) => {
 
 export const removeListItem = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const listId = String(req.params.listId);
     const itemId = String(req.params.itemId);
 
     const list = await prisma.list.findUnique({ where: { id: listId } });
-    if (!list || list.author_id !== userId) {
+    if (!list || list.author_id !== user.id) {
       return res.status(403).json({ error: 'Unauthorized to modify this list' });
     }
 
     await prisma.listItem.deleteMany({
-      where: { id: itemId, list_id: listId }
+      where: { id: itemId, list_id: listId },
     });
 
     res.json({ success: true });
@@ -229,15 +374,22 @@ export const removeListItem = async (req: AuthRequest, res: Response) => {
 
 export const updateListItem = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const listId = String(req.params.listId);
     const itemId = String(req.params.itemId);
-    const { commentary, displayOrder } = req.body;
+    const parsedBody = parseOrRespond(updateListItemBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { commentary, displayOrder } = parsedBody;
 
     const list = await prisma.list.findUnique({ where: { id: listId } });
-    if (!list || list.author_id !== userId) {
+    if (!list || list.author_id !== user.id) {
       return res.status(403).json({ error: 'Unauthorized to modify this list' });
     }
 
@@ -249,9 +401,9 @@ export const updateListItem = async (req: AuthRequest, res: Response) => {
     const updatedItem = await prisma.listItem.update({
       where: { id: itemId },
       data: {
-        ...(commentary !== undefined && { author_commentary: commentary }),
-        ...(displayOrder !== undefined && { display_order: displayOrder })
-      }
+        ...(commentary !== undefined && { author_commentary: commentary ? String(commentary) : null }),
+        ...(displayOrder !== undefined && { display_order: Number(displayOrder) }),
+      },
     });
 
     res.json(updatedItem);
@@ -263,17 +415,18 @@ export const updateListItem = async (req: AuthRequest, res: Response) => {
 
 export const deleteList = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const user = ensureAuthenticated(req, res);
+    if (!user) {
+      return;
+    }
 
     const id = String(req.params.id);
 
     const list = await prisma.list.findUnique({ where: { id } });
-    if (!list || list.author_id !== userId) {
+    if (!list || list.author_id !== user.id) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Prisma handles cascading potentially, but better safe:
     await prisma.listItem.deleteMany({ where: { list_id: id } });
     await prisma.list.delete({ where: { id } });
 

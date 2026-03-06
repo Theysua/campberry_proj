@@ -36,6 +36,8 @@ export default function ProgramCard({ program }) {
   const logo = (typeof program.logo === 'string' ? program.logo : program.logo?.url) || trpcData?.logo?.url
   const score = program.score || "1.00"
   const id = program.id
+  const sessions = trpcData?.sessions || program.sessions || []
+  const deadlines = trpcData?.deadlines || program.deadlines || []
 
   // Recommended badge
   let recommended = program.recommended
@@ -44,25 +46,36 @@ export default function ProgramCard({ program }) {
   }
 
   // Tags
-  const tags = program.tags || trpcData?.interests?.map(i => i.name) || []
+  const tags =
+    program.tags ||
+    (trpcData?.interests?.map(i => i.name || i.interest?.name)?.filter(Boolean)) ||
+    []
 
   // Dates
   let dates = program.dates
-  if (!dates && trpcData?.sessions?.[0]) {
-    const s = new Date(trpcData.sessions[0].startDate)
-    const e = trpcData.sessions[0].endDate ? new Date(trpcData.sessions[0].endDate) : null
+  if (!dates && sessions[0]) {
+    const startDate = sessions[0].startDate || sessions[0].start_date
+    const endDate = sessions[0].endDate || sessions[0].end_date
+    const s = startDate ? new Date(startDate) : null
+    const e = endDate ? new Date(endDate) : null
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    dates = `${months[s.getMonth()]}${e ? ' - ' + months[e.getMonth()] : ''}`
+    dates = s ? `${months[s.getMonth()]}${e ? ' - ' + months[e.getMonth()] : ''}` : null
   }
 
   // Location
-  const location = program.location || trpcData?.sessions?.[0]?.location?.name || (trpcData?.sessions?.[0]?.locationType === 'ONLINE' ? 'Online' : 'TBD')
+  const firstSession = sessions[0]
+  const firstSessionLocationType = firstSession?.locationType || firstSession?.location_type
+  const location =
+    program.location ||
+    firstSession?.location?.name ||
+    firstSession?.location_name ||
+    (firstSessionLocationType === 'ONLINE' ? 'Online' : 'TBD')
 
   // Deadline + color coding
   let deadline = program.deadline
   let deadlineStatus = 'normal' // 'passed' | 'soon' | 'normal'
-  if (!deadline && trpcData?.deadlines?.[0]) {
-    const d = new Date(trpcData.deadlines[0].date)
+  if (!deadline && deadlines[0]) {
+    const d = new Date(deadlines[0].date)
     const now = new Date()
     deadline = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const diffDays = Math.ceil((d - now) / (1000 * 60 * 60 * 24))
