@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { LockKeyhole, Scale, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { warmSearchBootstrapCache } from '../services/api'
 import { buildSearchPath } from '../utils/searchUrlState'
 
 export default function Home() {
@@ -8,6 +9,21 @@ export default function Home() {
   const [heroSearch, setHeroSearch] = useState('')
 
   useEffect(() => {
+    let timeoutId
+    let idleId
+
+    const warmSearchCache = () => {
+      warmSearchBootstrapCache().catch(() => {
+        // Ignore cache warm failures; live requests still work.
+      })
+    }
+
+    if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(warmSearchCache, { timeout: 1500 })
+    } else {
+      timeoutId = window.setTimeout(warmSearchCache, 900)
+    }
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -52,6 +68,12 @@ export default function Home() {
     }
 
     return () => {
+      if (idleId && typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId)
+      }
+      if (timeoutId) {
+        window.clearTimeout(timeoutId)
+      }
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       if (hero) {
         hero.removeEventListener('mousemove', handleHeroMouseMove)

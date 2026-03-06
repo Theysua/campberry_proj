@@ -1,12 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { warmSearchBootstrapCache } from '../services/api';
 import logo from '../assets/logo.svg';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const headerRef = useRef(null);
   const { isAuthenticated, user, logout } = useAuth();
+  const handleWarmFind = () => {
+    warmSearchBootstrapCache().catch(() => {
+      // Ignore prefetch failures; the actual navigation will still fetch live data.
+    });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +43,7 @@ export default function Navbar() {
           <img src={logo} alt="Campberry Logo" style={{ height: '32px' }} />
         </div>
         <div className="nav-links">
-          <button onClick={() => navigate('/search')}>Find</button>
+          <button onClick={() => navigate('/search')} onMouseEnter={handleWarmFind} onFocus={handleWarmFind}>Find</button>
           <button onClick={() => navigate('/lists')}>Lists</button>
           <button onClick={() => navigate('/my-lists')}>My Lists</button>
           {isAuthenticated ? (

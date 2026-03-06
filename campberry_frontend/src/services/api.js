@@ -28,6 +28,13 @@ const API_BASE =
   (import.meta.env.DEV ? 'http://localhost:3001/api/v1' : '')
 
 export const isDemoMode = !API_BASE
+const PUBLIC_CACHE_PREFIX = 'campberry_public_cache_v1'
+const memoryCache = new Map()
+const PROGRAMS_CACHE_TTL_MS = 5 * 60 * 1000
+const INTERESTS_CACHE_TTL_MS = 60 * 60 * 1000
+const DETAIL_CACHE_TTL_MS = 10 * 60 * 1000
+
+const canUseSessionStorage = () => typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined'
 
 const requireApiBase = () => {
   if (API_BASE) {
@@ -95,6 +102,68 @@ const shouldAttemptRefresh = (endpoint) =>
   !endpoint.startsWith('/auth/verify-email') &&
   !endpoint.startsWith('/auth/google') &&
   !endpoint.startsWith('/auth/refresh')
+
+const getCacheKey = (endpoint) => `${PUBLIC_CACHE_PREFIX}:${endpoint}`
+
+const readCachedValue = (endpoint) => {
+  const key = getCacheKey(endpoint)
+  const memoryEntry = memoryCache.get(key)
+  if (memoryEntry && memoryEntry.expiresAt > Date.now()) {
+    return memoryEntry.data
+  }
+
+  if (!canUseSessionStorage()) {
+    return null
+  }
+
+  try {
+    const raw = window.sessionStorage.getItem(key)
+    if (!raw) {
+      return null
+    }
+
+    const parsed = JSON.parse(raw)
+    if (!parsed?.expiresAt || parsed.expiresAt <= Date.now()) {
+      window.sessionStorage.removeItem(key)
+      return null
+    }
+
+    memoryCache.set(key, parsed)
+    return parsed.data
+  } catch {
+    return null
+  }
+}
+
+const writeCachedValue = (endpoint, data, ttlMs) => {
+  const entry = {
+    data,
+    expiresAt: Date.now() + ttlMs,
+  }
+  const key = getCacheKey(endpoint)
+  memoryCache.set(key, entry)
+
+  if (!canUseSessionStorage()) {
+    return
+  }
+
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(entry))
+  } catch {
+    // Ignore storage quota or serialization issues and keep the in-memory cache only.
+  }
+}
+
+const cachedPublicFetch = async (endpoint, ttlMs) => {
+  const cached = readCachedValue(endpoint)
+  if (cached) {
+    return cached
+  }
+
+  const data = await apiFetch(endpoint)
+  writeCachedValue(endpoint, data, ttlMs)
+  return data
+}
 
 export const apiFetch = async (endpoint, options = {}, allowRetry = true) => {
   const url = `${requireApiBase()}${endpoint}`
@@ -165,20 +234,20 @@ export const getPrograms = (params = {}) => {
     Object.entries(params).filter(([, value]) => value !== undefined && value !== '' && value !== null && value !== false)
   ).toString()
 
-  return apiFetch(`/programs${query ? `?${query}` : ''}`)
+  return cachedPublicFetch(`/programs${query ? `?${query}` : ''}`, PROGRAMS_CACHE_TTL_MS)
 }
 
 export const getProgramById = (id) =>
-  isDemoMode ? Promise.resolve(getDemoProgramById(id)) : apiFetch(`/programs/${id}`)
+  isDemoMode ? Promise.resolve(getDemoProgramById(id)) : cachedPublicFetch(`/programs/${id}`, DETAIL_CACHE_TTL_MS)
 export const getProgramFeedback = (id) =>
-  isDemoMode ? Promise.resolve(getDemoProgramById(id).feedback_preview || []) : apiFetch(`/programs/${id}/feedback`)
+  isDemoMode ? Promise.resolve(getDemoProgramById(id).feedback_preview || []) : cachedPublicFetch(`/programs/${id}/feedback`, DETAIL_CACHE_TTL_MS)
 export const submitProgramFeedback = (programId, rating, comment = '') =>
   (requireLiveApi(), apiFetch(`/me/programs/${programId}/feedback`, {
     method: 'POST',
     body: JSON.stringify({ rating, comment }),
   }))
 export const getInterests = () =>
-  isDemoMode ? Promise.resolve(getDemoInterests()) : apiFetch('/interests')
+  isDemoMode ? Promise.resolve(getDemoInterests()) : cachedPublicFetch('/interests', INTERESTS_CACHE_TTL_MS)
 
 export const getSavedPrograms = () =>
   isDemoMode ? demoGetSavedPrograms() : apiFetch('/me/saved-programs')
@@ -197,11 +266,11 @@ export const unsaveProgram = (programId) =>
       }))
 
 export const getLists = () =>
-  isDemoMode ? Promise.resolve(getDemoLists()) : apiFetch('/lists')
+  isDemoMode ? Promise.resolve(getDemoLists()) : cachedPublicFetch('/lists', DETAIL_CACHE_TTL_MS)
 export const getListById = (id) =>
-  isDemoMode ? Promise.resolve(getDemoListById(id)) : apiFetch(`/lists/${id}`)
+  isDemoMode ? Promise.resolve(getDemoListById(id)) : cachedPublicFetch(`/lists/${id}`, DETAIL_CACHE_TTL_MS)
 export const getListFeedback = (id) =>
-  isDemoMode ? Promise.resolve(getDemoListById(id).feedback_preview || []) : apiFetch(`/lists/${id}/feedback`)
+  isDemoMode ? Promise.resolve(getDemoListById(id).feedback_preview || []) : cachedPublicFetch(`/lists/${id}/feedback`, DETAIL_CACHE_TTL_MS)
 export const submitListFeedback = (listId, rating, comment = '') =>
   (requireLiveApi(), apiFetch(`/me/lists/${listId}/feedback`, {
     method: 'POST',
@@ -249,3 +318,14 @@ export const removeListItem = (listId, itemId) =>
     : apiFetch(`/me/lists/${listId}/items/${itemId}`, {
         method: 'DELETE',
       }))
+
+export const warmSearchBootstrapCache = async () => {
+  if (isDemoMode) {
+    return
+  }
+
+  await Promise.allSettled([
+    getPrograms({ page: 1, limit: 10 }),
+    getInterests(),
+  ])
+}
