@@ -7,6 +7,7 @@ import AddToListModal from './AddToListModal'
 import Badge from './Badge'
 import Pill from './Pill'
 import { buildAuthRedirectPath, buildProgramDetailPath, readNavigationContext, replaceSearchParams } from '../utils/navigationContext'
+import { getProgramStarRating } from '../utils/programRating'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -121,6 +122,12 @@ export default function ProgramCard({ program }) {
   const deadlines = trpcData?.deadlines || program.deadlines || []
   const recommendedBadge = getExpertsChoiceBadge(program, trpcData)
   const impactBadge = getImpactBadge(program, trpcData)
+  const isHighlySelective = Boolean(program.is_highly_selective || trpcData?.isHighlySelective)
+  const starRating = getProgramStarRating({
+    experts_choice_rating: program.experts_choice_rating || trpcData?.expertsChoiceRating,
+    impact_rating: program.impact_rating || trpcData?.impactOnAdmissionsRating,
+    is_highly_selective: isHighlySelective,
+  })
   const isSaved = isProgramSaved(id)
   const isComparing = compareList.some((entry) => entry.id === id)
 
@@ -309,6 +316,8 @@ export default function ProgramCard({ program }) {
         <div className="mt-auto flex flex-col items-center gap-2">
           {recommendedBadge && <Badge type={recommendedBadge} />}
           {impactBadge && <Badge type={impactBadge} />}
+          {isHighlySelective && <span className="badge-highly">HIGHLY SELECTIVE</span>}
+          {starRating > 0 && <span className="tag">Campberry Score: {starRating}</span>}
           <button onClick={handleSaveProgram} className={`flex items-center gap-1 text-[10px] font-bold transition-colors uppercase tracking-wider ${isSaved ? 'text-[#ff751f]' : 'text-slate-500 hover:text-[#ff751f]'}`}>
             <Star size={12} fill={isSaved ? 'currentColor' : 'none'} /> {isSaved ? 'Saved' : 'Save'}
           </button>

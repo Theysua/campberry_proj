@@ -180,17 +180,30 @@ const getRatingScore = (program: {
   impact_rating?: string | null;
   is_highly_selective?: boolean | null;
 }) => {
-  let score = 0;
+  const hasHighImpact =
+    program.impact_rating === 'HIGH_IMPACT' || program.impact_rating === 'MOST_HIGH_IMPACT';
+
+  if (program.experts_choice_rating === 'MOST_RECOMMENDED' && hasHighImpact && program.is_highly_selective) {
+    return 500;
+  }
+
+  if (program.experts_choice_rating === 'MOST_RECOMMENDED' && hasHighImpact) {
+    return 400;
+  }
+
   if (program.experts_choice_rating === 'MOST_RECOMMENDED') {
-    score += 100;
-  } else if (program.experts_choice_rating === 'HIGHLY_RECOMMENDED') {
+    return 300;
+  }
+
+  let score = 0;
+  if (program.experts_choice_rating === 'HIGHLY_RECOMMENDED') {
     score += 70;
   }
 
   if (program.impact_rating === 'MOST_HIGH_IMPACT') {
-    score += 50;
+    score += 35;
   } else if (program.impact_rating === 'HIGH_IMPACT') {
-    score += 30;
+    score += 25;
   }
 
   if (program.is_highly_selective) {

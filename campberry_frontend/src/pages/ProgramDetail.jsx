@@ -6,6 +6,7 @@ import { useListContext } from '../context/ListContext'
 import AddToListModal from '../components/AddToListModal'
 import { getProgramById } from '../services/api'
 import { buildAuthRedirectPath, getBackTarget, readNavigationContext, replaceSearchParams } from '../utils/navigationContext'
+import { getProgramStarRating, hasHighImpactRating } from '../utils/programRating'
 
 const formatDateRange = (startDate, endDate) => {
   if (!startDate) {
@@ -93,6 +94,7 @@ export default function ProgramDetail() {
   const feedbackSummary = program?.feedback_summary || { averageRating: null, ratingCount: 0, commentCount: 0 }
   const feedbackPreview = Array.isArray(program?.feedback_preview) ? program.feedback_preview : []
   const backTarget = getBackTarget(location, '/search', 'Back to Search')
+  const starRating = getProgramStarRating(program)
 
   const handleSave = () => {
     if (!isAuthenticated) {
@@ -154,8 +156,9 @@ export default function ProgramDetail() {
               <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">MOST RECOMMENDED</span>}
                 {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">HIGHLY RECOMMENDED</span>}
-                {program.impact_rating === 'MOST_HIGH_IMPACT' && <span className="badge-impact">MOST HIGH IMPACT</span>}
-                {program.impact_rating === 'HIGH_IMPACT' && <span className="badge-impact">HIGH IMPACT</span>}
+                {hasHighImpactRating(program) && <span className="badge-impact">HIGH IMPACT</span>}
+                {program.is_highly_selective && <span className="badge-highly">HIGHLY SELECTIVE</span>}
+                {starRating > 0 && <span className="tag">Campberry Score: {starRating}</span>}
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {program.interests?.map((interest, index) => (

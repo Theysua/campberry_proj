@@ -250,6 +250,12 @@ test('search endpoint validates geo params and still supports season filtering',
     .expect(200);
 
   assert.ok(Array.isArray(impactResponse.body.data));
+
+  const selectiveResponse = await request(app)
+    .get('/api/v1/programs?isSelective=true&limit=5')
+    .expect(200);
+
+  assert.ok(Array.isArray(selectiveResponse.body.data));
 });
 
 test('student users cannot create public lists', async () => {

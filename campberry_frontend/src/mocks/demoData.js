@@ -28,6 +28,7 @@ const DEMO_PROGRAMS = [
     eligible_grades: '9,10,11',
     experts_choice_rating: 'MOST_RECOMMENDED',
     impact_rating: 'HIGH_IMPACT',
+    is_highly_selective: true,
     allows_international: true,
     logo_url: '',
     url: 'https://example.org/astro-research',
@@ -94,6 +95,7 @@ const DEMO_PROGRAMS = [
     eligible_grades: '10,11,12',
     experts_choice_rating: 'HIGHLY_RECOMMENDED',
     impact_rating: 'MOST_HIGH_IMPACT',
+    is_highly_selective: true,
     allows_international: false,
     logo_url: '',
     url: 'https://example.org/health-policy',
@@ -125,6 +127,7 @@ const DEMO_PROGRAMS = [
     eligible_grades: '9,10,11,12',
     experts_choice_rating: 'MOST_RECOMMENDED',
     impact_rating: 'HIGH_IMPACT',
+    is_highly_selective: false,
     allows_international: true,
     logo_url: '',
     url: 'https://example.org/startup-sprint',
@@ -277,6 +280,50 @@ const normalizeSearchText = (value) => (value || '').toLowerCase().trim()
 
 const includesText = (haystack, needle) => normalizeSearchText(haystack).includes(normalizeSearchText(needle))
 
+const hasHighImpactRating = (program) =>
+  program?.impact_rating === 'HIGH_IMPACT' || program?.impact_rating === 'MOST_HIGH_IMPACT'
+
+const getProgramStarRating = (program) => {
+  if (program?.experts_choice_rating !== 'MOST_RECOMMENDED') {
+    return 0
+  }
+
+  if (hasHighImpactRating(program) && program?.is_highly_selective) {
+    return 5
+  }
+
+  if (hasHighImpactRating(program)) {
+    return 4
+  }
+
+  return 3
+}
+
+const getProgramRatingScore = (program) => {
+  const starRating = getProgramStarRating(program)
+  if (starRating > 0) {
+    return starRating * 100
+  }
+
+  let score = 0
+
+  if (program?.experts_choice_rating === 'HIGHLY_RECOMMENDED') {
+    score += 70
+  }
+
+  if (program?.impact_rating === 'MOST_HIGH_IMPACT') {
+    score += 35
+  } else if (program?.impact_rating === 'HIGH_IMPACT') {
+    score += 25
+  }
+
+  if (program?.is_highly_selective) {
+    score += 10
+  }
+
+  return score
+}
+
 export const getDemoInterests = () => DEMO_INTERESTS
 
 export const getDemoLists = () =>
@@ -326,6 +373,10 @@ export const getDemoPrograms = (params = {}) => {
     filtered = filtered.filter((program) => includesText(program.cost_info, 'free'))
   }
 
+  if (params.isSelective) {
+    filtered = filtered.filter((program) => program.is_highly_selective)
+  }
+
   if (params.locationQuery) {
     filtered = filtered.filter((program) =>
       program.sessions?.some((session) => includesText(session.location_name, params.locationQuery))
@@ -366,8 +417,7 @@ export const getDemoPrograms = (params = {}) => {
 
   if (params.sort === 'rating') {
     filtered.sort((left, right) => {
-      const ranking = { MOST_RECOMMENDED: 2, HIGHLY_RECOMMENDED: 1 }
-      return (ranking[right.experts_choice_rating] || 0) - (ranking[left.experts_choice_rating] || 0)
+      return getProgramRatingScore(right) - getProgramRatingScore(left)
     })
   }
 

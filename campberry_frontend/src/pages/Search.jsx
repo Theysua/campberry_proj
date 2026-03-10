@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Check, ChevronDown, X } from 'lucide-react'
+import { Check, ChevronDown, Star, X } from 'lucide-react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { getInterests, getPrograms } from '../services/api'
@@ -10,6 +10,7 @@ import {
   parseSearchStateFromParams,
   sortToApiValue,
 } from '../utils/searchUrlState'
+import { getProgramStarRating, hasHighImpactRating } from '../utils/programRating'
 
 const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline']
 
@@ -246,6 +247,7 @@ export default function Search() {
   const renderProgramCard = (program, index) => {
     const locationMeta = getLocationMeta(program)
     const distanceLabel = typeof program.distance_miles === 'number' && !locationMeta.hasOnline ? `${program.distance_miles.toFixed(1)} mi away` : null
+    const starRating = getProgramStarRating(program)
     return (
       <div key={program.id || index} className={`card program-card ${index % 2 === 0 ? 'accent-top' : 'primary-top'}`} onClick={() => navigate(buildProgramDetailPath(program.id, location, { returnLabel: 'Back to Results' }))} style={{ cursor: 'pointer' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
@@ -273,11 +275,25 @@ export default function Search() {
 
         <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px', borderTop: '1px solid var(--border-light)' }}>
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {program.impact_rating && <span className="badge-impact">High Impact</span>}
+            {hasHighImpactRating(program) && <span className="badge-impact">High Impact</span>}
             {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
             {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
+            {program.is_highly_selective && <span className="badge-highly">Highly Selective</span>}
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent)' }}>View details →</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {starRating > 0 && (
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#d97706' }}
+                aria-label={`Campberry Score ${starRating}`}
+                title={`Campberry Score: ${starRating}`}
+              >
+                {Array.from({ length: starRating }).map((_, starIndex) => (
+                  <Star key={starIndex} size={14} fill="currentColor" strokeWidth={1.8} />
+                ))}
+              </div>
+            )}
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent)' }}>View details →</div>
+          </div>
         </div>
       </div>
     )
