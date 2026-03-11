@@ -52,7 +52,6 @@ export const parseSearchStateFromParams = (searchParams) => {
     typeFilter: searchParams.get('type') || '',
     ratingFilter: searchParams.get('rating') || '',
     impactFilter: searchParams.get('impact') || '',
-    isFree: parseBooleanParam(searchParams.get('isFree')),
     isSelective: parseBooleanParam(searchParams.get('isSelective')),
     locationInput: '',
     onlineOnly: false,
@@ -78,7 +77,6 @@ export const buildSearchParamsFromState = ({
   typeFilter,
   ratingFilter,
   impactFilter,
-  isFree,
   isSelective,
   locationInput,
   onlineOnly,
@@ -111,10 +109,6 @@ export const buildSearchParamsFromState = ({
 
   if (impactFilter) {
     nextParams.set('impact', impactFilter)
-  }
-
-  if (isFree) {
-    nextParams.set('isFree', 'true')
   }
 
   if (isSelective) {

@@ -72,7 +72,6 @@ export default function Search() {
   const [typeFilter, setTypeFilter] = useState('')
   const [ratingFilter, setRatingFilter] = useState('')
   const [impactFilter, setImpactFilter] = useState('')
-  const [isFree, setIsFree] = useState(false)
   const [isSelective, setIsSelective] = useState(false)
   const [internationalFilter, setInternationalFilter] = useState(false)
   const [creditFilter, setCreditFilter] = useState(false)
@@ -102,7 +101,6 @@ export default function Search() {
     setTypeFilter((current) => (current === nextState.typeFilter ? current : nextState.typeFilter))
     setRatingFilter((current) => (current === nextState.ratingFilter ? current : nextState.ratingFilter))
     setImpactFilter((current) => (current === nextState.impactFilter ? current : nextState.impactFilter))
-    setIsFree((current) => (current === nextState.isFree ? current : nextState.isFree))
     setIsSelective((current) => (current === nextState.isSelective ? current : nextState.isSelective))
     setInternationalFilter((current) => (current === nextState.internationalFilter ? current : nextState.internationalFilter))
     setCreditFilter((current) => (current === nextState.creditFilter ? current : nextState.creditFilter))
@@ -122,7 +120,6 @@ export default function Search() {
       typeFilter,
       ratingFilter,
       impactFilter,
-      isFree,
       isSelective,
       internationalFilter,
       creditFilter,
@@ -134,7 +131,7 @@ export default function Search() {
       page,
     })
     if (nextParams.toString() !== searchParams.toString()) setSearchParams(nextParams, { replace: true })
-  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isFree, isSelective, internationalFilter, creditFilter, oneOnOneFilter, seasonFilter, gradesFilter, interestIds, sortBy, page, searchParams, setSearchParams])
+  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isSelective, internationalFilter, creditFilter, oneOnOneFilter, seasonFilter, gradesFilter, interestIds, sortBy, page, searchParams, setSearchParams])
 
   useEffect(() => {
     if (!isUrlStateReady) return undefined
@@ -143,7 +140,6 @@ export default function Search() {
       type: typeFilter || undefined,
       rating: ratingFilter || undefined,
       impact: impactFilter || undefined,
-      isFree: isFree ? true : undefined,
       isSelective: isSelective ? true : undefined,
       season: seasonFilter || undefined,
       grades: gradesFilter.length > 0 ? gradesFilter.join(',') : undefined,
@@ -212,7 +208,7 @@ export default function Search() {
       })
 
     return () => controller.abort()
-  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isFree, isSelective, seasonFilter, gradesFilter, interestIds, internationalFilter, creditFilter, oneOnOneFilter, sortBy, page])
+  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isSelective, seasonFilter, gradesFilter, interestIds, internationalFilter, creditFilter, oneOnOneFilter, sortBy, page])
 
   useEffect(() => {
     getInterests().then(setAllInterests).catch((error) => console.error('Failed to fetch interests', error))
@@ -232,7 +228,6 @@ export default function Search() {
     setTypeFilter('')
     setRatingFilter('')
     setImpactFilter('')
-    setIsFree(false)
     setIsSelective(false)
     setSeasonFilter('')
     setGradesFilter([])
@@ -378,7 +373,6 @@ export default function Search() {
 
               <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid var(--border)' }}>
                 <label className="checkbox-row"><input type="checkbox" checked={isSelective} onChange={(event) => { setIsSelective(event.target.checked); setPage(1) }} /> Highly Selective</label>
-                <label className="checkbox-row"><input type="checkbox" checked={isFree} onChange={(event) => { setIsFree(event.target.checked); setPage(1) }} /> Free / Fully Funded</label>
                 <label className="checkbox-row"><input type="checkbox" checked={internationalFilter} onChange={(event) => { setInternationalFilter(event.target.checked); setPage(1) }} /> Allows International Students</label>
                 <label className="checkbox-row"><input type="checkbox" checked={creditFilter} onChange={(event) => { setCreditFilter(event.target.checked); setPage(1) }} /> Offers College Credit</label>
                 <label className="checkbox-row"><input type="checkbox" checked={oneOnOneFilter} onChange={(event) => { setOneOnOneFilter(event.target.checked); setPage(1) }} /> 1-on-1 programs</label>

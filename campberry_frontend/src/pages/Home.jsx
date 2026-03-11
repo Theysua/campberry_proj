@@ -190,7 +190,7 @@ export default function Home() {
             </div>
             <div className="hot-card reveal-scale" style={{ borderTop: 'none', transitionDelay: '0.2s' }}>
               <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '4px', background: 'linear-gradient(135deg, var(--mint-dark) 0%, var(--mint) 100%)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0' }}></div>
-              <h4>Best Free Programs</h4>
+              <h4>Highly Selective Programs</h4>
               <div className="meta">By Campberry</div>
             </div>
             <div className="hot-card reveal-scale" onClick={() => navigate('/lists')} style={{ borderTop: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', transitionDelay: '0.3s' }}>
