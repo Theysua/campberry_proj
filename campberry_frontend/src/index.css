@@ -772,6 +772,63 @@ header {
     overflow: hidden;
 }
 
+.search-card-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-light);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px 18px;
+    align-items: end;
+}
+
+.search-card-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+
+.search-card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 150px;
+}
+
+.search-card-meta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-card-website {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.search-card-score {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: #d97706;
+}
+
+.search-card-detail-cta {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--accent);
+    padding: 9px 14px;
+    border: 1px solid rgba(137, 34, 51, 0.18);
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(137, 34, 51, 0.06), rgba(255, 117, 31, 0.08));
+    white-space: nowrap;
+}
+
 .rating-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1632,6 +1689,20 @@ details[open] .chevron {
 
     .program-layout {
         grid-template-columns: 1fr !important;
+    }
+
+    .search-card-footer {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .search-card-actions {
+        min-width: 0;
+        align-items: flex-start;
+    }
+
+    .search-card-meta-actions {
+        justify-content: flex-start;
     }
 }
 

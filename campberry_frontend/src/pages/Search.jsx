@@ -302,30 +302,40 @@ export default function Search() {
           {distanceLabel && <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{distanceLabel}</span>}
         </div>
 
-        <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px', borderTop: '1px solid var(--border-light)' }}>
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        <div className="search-card-footer">
+          <div className="search-card-badges">
             {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
             {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
             {program.is_highly_selective && <span className="badge-highly">Highly Selective</span>}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {program.url && (
-              <a href={program.url} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
-                Website
-              </a>
-            )}
-            {starRating > 0 && (
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#d97706' }}
-                aria-label={`Campberry Score ${starRating}`}
-                title={`Campberry Score: ${starRating}`}
-              >
-                {Array.from({ length: starRating }).map((_, starIndex) => (
-                  <Star key={starIndex} size={14} fill="currentColor" strokeWidth={1.8} />
-                ))}
-              </div>
-            )}
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--accent)' }}>View details →</div>
+
+          <div className="search-card-actions">
+            <div className="search-card-meta-actions">
+              {program.url && (
+                <a
+                  href={program.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                  className="search-card-website"
+                >
+                  Website
+                </a>
+              )}
+              {starRating > 0 && (
+                <div
+                  className="search-card-score"
+                  aria-label={`Campberry Score ${starRating}`}
+                  title={`Campberry Score: ${starRating}`}
+                >
+                  {Array.from({ length: starRating }).map((_, starIndex) => (
+                    <Star key={starIndex} size={14} fill="currentColor" strokeWidth={1.8} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="search-card-detail-cta">View details →</div>
           </div>
         </div>
       </div>
