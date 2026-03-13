@@ -80,10 +80,15 @@ const LockedResultCard = ({ hiddenCount, onRegister }) => (
     </div>
 
     <div className="search-lock-card-overlay">
-      <div className="search-lock-badge">Sign in required</div>
-      <h3>Unlock {hiddenCount} more activities</h3>
-      <p>Guests can preview the first 10 results. Create an account to access the full search set and save lists.</p>
-      <button className="btn" type="button">Register to Continue</button>
+      <div className="search-lock-pill-row">
+        <div className="search-lock-badge">Sign in required</div>
+        <div className="search-lock-count">{hiddenCount}+ hidden</div>
+      </div>
+      <div className="search-lock-copy">
+        <h3>The rest of the search is locked.</h3>
+        <p>Guests can preview the first 10 activities. Register to unlock the full list, deadlines, and saved research lists.</p>
+      </div>
+      <button className="search-lock-button" type="button">Unlock Full Search</button>
     </div>
   </div>
 )

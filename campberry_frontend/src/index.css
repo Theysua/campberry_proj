@@ -832,57 +832,169 @@ header {
 .search-lock-card {
     min-height: 320px;
     position: relative;
-    border-style: dashed;
+    overflow: hidden;
+    border: 1px solid rgba(201, 211, 227, 0.95);
+    background:
+        radial-gradient(circle at top right, rgba(255, 168, 76, 0.18), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 242, 237, 0.96));
 }
 
 .search-lock-card-blur {
-    filter: blur(7px);
-    opacity: 0.7;
+    filter: blur(10px);
+    opacity: 0.92;
+    transform: scale(1.04);
     pointer-events: none;
 }
 
 .search-lock-card-overlay {
     position: absolute;
-    inset: 22px;
+    inset: 18px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 12px;
-    padding: 22px;
-    border-radius: 22px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 247, 237, 0.95));
-    border: 1px solid rgba(137, 34, 51, 0.12);
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+    justify-content: space-between;
+    padding: 18px;
+    border-radius: 26px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.18)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 247, 237, 0.42));
+    border: 1px solid rgba(255, 255, 255, 0.52);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
+}
+
+.search-lock-card-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.65), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255, 122, 26, 0.16), transparent 28%);
+    pointer-events: none;
+}
+
+.search-lock-pill-row,
+.search-lock-copy,
+.search-lock-button {
+    position: relative;
+    z-index: 1;
+}
+
+.search-lock-pill-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .search-lock-card-overlay h3 {
     margin: 0;
-    font-size: 22px;
-    line-height: 1.15;
+    font-size: 28px;
+    line-height: 1.05;
     color: var(--primary);
+    max-width: 12ch;
 }
 
 .search-lock-card-overlay p {
     margin: 0;
     font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-secondary);
+    line-height: 1.55;
+    color: rgba(82, 97, 126, 0.92);
+    max-width: 30ch;
 }
 
-.search-lock-card-overlay .btn {
-    align-self: flex-start;
+.search-lock-copy {
+    margin-top: auto;
+    margin-bottom: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .search-lock-badge {
     width: fit-content;
-    padding: 6px 10px;
+    padding: 7px 11px;
     border-radius: 999px;
-    background: rgba(137, 34, 51, 0.08);
+    background: rgba(255, 255, 255, 0.48);
     color: var(--accent);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    border: 1px solid rgba(137, 34, 51, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.search-lock-count {
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.search-lock-button {
+    position: relative;
+    align-self: center;
+    min-width: 210px;
+    padding: 14px 22px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--secondary), #ff9b45);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    box-shadow: 0 14px 28px rgba(255, 122, 26, 0.26);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    cursor: pointer;
+}
+
+.search-lock-button:hover,
+.search-lock-button:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px rgba(255, 122, 26, 0.3);
+    filter: saturate(1.05);
+}
+
+.search-lock-button:focus-visible {
+    outline: 3px solid rgba(255, 122, 26, 0.22);
+    outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+    .search-lock-card-overlay h3 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 640px) {
+    .search-lock-card {
+        min-height: 300px;
+    }
+
+    .search-lock-card-overlay {
+        inset: 14px;
+        padding: 16px;
+    }
+
+    .search-lock-copy {
+        gap: 10px;
+    }
+
+    .search-lock-card-overlay h3,
+    .search-lock-card-overlay p {
+        max-width: none;
+    }
+
+    .search-lock-button {
+        width: 100%;
+        min-width: 0;
+    }
 }
 
 .rating-grid {
