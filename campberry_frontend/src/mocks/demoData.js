@@ -324,6 +324,11 @@ const getProgramRatingScore = (program) => {
   return score
 }
 
+const getDeadlineTime = (deadline) => {
+  const parsed = new Date(deadline?.predictedDate || deadline?.date || '').getTime()
+  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed
+}
+
 export const getDemoInterests = () => DEMO_INTERESTS
 
 export const getDemoLists = () =>
@@ -429,8 +434,8 @@ export const getDemoPrograms = (params = {}) => {
 
   if (params.sort === 'deadline') {
     filtered.sort((left, right) => {
-      const leftDate = new Date(left.deadlines?.[0]?.date || '2100-01-01').getTime()
-      const rightDate = new Date(right.deadlines?.[0]?.date || '2100-01-01').getTime()
+      const leftDate = Math.min(...(left.deadlines || []).map(getDeadlineTime), Number.POSITIVE_INFINITY)
+      const rightDate = Math.min(...(right.deadlines || []).map(getDeadlineTime), Number.POSITIVE_INFINITY)
       const comparison = leftDate - rightDate
       return params.sortOrder === 'desc' ? comparison * -1 : comparison
     })

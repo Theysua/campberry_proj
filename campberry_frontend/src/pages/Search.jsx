@@ -236,7 +236,7 @@ export default function Search() {
 
   const getNextDeadlineLabel = (program) => {
     const deadline = (program.deadlines || [])
-      .map((entry) => ({ ...entry, parsedDate: new Date(entry.date) }))
+      .map((entry) => ({ ...entry, parsedDate: new Date(entry.predictedDate || entry.date) }))
       .filter((entry) => !Number.isNaN(entry.parsedDate.getTime()))
       .sort((left, right) => left.parsedDate.getTime() - right.parsedDate.getTime())[0]
 

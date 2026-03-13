@@ -419,14 +419,15 @@ async function main() {
     }
 
     for (const deadline of programData.deadlines || []) {
-      if (!deadline?.date) {
+      const normalizedDate = deadline?.predictedDate || deadline?.date;
+      if (!normalizedDate) {
         continue
       }
 
       normalizedDeadlines.push({
         program_id: programData.id,
         description: deadline.description || 'Deadline',
-        date: new Date(deadline.date),
+        date: new Date(normalizedDate),
       })
     }
   }

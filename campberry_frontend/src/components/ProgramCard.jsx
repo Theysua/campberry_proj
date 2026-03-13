@@ -69,7 +69,7 @@ const getDeadlineLabel = (program, deadlines) => {
   }
 
   const validDeadline = deadlines
-    .map((entry) => new Date(entry.date))
+    .map((entry) => new Date(entry.predictedDate || entry.date))
     .filter((date) => !Number.isNaN(date.getTime()))
     .sort((left, right) => left.getTime() - right.getTime())[0]
 

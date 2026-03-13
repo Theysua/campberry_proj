@@ -213,6 +213,71 @@ const getRatingScore = (program: {
   return score;
 };
 
+const toDeadlineTimestamp = (value?: Date | string | null) => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const isNormalizedDeadline = (
+  value: { description: string; date: Date } | null
+): value is { description: string; date: Date } => value !== null;
+
+const getNormalizedDeadlines = (
+  deadlines: Array<{ description?: string | null; date?: Date | string | null }>,
+  trpcData?: string | null
+) => {
+  if (trpcData) {
+    try {
+      const parsed = JSON.parse(trpcData);
+      const normalizedFromTrpc: Array<{ description: string; date: Date }> = Array.isArray(parsed?.deadlines)
+        ? parsed.deadlines
+            .map((deadline: { description?: string | null; date?: string | null; predictedDate?: string | null }) => {
+              const normalizedDate = deadline?.predictedDate || deadline?.date || null;
+              const timestamp = toDeadlineTimestamp(normalizedDate);
+
+              if (timestamp === null) {
+                return null;
+              }
+
+              return {
+                description: deadline?.description || 'Deadline',
+                date: new Date(timestamp),
+              };
+            })
+            .filter(isNormalizedDeadline)
+            .sort(
+              (left: { date: Date }, right: { date: Date }) => left.date.getTime() - right.date.getTime()
+            )
+        : [];
+
+      if (normalizedFromTrpc.length > 0) {
+        return normalizedFromTrpc;
+      }
+    } catch {
+      // Fall back to relational deadlines when trpc_data is unavailable or malformed.
+    }
+  }
+
+  return deadlines
+    .map((deadline) => {
+      const timestamp = toDeadlineTimestamp(deadline?.date);
+      if (timestamp === null) {
+        return null;
+      }
+
+      return {
+        description: deadline?.description || 'Deadline',
+        date: new Date(timestamp),
+      };
+    })
+    .filter(isNormalizedDeadline)
+    .sort((left: { date: Date }, right: { date: Date }) => left.date.getTime() - right.date.getTime());
+};
+
 const getNextDeadlineTime = (deadlines: Array<{ date: Date }>) => {
   const now = Date.now();
   const futureDeadlines = deadlines
@@ -635,6 +700,7 @@ export const getPrograms = async (req: Request, res: Response) => {
         experts_choice_rating: true,
         impact_rating: true,
         is_highly_selective: true,
+        trpc_data: true,
         provider: {
           select: {
             name: true,
@@ -706,7 +772,9 @@ export const getPrograms = async (req: Request, res: Response) => {
       }
 
       if (sortKey === 'deadline') {
-        const comparison = getNextDeadlineTime(left.deadlines) - getNextDeadlineTime(right.deadlines);
+        const comparison =
+          getNextDeadlineTime(getNormalizedDeadlines(left.deadlines, left.trpc_data)) -
+          getNextDeadlineTime(getNormalizedDeadlines(right.deadlines, right.trpc_data));
         return sortDirection === 'desc' ? comparison * -1 : comparison;
       }
 
@@ -771,6 +839,7 @@ export const getPrograms = async (req: Request, res: Response) => {
 
         return {
           ...fullProgram,
+          deadlines: getNormalizedDeadlines(fullProgram.deadlines, fullProgram.trpc_data),
           distance_miles: candidateMap.get(id)?.distance_miles ?? null,
         };
       })
@@ -817,6 +886,7 @@ export const getProgramById = async (req: Request, res: Response) => {
 
     res.json({
       ...program,
+      deadlines: getNormalizedDeadlines(program.deadlines, program.trpc_data),
       feedback_summary: feedback.summary,
       feedback_preview: feedback.reviews.slice(0, 3),
     });

@@ -28,7 +28,7 @@ const API_BASE =
   (import.meta.env.DEV ? 'http://localhost:3001/api/v1' : '')
 
 export const isDemoMode = !API_BASE
-const PUBLIC_CACHE_PREFIX = 'campberry_public_cache_v1'
+const PUBLIC_CACHE_PREFIX = 'campberry_public_cache_v2'
 const memoryCache = new Map()
 const PROGRAMS_CACHE_TTL_MS = 5 * 60 * 1000
 const INTERESTS_CACHE_TTL_MS = 60 * 60 * 1000
