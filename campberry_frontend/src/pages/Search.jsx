@@ -61,25 +61,58 @@ const SkeletonCard = ({ accentClass }) => (
   </div>
 )
 
-const LockedSearchPanel = ({ hiddenCount, onRegister }) => (
+const LockedPreviewCard = ({ program, accentClass }) => {
+  if (!program) return <SkeletonCard accentClass={accentClass} />
+
+  const locationMeta = getLocationMeta(program)
+  const primaryTags = [program.category, ...(program.interests || []).slice(0, 2).map((interest) => interest.name)].filter(Boolean).slice(0, 3)
+
+  return (
+    <div className={`card program-card ${accentClass}`}>
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '18px' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', background: 'var(--border-light)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {program.provider?.logo_url ? (
+            <img src={program.provider.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ fontWeight: '800', color: 'var(--primary)' }}>{(program.provider?.name || program.title || '?').slice(0, 2).toUpperCase()}</div>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '18px', fontWeight: '800', lineHeight: '1.2', color: 'var(--primary)', marginBottom: '8px' }}>{program.title}</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{program.provider?.name || 'Campberry partner'}</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
+        {primaryTags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
+      </div>
+
+      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', marginBottom: '8px' }}>
+        {program.deadlines?.[0]?.display || 'Upcoming deadline'}
+      </div>
+      <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '18px' }}>{locationMeta.label}</div>
+
+      <div className="search-card-footer">
+        <div className="search-card-badges">
+          {program.isMostRecommended && <span className="badge-most">Most Recommended</span>}
+          {program.isSelective && <span className="badge-highly-outline">Highly Selective</span>}
+        </div>
+        <div className="search-card-links">
+          <span className="search-card-link">Website</span>
+          <span className="search-card-cta">View details</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const LockedSearchPanel = ({ hiddenCount, onRegister, previewPrograms }) => (
   <div className="search-lock-panel" onClick={onRegister} role="button" tabIndex={0} onKeyDown={(event) => event.key === 'Enter' && onRegister()} style={{ cursor: 'pointer' }}>
     <div className="search-lock-panel-stack" aria-hidden="true">
-      {[0, 1].map((index) => (
-        <div key={index} className={`card program-card search-lock-card search-lock-card-${index + 1}`}>
+      {(previewPrograms.length > 0 ? previewPrograms : [null, null]).slice(0, 2).map((program, index) => (
+        <div key={program?.id || `placeholder-${index}`} className={`search-lock-card search-lock-card-${index + 1}`}>
           <div className="search-lock-card-blur">
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '18px' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', background: 'var(--border-light)' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ width: '74%', height: '18px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '10px' }} />
-                <div style={{ width: '46%', height: '12px', borderRadius: '999px', background: 'var(--border-light)' }} />
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
-              {[1, 2, 3, 4].map((item) => <div key={item} style={{ width: item === 4 ? '116px' : '84px', height: '28px', borderRadius: '999px', background: 'var(--border-light)' }} />)}
-            </div>
-            <div style={{ width: '42%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '8px' }} />
-            <div style={{ width: '32%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '18px' }} />
-            <div style={{ width: '100%', height: '54px', borderRadius: '18px', background: 'var(--border-light)' }} />
+            <LockedPreviewCard program={program} accentClass={index === 0 ? 'accent-top' : 'primary-top'} />
           </div>
         </div>
       ))}
@@ -89,7 +122,7 @@ const LockedSearchPanel = ({ hiddenCount, onRegister }) => (
       <div className="search-lock-badge">Sign in required</div>
       <div className="search-lock-copy">
         <h3>{hiddenCount} more activities are locked</h3>
-        <p>You can preview the first 10. Register to unlock the full search and save lists for client research.</p>
+        <p>You can preview the first 10. Register for free to unlock the full search and save lists for client research.</p>
       </div>
       <button className="search-lock-button" type="button">Unlock Full Search</button>
     </div>
@@ -505,7 +538,7 @@ export default function Search() {
             )}
 
             {isGuestSearchLocked && hiddenGuestResultCount > 0 && (
-              <LockedSearchPanel hiddenCount={hiddenGuestResultCount} onRegister={handleRegisterForSearchAccess} />
+              <LockedSearchPanel hiddenCount={hiddenGuestResultCount} onRegister={handleRegisterForSearchAccess} previewPrograms={programs.slice(-2)} />
             )}
 
             {!isGuestSearchLocked && (

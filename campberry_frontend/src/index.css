@@ -831,13 +831,16 @@ header {
 
 .search-lock-panel {
     position: relative;
-    min-height: 330px;
+    min-height: 320px;
     margin-top: 24px;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 30px;
 }
 
 .search-lock-panel-stack {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    min-height: 320px;
     pointer-events: none;
 }
 
@@ -845,50 +848,61 @@ header {
     min-height: 280px;
     position: absolute;
     overflow: hidden;
-    border: 1px solid rgba(201, 211, 227, 0.9);
-    background:
-        radial-gradient(circle at top right, rgba(255, 168, 76, 0.16), transparent 34%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 242, 237, 0.96));
-    box-shadow: var(--shadow-md);
+    background: none;
+    border: none;
+    box-shadow: none;
 }
 
 .search-lock-card-1 {
-    inset: 6px 110px 28px 0;
+    inset: 18px 110px 18px 18px;
     transform: rotate(-1.6deg);
-    opacity: 0.7;
+    opacity: 0.92;
 }
 
 .search-lock-card-2 {
-    inset: 22px 0 0 120px;
-    transform: rotate(1.4deg);
-    opacity: 0.6;
+    inset: 26px 18px 10px 132px;
+    transform: rotate(1.8deg);
+    opacity: 0.82;
 }
 
 .search-lock-card-blur {
-    filter: blur(12px);
-    opacity: 0.9;
-    transform: scale(1.05);
+    position: relative;
+    filter: blur(10px) saturate(0.92);
+    opacity: 0.96;
+    transform: scale(1.01);
     pointer-events: none;
 }
 
+.search-lock-card-blur::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08)),
+        radial-gradient(circle at top right, rgba(255, 168, 76, 0.1), transparent 28%);
+}
+
 .search-lock-overlay-card {
-    position: relative;
+    position: absolute;
+    inset: 0;
     z-index: 1;
-    min-height: 280px;
-    margin: 28px 60px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 18px;
-    padding: 28px 32px;
-    border-radius: 28px;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 34px 42px;
+    border-radius: 30px;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.2)),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 247, 237, 0.42));
-    border: 1px solid rgba(255, 255, 255, 0.56);
-    backdrop-filter: blur(20px) saturate(145%);
-    -webkit-backdrop-filter: blur(20px) saturate(145%);
-    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.38)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.36), rgba(255, 247, 237, 0.26));
+    border: 1px solid rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    box-shadow:
+        0 18px 44px rgba(15, 23, 42, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.54);
 }
 
 .search-lock-overlay-card::before {
@@ -897,7 +911,7 @@ header {
     inset: 0;
     border-radius: inherit;
     background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.62), transparent 30%),
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.72), transparent 30%),
         radial-gradient(circle at bottom right, rgba(255, 122, 26, 0.14), transparent 26%);
     pointer-events: none;
 }
@@ -911,18 +925,20 @@ header {
 
 .search-lock-overlay-card h3 {
     margin: 0;
-    font-size: 30px;
-    line-height: 1.02;
+    font-size: 34px;
+    line-height: 0.98;
     color: var(--primary);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     max-width: 14ch;
 }
 
 .search-lock-overlay-card p {
     margin: 0;
-    font-size: 15px;
-    line-height: 1.6;
-    color: rgba(82, 97, 126, 0.92);
-    max-width: 38ch;
+    font-size: 16px;
+    line-height: 1.65;
+    color: rgba(56, 71, 98, 0.98);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+    max-width: 40ch;
 }
 
 .search-lock-copy {
@@ -935,7 +951,7 @@ header {
     width: fit-content;
     padding: 7px 11px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.52);
+    background: rgba(255, 255, 255, 0.78);
     color: var(--accent);
     font-size: 11px;
     font-weight: 800;
@@ -950,17 +966,24 @@ header {
     position: relative;
     align-self: flex-start;
     min-width: 220px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 14px 22px;
     border: 0;
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--secondary), #ff9b45);
-    color: #fff;
+    background: linear-gradient(135deg, #ff7a1a, #ff9b45);
+    color: #fff !important;
     font-size: 15px;
     font-weight: 800;
     letter-spacing: 0.01em;
-    box-shadow: 0 14px 28px rgba(255, 122, 26, 0.26);
+    box-shadow:
+        0 14px 28px rgba(255, 122, 26, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
     transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
     cursor: pointer;
+    opacity: 1;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 .search-lock-button:hover,
@@ -977,7 +1000,6 @@ header {
 
 @media (max-width: 900px) {
     .search-lock-overlay-card {
-        margin: 20px 28px;
         padding: 24px;
     }
 
@@ -993,7 +1015,7 @@ header {
 
     .search-lock-card-1,
     .search-lock-card-2 {
-        inset: 0;
+        inset: 18px 0 0 0;
         transform: none;
     }
 
@@ -1002,8 +1024,6 @@ header {
     }
 
     .search-lock-overlay-card {
-        min-height: 260px;
-        margin: 14px;
         padding: 20px;
         justify-content: center;
     }
