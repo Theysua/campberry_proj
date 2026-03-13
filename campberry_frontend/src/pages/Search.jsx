@@ -61,32 +61,35 @@ const SkeletonCard = ({ accentClass }) => (
   </div>
 )
 
-const LockedResultCard = ({ hiddenCount, onRegister }) => (
-  <div className="card program-card search-lock-card accent-top" onClick={onRegister} role="button" tabIndex={0} onKeyDown={(event) => event.key === 'Enter' && onRegister()} style={{ cursor: 'pointer' }}>
-    <div className="search-lock-card-blur">
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '18px' }}>
-        <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', background: 'var(--border-light)' }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ width: '74%', height: '18px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '10px' }} />
-          <div style={{ width: '46%', height: '12px', borderRadius: '999px', background: 'var(--border-light)' }} />
+const LockedSearchPanel = ({ hiddenCount, onRegister }) => (
+  <div className="search-lock-panel" onClick={onRegister} role="button" tabIndex={0} onKeyDown={(event) => event.key === 'Enter' && onRegister()} style={{ cursor: 'pointer' }}>
+    <div className="search-lock-panel-stack" aria-hidden="true">
+      {[0, 1].map((index) => (
+        <div key={index} className={`card program-card search-lock-card search-lock-card-${index + 1}`}>
+          <div className="search-lock-card-blur">
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '18px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', background: 'var(--border-light)' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ width: '74%', height: '18px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '10px' }} />
+                <div style={{ width: '46%', height: '12px', borderRadius: '999px', background: 'var(--border-light)' }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
+              {[1, 2, 3, 4].map((item) => <div key={item} style={{ width: item === 4 ? '116px' : '84px', height: '28px', borderRadius: '999px', background: 'var(--border-light)' }} />)}
+            </div>
+            <div style={{ width: '42%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '8px' }} />
+            <div style={{ width: '32%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '18px' }} />
+            <div style={{ width: '100%', height: '54px', borderRadius: '18px', background: 'var(--border-light)' }} />
+          </div>
         </div>
-      </div>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
-        {[1, 2, 3, 4].map((item) => <div key={item} style={{ width: item === 4 ? '116px' : '84px', height: '28px', borderRadius: '999px', background: 'var(--border-light)' }} />)}
-      </div>
-      <div style={{ width: '42%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '8px' }} />
-      <div style={{ width: '32%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '18px' }} />
-      <div style={{ width: '100%', height: '54px', borderRadius: '18px', background: 'var(--border-light)' }} />
+      ))}
     </div>
 
-    <div className="search-lock-card-overlay">
-      <div className="search-lock-pill-row">
-        <div className="search-lock-badge">Sign in required</div>
-        <div className="search-lock-count">{hiddenCount}+ hidden</div>
-      </div>
+    <div className="card search-lock-overlay-card">
+      <div className="search-lock-badge">Sign in required</div>
       <div className="search-lock-copy">
-        <h3>The rest of the search is locked.</h3>
-        <p>Guests can preview the first 10 activities. Register to unlock the full list, deadlines, and saved research lists.</p>
+        <h3>{hiddenCount} more activities are locked</h3>
+        <p>You can preview the first 10. Register to unlock the full search and save lists for client research.</p>
       </div>
       <button className="search-lock-button" type="button">Unlock Full Search</button>
     </div>
@@ -491,9 +494,6 @@ export default function Search() {
             ) : (
               <div className="l1-grid">
                 {programs.map(renderProgramCard)}
-                {isGuestSearchLocked && hiddenGuestResultCount > 0 && Array.from({ length: Math.min(GUEST_LOCK_PREVIEW_CARDS, hiddenGuestResultCount) }).map((_, index) => (
-                  <LockedResultCard key={`locked-${index}`} hiddenCount={hiddenGuestResultCount} onRegister={handleRegisterForSearchAccess} />
-                ))}
               </div>
             )}
 
@@ -505,13 +505,7 @@ export default function Search() {
             )}
 
             {isGuestSearchLocked && hiddenGuestResultCount > 0 && (
-              <div className="card" style={{ marginTop: '24px', padding: '24px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', marginBottom: '6px' }}>Create an account to continue research</div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>The remaining {hiddenGuestResultCount} matching activities are available after sign in.</div>
-                </div>
-                <button className="btn" onClick={handleRegisterForSearchAccess}>Register to Unlock</button>
-              </div>
+              <LockedSearchPanel hiddenCount={hiddenGuestResultCount} onRegister={handleRegisterForSearchAccess} />
             )}
 
             {!isGuestSearchLocked && (
