@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import prisma from '../db';
 import { parseOrRespond } from '../validation/parse';
 import { searchProgramsQuerySchema } from '../validation/schemas';
@@ -6,6 +7,8 @@ import { searchProgramsQuerySchema } from '../validation/schemas';
 const PUBLIC_RESPONSE_CACHE = new Map<string, { expiresAt: number; payload: unknown }>();
 const PROGRAMS_CACHE_TTL_MS = 60 * 1000;
 const INTERESTS_CACHE_TTL_MS = 10 * 60 * 1000;
+const JWT_SECRET = process.env.JWT_SECRET || 'campberry_super_secret';
+const GUEST_SEARCH_VISIBLE_LIMIT = 10;
 
 const getCachedResponse = <T>(key: string): T | null => {
   const cached = PUBLIC_RESPONSE_CACHE.get(key);
@@ -19,6 +22,24 @@ const getCachedResponse = <T>(key: string): T | null => {
   }
 
   return cached.payload as T;
+};
+
+const getOptionalViewer = (req: Request) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return null;
+  }
+
+  try {
+    return jwt.verify(token, JWT_SECRET) as { id: string; role: string };
+  } catch {
+    return null;
+  }
 };
 
 const setCachedResponse = (key: string, payload: unknown, ttlMs: number) => {
@@ -548,7 +569,9 @@ const buildSessionFilterClause = ({
 
 export const getPrograms = async (req: Request, res: Response) => {
   try {
-    const cacheKey = `programs:${req.originalUrl}`;
+    const viewer = getOptionalViewer(req);
+    const isGuestViewer = !viewer;
+    const cacheKey = `programs:${isGuestViewer ? 'guest' : `auth:${viewer.id}`}:${req.originalUrl}`;
     const cachedPayload = getCachedResponse<any>(cacheKey);
     if (cachedPayload) {
       sendCachedJson(res, cachedPayload, 60, 'HIT');
@@ -791,18 +814,27 @@ export const getPrograms = async (req: Request, res: Response) => {
     });
 
     const total = filteredPrograms.length;
-    const paginatedIds = filteredPrograms
-      .slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber)
+    const visiblePrograms = isGuestViewer
+      ? filteredPrograms.slice(0, GUEST_SEARCH_VISIBLE_LIMIT)
+      : filteredPrograms;
+    const effectivePageNumber = isGuestViewer ? 1 : pageNumber;
+    const effectiveLimitNumber = isGuestViewer ? Math.min(limitNumber, GUEST_SEARCH_VISIBLE_LIMIT) : limitNumber;
+    const paginatedIds = visiblePrograms
+      .slice((effectivePageNumber - 1) * effectiveLimitNumber, effectivePageNumber * effectiveLimitNumber)
       .map((program) => program.id);
 
     if (paginatedIds.length === 0) {
       const payload = {
         data: [],
         meta: {
-          page: pageNumber,
-          limit: limitNumber,
-          total,
-          totalPages: Math.max(1, Math.ceil(total / limitNumber)),
+          page: effectivePageNumber,
+          limit: effectiveLimitNumber,
+          total: visiblePrograms.length,
+          totalPages: Math.max(1, Math.ceil(visiblePrograms.length / effectiveLimitNumber)),
+          totalMatches: total,
+          guestVisibleLimit: isGuestViewer ? GUEST_SEARCH_VISIBLE_LIMIT : null,
+          loginRequiredForMore: isGuestViewer && total > GUEST_SEARCH_VISIBLE_LIMIT,
+          hiddenCount: isGuestViewer ? Math.max(0, total - GUEST_SEARCH_VISIBLE_LIMIT) : 0,
         },
       };
       setCachedResponse(cacheKey, payload, PROGRAMS_CACHE_TTL_MS);
@@ -848,10 +880,14 @@ export const getPrograms = async (req: Request, res: Response) => {
     const payload = {
       data: orderedPrograms,
       meta: {
-        page: pageNumber,
-        limit: limitNumber,
-        total,
-        totalPages: Math.max(1, Math.ceil(total / limitNumber)),
+        page: effectivePageNumber,
+        limit: effectiveLimitNumber,
+        total: visiblePrograms.length,
+        totalPages: Math.max(1, Math.ceil(visiblePrograms.length / effectiveLimitNumber)),
+        totalMatches: total,
+        guestVisibleLimit: isGuestViewer ? GUEST_SEARCH_VISIBLE_LIMIT : null,
+        loginRequiredForMore: isGuestViewer && total > GUEST_SEARCH_VISIBLE_LIMIT,
+        hiddenCount: isGuestViewer ? Math.max(0, total - GUEST_SEARCH_VISIBLE_LIMIT) : 0,
       },
     };
 

@@ -239,14 +239,14 @@ export const getMe = () =>
 
 export const getPrograms = (params = {}, options = {}) => {
   if (isDemoMode) {
-    return Promise.resolve(getDemoPrograms(params))
+    return Promise.resolve(getDemoPrograms(params, { isAuthenticated: Boolean(getAuthToken()) }))
   }
 
   const query = new URLSearchParams(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== '' && value !== null && value !== false)
   ).toString()
 
-  return cachedPublicFetch(`/programs${query ? `?${query}` : ''}`, PROGRAMS_CACHE_TTL_MS, options)
+  return apiFetch(`/programs${query ? `?${query}` : ''}`, options)
 }
 
 export const getProgramById = (id) =>

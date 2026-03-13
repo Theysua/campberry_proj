@@ -355,7 +355,7 @@ export const getDemoProgramById = (id) => {
   return program
 }
 
-export const getDemoPrograms = (params = {}) => {
+export const getDemoPrograms = (params = {}, options = {}) => {
   let filtered = [...DEMO_PROGRAMS]
 
   if (params.search) {
@@ -442,18 +442,24 @@ export const getDemoPrograms = (params = {}) => {
   }
 
   const limit = Number(params.limit || 10)
-  const page = Number(params.page || 1)
+  const page = options.isAuthenticated ? Number(params.page || 1) : 1
   const total = filtered.length
-  const totalPages = Math.max(1, Math.ceil(total / limit))
-  const startIndex = (page - 1) * limit
+  const visibleLimit = options.isAuthenticated ? limit : Math.min(limit, 10)
+  const visiblePrograms = options.isAuthenticated ? filtered : filtered.slice(0, 10)
+  const totalPages = Math.max(1, Math.ceil(visiblePrograms.length / visibleLimit))
+  const startIndex = (page - 1) * visibleLimit
 
   return {
-    data: filtered.slice(startIndex, startIndex + limit),
+    data: visiblePrograms.slice(startIndex, startIndex + visibleLimit),
     meta: {
-      total,
+      total: visiblePrograms.length,
       totalPages,
       page,
-      limit,
+      limit: visibleLimit,
+      totalMatches: total,
+      guestVisibleLimit: options.isAuthenticated ? null : 10,
+      loginRequiredForMore: !options.isAuthenticated && total > 10,
+      hiddenCount: options.isAuthenticated ? 0 : Math.max(0, total - 10),
     },
   }
 }

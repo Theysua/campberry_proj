@@ -13,9 +13,10 @@ import {
   sortToApiValue,
 } from '../utils/searchUrlState'
 import { getProgramStarRating } from '../utils/programRating'
-import { canGuestAccessProgram, getGuestPreviewState } from '../utils/previewGate'
+import { canGuestAccessProgram } from '../utils/previewGate'
 
 const SORT_OPTIONS = ['Relevancy', 'Selectivity', 'Deadline (Ascending)', 'Deadline (Descending)']
+const GUEST_LOCK_PREVIEW_CARDS = 2
 
 const getLocationMeta = (program) => {
   const sessions = program.sessions || []
@@ -60,6 +61,33 @@ const SkeletonCard = ({ accentClass }) => (
   </div>
 )
 
+const LockedResultCard = ({ hiddenCount, onRegister }) => (
+  <div className="card program-card search-lock-card accent-top" onClick={onRegister} role="button" tabIndex={0} onKeyDown={(event) => event.key === 'Enter' && onRegister()} style={{ cursor: 'pointer' }}>
+    <div className="search-lock-card-blur">
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '18px' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', background: 'var(--border-light)' }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ width: '74%', height: '18px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '10px' }} />
+          <div style={{ width: '46%', height: '12px', borderRadius: '999px', background: 'var(--border-light)' }} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
+        {[1, 2, 3, 4].map((item) => <div key={item} style={{ width: item === 4 ? '116px' : '84px', height: '28px', borderRadius: '999px', background: 'var(--border-light)' }} />)}
+      </div>
+      <div style={{ width: '42%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '8px' }} />
+      <div style={{ width: '32%', height: '12px', borderRadius: '999px', background: 'var(--border-light)', marginBottom: '18px' }} />
+      <div style={{ width: '100%', height: '54px', borderRadius: '18px', background: 'var(--border-light)' }} />
+    </div>
+
+    <div className="search-lock-card-overlay">
+      <div className="search-lock-badge">Sign in required</div>
+      <h3>Unlock {hiddenCount} more activities</h3>
+      <p>Guests can preview the first 10 results. Create an account to access the full search set and save lists.</p>
+      <button className="btn" type="button">Register to Continue</button>
+    </div>
+  </div>
+)
+
 export default function Search() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -86,6 +114,7 @@ export default function Search() {
   const [totalPages, setTotalPages] = useState(1)
   const [programs, setPrograms] = useState([])
   const [totalPrograms, setTotalPrograms] = useState(0)
+  const [resultsMeta, setResultsMeta] = useState({ totalMatches: 0, loginRequiredForMore: false, hiddenCount: 0, guestVisibleLimit: null })
   const [allInterests, setAllInterests] = useState([])
   const [isProgramsLoading, setIsProgramsLoading] = useState(false)
   const [hasLoadedPrograms, setHasLoadedPrograms] = useState(false)
@@ -169,6 +198,7 @@ export default function Search() {
         setPrograms(response.data || [])
         setTotalPrograms(response.meta?.total || 0)
         setTotalPages(response.meta?.totalPages || 1)
+        setResultsMeta(response.meta || { totalMatches: 0, loginRequiredForMore: false, hiddenCount: 0, guestVisibleLimit: null })
         setHasLoadedPrograms(true)
       }
 
@@ -181,6 +211,7 @@ export default function Search() {
         setPrograms(cached.pages.get(page) || [])
         setTotalPrograms(cached.meta?.total || 0)
         setTotalPages(cached.meta?.totalPages || 1)
+        setResultsMeta(cached.meta || { totalMatches: 0, loginRequiredForMore: false, hiddenCount: 0, guestVisibleLimit: null })
         setHasLoadedPrograms(true)
       } else {
         await loadPage(page, { signal: controller.signal })
@@ -256,6 +287,13 @@ export default function Search() {
     }
 
     return { label: `Deadline: ${formatted}`, tone: 'normal' }
+  }
+
+  const isGuestSearchLocked = !isAuthenticated && Boolean(resultsMeta.loginRequiredForMore)
+  const displayedResultCount = isGuestSearchLocked ? resultsMeta.totalMatches || totalPrograms : totalPrograms
+  const hiddenGuestResultCount = Math.max(0, resultsMeta.hiddenCount || 0)
+  const handleRegisterForSearchAccess = () => {
+    navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}&reason=preview_limit`)
   }
 
   const renderProgramCard = (program, index) => {
@@ -421,11 +459,11 @@ export default function Search() {
 
           <div style={{ flex: '1' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>{hasLoadedPrograms ? `${totalPrograms} Results` : 'Loading programs...'}</h2>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>{hasLoadedPrograms ? `${displayedResultCount} Results` : 'Loading programs...'}</h2>
               <button className="mobile-filter-toggle btn-outline" onClick={() => setIsMobileFilterOpen(true)}>Filters</button>
-              {!isAuthenticated && !isProgramsLoading && (
+              {isGuestSearchLocked && !isProgramsLoading && (
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', padding: '8px 12px', borderRadius: '999px', background: 'var(--border-light)' }}>
-                  Guest preview remaining: {getGuestPreviewState().remaining}
+                  Showing first {resultsMeta.guestVisibleLimit || 10} activities
                 </div>
               )}
               <div style={{ fontSize: '14px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }} ref={sortRef}>
@@ -446,7 +484,12 @@ export default function Search() {
             {!hasLoadedPrograms && isProgramsLoading ? (
               <div className="l1-grid">{Array.from({ length: 4 }).map((_, index) => <SkeletonCard key={index} accentClass={index % 2 === 0 ? 'accent-top' : 'primary-top'} />)}</div>
             ) : (
-              <div className="l1-grid">{programs.map(renderProgramCard)}</div>
+              <div className="l1-grid">
+                {programs.map(renderProgramCard)}
+                {isGuestSearchLocked && hiddenGuestResultCount > 0 && Array.from({ length: Math.min(GUEST_LOCK_PREVIEW_CARDS, hiddenGuestResultCount) }).map((_, index) => (
+                  <LockedResultCard key={`locked-${index}`} hiddenCount={hiddenGuestResultCount} onRegister={handleRegisterForSearchAccess} />
+                ))}
+              </div>
             )}
 
             {hasLoadedPrograms && !isProgramsLoading && programs.length === 0 && (
@@ -456,6 +499,17 @@ export default function Search() {
               </div>
             )}
 
+            {isGuestSearchLocked && hiddenGuestResultCount > 0 && (
+              <div className="card" style={{ marginTop: '24px', padding: '24px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '18px', flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', marginBottom: '6px' }}>Create an account to continue research</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>The remaining {hiddenGuestResultCount} matching activities are available after sign in.</div>
+                </div>
+                <button className="btn" onClick={handleRegisterForSearchAccess}>Register to Unlock</button>
+              </div>
+            )}
+
+            {!isGuestSearchLocked && (
             <div className="pagination" style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '30px' }}>
               <button onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))} disabled={page === 1} className="btn-outline" style={{ opacity: page === 1 ? 0.5 : 1, cursor: page === 1 ? 'not-allowed' : 'pointer' }}>← Previous</button>
               <div className="pagination-pages">
@@ -467,6 +521,7 @@ export default function Search() {
               </div>
               <button onClick={() => setPage((currentPage) => Math.min(totalPages, currentPage + 1))} disabled={page >= totalPages} className="btn-outline" style={{ opacity: page >= totalPages ? 0.5 : 1, cursor: page >= totalPages ? 'not-allowed' : 'pointer' }}>Next →</button>
             </div>
+            )}
           </div>
         </div>
       </div>
