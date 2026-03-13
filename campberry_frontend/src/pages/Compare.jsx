@@ -106,7 +106,6 @@ export default function Compare() {
                                 <div>
                                     <div style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.05em' }}>Cost & Funding</div>
                                     <p style={{ fontSize: '14px', margin: 0 }}>{program.cost_info || 'N/A'}</p>
-                                    {program.cost_info?.toLowerCase().includes('free') && <span className="badge-impact mt-2 inline-block">Free Program</span>}
                                 </div>
                                 <div>
                                     <div style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.05em' }}>Eligibility</div>

@@ -14,6 +14,7 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const redirectTarget = useMemo(() => searchParams.get('redirect') || '/my-lists', [searchParams]);
+  const authReason = useMemo(() => searchParams.get('reason') || '', [searchParams]);
   const googleButtonRef = useRef(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const [googleState, setGoogleState] = useState('idle');
@@ -86,6 +87,7 @@ export default function Auth() {
       return true;
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGoogleState('loading');
     ensureGoogleScript()
       .then(() => {
@@ -162,6 +164,12 @@ export default function Auth() {
                 >
                   Use Demo Account
                 </button>
+              </div>
+            )}
+
+            {authReason === 'preview_limit' && (
+              <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--primary)', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: '14px', padding: '12px 14px' }}>
+                You have reached the 10-activity guest preview limit. Sign in or create an account to continue researching and saving lists.
               </div>
             )}
 

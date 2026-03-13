@@ -44,12 +44,12 @@ export default function Mission() {
             
             <div className="bg-white p-8 rounded-2xl shadow-xl shadow-[#892233]/5 border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-transform">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#fade41]/20 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
-              <div className="text-4xl mb-6 relative">🆓</div>
-              <h3 className="text-xl font-bold text-[#011936] mb-4 relative">Free, Forever</h3>
+              <div className="text-4xl mb-6 relative">🌍</div>
+              <h3 className="text-xl font-bold text-[#011936] mb-4 relative">Built for Broad Access</h3>
               <ul className="space-y-3 text-sm text-[#011936] font-medium opacity-80 relative">
-                <li className="flex items-start gap-2"><span className="text-[#fade41] font-bold mt-0.5">✓</span> No paywalls blocking access</li>
-                <li className="flex items-start gap-2"><span className="text-[#fade41] font-bold mt-0.5">✓</span> No premium membership tiers</li>
-                <li className="flex items-start gap-2"><span className="text-[#fade41] font-bold mt-0.5">✓</span> Equal access for everyone</li>
+                <li className="flex items-start gap-2"><span className="text-[#fade41] font-bold mt-0.5">✓</span> Open discovery for students and counselors</li>
+                <li className="flex items-start gap-2"><span className="text-[#fade41] font-bold mt-0.5">✓</span> No pay-to-rank incentives</li>
+                <li className="flex items-start gap-2"><span className="text-[#fade41] font-bold mt-0.5">✓</span> Consistent access to the same core information</li>
               </ul>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function Mission() {
           <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-emerald-100 rounded-full blur-3xl opacity-50"></div>
           
           <h2 className="text-2xl md:text-3xl font-bold text-[#011936] mb-6 relative z-10">
-            Join the community to help build this shared and free resource.
+            Join the community to help build this shared resource.
           </h2>
           <p className="text-[#011936] mb-8 relative z-10 max-w-xl mx-auto font-medium opacity-70">
             Whether you are a student sharing a review of your summer program or an educator curating lists for your students, your voice matters.

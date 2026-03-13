@@ -2,8 +2,9 @@ import { buildCurrentPath, getDefaultBackLabel } from './navigationContext'
 
 const SORT_LABEL_BY_API_VALUE = {
   relevancy: 'Relevancy',
-  rating: 'Rating',
-  deadline: 'Deadline',
+  selectivity: 'Selectivity',
+  deadline_asc: 'Deadline (Ascending)',
+  deadline_desc: 'Deadline (Descending)',
 }
 
 const ALLOWED_RADII = new Set(['5', '10', '25', '50', '100'])
@@ -32,19 +33,26 @@ export const areCoordsEqual = (left, right) => {
 
 export const sortToApiValue = (sortBy) => {
   switch (sortBy) {
-    case 'Rating':
-      return 'rating'
-    case 'Deadline':
-      return 'deadline'
+    case 'Selectivity':
+      return { sort: 'selectivity' }
+    case 'Deadline (Ascending)':
+      return { sort: 'deadline', sortOrder: 'asc' }
+    case 'Deadline (Descending)':
+      return { sort: 'deadline', sortOrder: 'desc' }
     default:
-      return 'relevancy'
+      return { sort: 'relevancy' }
   }
 }
 
 export const parseSearchStateFromParams = (searchParams) => {
   const searchQuery = (searchParams.get('q') || '').trim()
   const rawPage = Number.parseInt(searchParams.get('page') || '1', 10)
-  const parsedSort = SORT_LABEL_BY_API_VALUE[searchParams.get('sort')] || 'Relevancy'
+  const rawSort = searchParams.get('sort')
+  const rawSortOrder = searchParams.get('sortOrder')
+  const parsedSort =
+    rawSort === 'deadline'
+      ? SORT_LABEL_BY_API_VALUE[`deadline_${rawSortOrder === 'desc' ? 'desc' : 'asc'}`]
+      : SORT_LABEL_BY_API_VALUE[rawSort] || 'Relevancy'
 
   return {
     searchInput: searchQuery,
@@ -67,7 +75,7 @@ export const parseSearchStateFromParams = (searchParams) => {
     currentCoords: null,
     locationStatus: '',
     locationError: '',
-    sortBy: parsedSort === 'Distance' ? 'Relevancy' : parsedSort,
+    sortBy: parsedSort,
     page: Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1,
   }
 }
@@ -78,18 +86,12 @@ export const buildSearchParamsFromState = ({
   ratingFilter,
   impactFilter,
   isSelective,
-  locationInput,
-  onlineOnly,
   internationalFilter,
   creditFilter,
   oneOnOneFilter,
-  includeOnline,
   seasonFilter,
   gradesFilter,
   interestIds,
-  radiusMiles,
-  radiusFilterEnabled,
-  currentCoords,
   sortBy,
   page,
 }) => {
@@ -139,9 +141,13 @@ export const buildSearchParamsFromState = ({
     nextParams.set('interests', interestIds.join(','))
   }
 
-  const apiSortValue = sortToApiValue(sortBy)
-  if (apiSortValue !== 'relevancy') {
-    nextParams.set('sort', apiSortValue)
+  const apiSort = sortToApiValue(sortBy)
+  if (apiSort.sort !== 'relevancy') {
+    nextParams.set('sort', apiSort.sort)
+  }
+
+  if (apiSort.sortOrder) {
+    nextParams.set('sortOrder', apiSort.sortOrder)
   }
 
   if (page > 1) {

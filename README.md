@@ -1,30 +1,17 @@
-# 🍓 Campberry
+# Campberry
 
-> **The most comprehensive database of extracurricular & enrichment opportunities for high schoolers — curated by college admissions experts.**
-
-Campberry helps students discover, compare, and save learning opportunities (summer programs, competitions, research internships, and more) that strengthen their college applications. Counselors and educators can create and publish curated program lists with their own expert commentary.
+Campberry is a searchable opportunity database for education consultants and counselors. The current product focus is B2B research workflows: finding listings, tracking deadlines, opening official program websites, and saving reusable lists for client work.
 
 ---
 
-## ✨ Features
+## Current Product Priorities
 
-### For Students
-- **Smart Search** — Filter programs by interest, location, season, and eligibility (international students supported by default)
-- **Geolocation Filter** — Find programs near you using the browser's Geolocation API
-- **Expert Ratings** — Programs are rated with two systems:
-  - 🏅 **Experts' Choice** — `MOST` / `HIGHLY` recommended by education consultants
-  - 🎓 **Impact on Admissions** — `MOST HIGH IMPACT` / `HIGH IMPACT` for elite college review
-- **Program Detail Pages** — Full program info including logo, tags, dates, cost, eligibility, external reviews, and expert guidance
-- **Save to My Lists** — Bookmark programs into personal lists for easy tracking
-
-### For Counselors & Educators
-- **Curated Lists** — Create and publish lists of recommended programs with author commentary and interspersed notes
-- **Expert Guidance** — Per-program guidance notes covering time commitment, scope, competition type, and awards are displayed on detail pages
-
-### Platform
-- **2,100+ Opportunities** — Competitions, summer programs, school-year programs, internships, and more
-- **No paywall** — Free to use, forever
-- **100% data privacy** — No student data sold to programs
+- **Listings-first search** with filters for interests, grades, season, selectivity, and international eligibility
+- **Deadline visibility** directly on search cards and detail pages
+- **Deadline sorting** with both ascending and descending options
+- **Official website links** surfaced in search results and detail views
+- **Saved lists** for consultant research and client presentation workflows
+- **Guest preview wall** after 10 unique program detail views for unauthenticated visitors
 
 ---
 
@@ -75,16 +62,29 @@ campberry_proj/
 ```bash
 # Clone the repo
 git clone https://github.com/Theysua/campberry_proj.git
-cd campberry_proj/campberry_frontend
+cd campberry_proj
 
-# Install dependencies
+# Frontend
+cd campberry_frontend
 npm install
-
-# Start development server
 npm run dev
 ```
 
 The app will be available at **http://localhost:5173** (or the next available port).
+
+### Backend Local Development
+
+```bash
+cd campberry_backend
+cp .env.example .env
+npm install
+npm run db:up
+npm run db:deploy
+npm run db:seed
+npm run dev
+```
+
+The backend API runs on **http://localhost:3001** by default and will fall back to the Docker Postgres URL from `.env.example` when an old local Prisma proxy URL is detected.
 
 ### Build for Production
 
@@ -152,7 +152,7 @@ Each program in `detailed_programs.json` follows this structure:
     "onlyUsResidents": false,
     "isHighlySelective": true,
     "expertsChoiceRating": "MOST_RECOMMENDED",
-    "costInfo": "Free / $X,XXX / Financial aid available",
+    "costInfo": "$X,XXX / Financial aid available",
     "admissionInfo": "Application details...",
     "eligibilityInfo": "Who can apply...",
     "additionalInfo": "Expert guidance: time commitment, scope, awards...",
@@ -200,24 +200,23 @@ Each program in `detailed_programs.json` follows this structure:
 
 ---
 
-## 📋 Requirements Implemented
+## Validation
 
-Based on product requirements spec (`Copy of Copy of Campberry_Requirements.xlsx`):
+Frontend:
 
-- [x] Only show programs tagged "allows international students" by default
-- [x] Add "US Students Only" toggle filter
-- [x] Location uses Geolocation API
-- [x] In addition to "expert choice", add Impact on Admissions with "Most" / "Highly" ratings
-- [x] Author commentary is unique to List Detail pages
-- [x] Short paragraph as list description is OK
-- [x] Centered card layout, light-blue background
-- [x] No need to add financial accessibility grade
-- [x] No need for Free / 1-on-1 filter tags
-- [x] No video on program detail pages — logo only
-- [x] Default sort: Relevancy
-- [x] Mobile nav may collapse to hamburger menu
-- [x] Redirects to login if unauthenticated (My Lists)
-- [x] Compare page details TBD
+```bash
+cd campberry_frontend
+npm run lint
+npm run build
+```
+
+Backend:
+
+```bash
+cd campberry_backend
+npm run typecheck
+npm test
+```
 
 ---
 

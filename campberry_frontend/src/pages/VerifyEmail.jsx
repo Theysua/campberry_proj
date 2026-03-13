@@ -5,11 +5,10 @@ import { apiFetch } from '../services/api';
 export default function VerifyEmail() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
-    const [status, setStatus] = useState('verifying');
+    const [status, setStatus] = useState(() => (token ? 'verifying' : 'error'));
 
     useEffect(() => {
         if (!token) {
-            setStatus('error');
             return;
         }
 

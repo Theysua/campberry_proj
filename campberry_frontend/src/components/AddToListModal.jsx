@@ -13,11 +13,6 @@ export default function AddToListModal({ isOpen, onClose, programId, preferredLi
 
     useEffect(() => {
         if (!isOpen) {
-            setSuccessList(null);
-            setIsCreating(false);
-            setNewListName('');
-            setNewListDescription('');
-            setError('');
             return;
         }
 

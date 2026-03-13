@@ -499,7 +499,6 @@ export const getPrograms = async (req: Request, res: Response) => {
       search,
       interests,
       type,
-      isFree,
       isSelective,
       rating,
       impact,
@@ -516,6 +515,7 @@ export const getPrograms = async (req: Request, res: Response) => {
       lng,
       radiusMiles,
       sort,
+      sortOrder,
       page = 1,
       limit = 10,
     } = parsedQuery;
@@ -536,6 +536,7 @@ export const getPrograms = async (req: Request, res: Response) => {
     const includeOnlinePrograms = includeOnline !== 'false';
     const onlineOnlyPrograms = onlineOnly === 'true';
     const sortKey = sort || 'relevancy';
+    const sortDirection = sortOrder || 'asc';
 
     const whereClause: any = {};
     const andClauses: any[] = [];
@@ -582,25 +583,6 @@ export const getPrograms = async (req: Request, res: Response) => {
 
     if (impact) {
       whereClause.impact_rating = String(impact);
-    }
-
-    if (isFree === 'true') {
-      andClauses.push({
-        OR: [
-          {
-            cost_info: {
-              contains: 'free',
-              mode: 'insensitive',
-            },
-          },
-          {
-            cost_info: {
-              contains: 'fully funded',
-              mode: 'insensitive',
-            },
-          },
-        ],
-      });
     }
 
     if (international === 'true') {
@@ -715,8 +697,17 @@ export const getPrograms = async (req: Request, res: Response) => {
         return getRatingScore(right) - getRatingScore(left);
       }
 
+      if (sortKey === 'selectivity') {
+        if (Boolean(left.is_highly_selective) !== Boolean(right.is_highly_selective)) {
+          return Boolean(right.is_highly_selective) ? 1 : -1;
+        }
+
+        return getRatingScore(right) - getRatingScore(left);
+      }
+
       if (sortKey === 'deadline') {
-        return getNextDeadlineTime(left.deadlines) - getNextDeadlineTime(right.deadlines);
+        const comparison = getNextDeadlineTime(left.deadlines) - getNextDeadlineTime(right.deadlines);
+        return sortDirection === 'desc' ? comparison * -1 : comparison;
       }
 
       if (sortKey === 'distance' && canUseDistance(latitude, longitude)) {

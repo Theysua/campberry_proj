@@ -9,7 +9,7 @@ import { buildCurrentPath, withSearchParams } from '../utils/navigationContext'
 export default function MyLists() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { userLists, savedLists, listsLoading, refreshLists, createList } = useListContext()
+  const { userLists, savedLists, refreshLists, createList } = useListContext()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [listName, setListName] = useState('')
   const [listDesc, setListDesc] = useState('')

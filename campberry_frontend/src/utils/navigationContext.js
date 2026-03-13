@@ -46,6 +46,7 @@ export const readNavigationContext = (search) => {
     targetListTitle: params.get('targetListTitle') || '',
     postLoginAction: params.get('postLoginAction') || '',
     actionProgramId: params.get('actionProgramId') || '',
+    authReason: params.get('reason') || '',
   }
 }
 

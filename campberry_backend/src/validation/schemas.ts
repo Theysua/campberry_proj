@@ -97,7 +97,6 @@ export const searchProgramsQuerySchema = z
     search: optionalQueryString,
     interests: z.preprocess(emptyToUndefined, z.string().regex(/^\d+(,\d+)*$/).optional()),
     type: z.preprocess(emptyToUndefined, z.enum(['PROGRAM', 'COMPETITION']).optional()),
-    isFree: optionalBooleanQuery,
     isSelective: optionalBooleanQuery,
     rating: z.preprocess(
       emptyToUndefined,
@@ -121,8 +120,9 @@ export const searchProgramsQuerySchema = z
     radiusMiles: optionalNumberQuery(z.number().positive().max(500)),
     sort: z.preprocess(
       emptyToUndefined,
-      z.enum(['relevancy', 'rating', 'deadline', 'distance']).optional()
+      z.enum(['relevancy', 'rating', 'deadline', 'distance', 'selectivity']).optional()
     ),
+    sortOrder: z.preprocess(emptyToUndefined, z.enum(['asc', 'desc']).optional()),
     page: optionalNumberQuery(z.number().int().positive()),
     limit: optionalNumberQuery(z.number().int().positive().max(100)),
   })

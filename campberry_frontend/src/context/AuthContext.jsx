@@ -1,5 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { clearAuthToken, getMe, login as apiLogin, loginWithGoogle as apiLoginWithGoogle, logoutUser, setAuthToken } from '../services/api';
+import { clearGuestPreviewState } from '../utils/previewGate';
 
 const AuthContext = createContext(null);
 
@@ -14,7 +16,7 @@ export const AuthProvider = ({ children }) => {
                 const me = await getMe();
                 setUser(me);
                 setIsAuthenticated(true);
-            } catch (err) {
+            } catch {
                 // Not authenticated or token expired
                 clearAuthToken();
                 setIsAuthenticated(false);
@@ -29,6 +31,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         const res = await apiLogin(email, password);
         setAuthToken(res.accessToken);
+        clearGuestPreviewState();
         setUser(res.user);
         setIsAuthenticated(true);
         return res;
@@ -37,6 +40,7 @@ export const AuthProvider = ({ children }) => {
     const loginWithGoogle = async (credential) => {
         const res = await apiLoginWithGoogle(credential);
         setAuthToken(res.accessToken);
+        clearGuestPreviewState();
         setUser(res.user);
         setIsAuthenticated(true);
         return res;

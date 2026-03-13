@@ -1,6 +1,6 @@
 # Campberry: Backend Development Design
 
-This document outlines the complete backend architecture, database schema, and API design required to transition the Campberry project from a static front-end prototype to a fully functional, dynamic web application.
+This document outlines the complete backend architecture, database schema, and API design required to transition the Campberry project from a static front-end prototype to a fully functional, dynamic web application. The current priority is a consultant-first B2B workflow focused on listings, deadlines, official website links, and persistent saved lists.
 
 ## 1. System Architecture
 
@@ -11,7 +11,7 @@ We will adopt a monolithic architecture for simplicity and rapid development, wh
     *   **Framework:** Express.js (or a similar robust framework like NestJS for more structure)
     *   **Database:** SQLite (Chosen for simplicity, zero maintenance, and high read performance suitable for deployment on a persistent VPS)
     *   **ORM:** Prisma (for its type-safety, intuitive schema definition, and migration management)
-*   **Authentication:** Token-based authentication using JSON Web Tokens (JWT).
+*   **Authentication:** Token-based authentication using JSON Web Tokens (JWT), plus anonymous session tracking for preview-limit enforcement.
 *   **Deployment:** The application will be deployed as a persistent service on a traditional VPS (e.g., DigitalOcean, AWS EC2, Railway with permanent disks) to prevent data loss from the local SQLite `dev.db`. Serverless environments (like Vercel) are avoided due to ephemeral storage.
 
 ## 2. Database Schema
@@ -29,7 +29,7 @@ Stores user information for authentication and role management.
 | `email` | VARCHAR(255) | Unique, Not Null | User's email for login |
 | `password_hash` | VARCHAR(255) | Nullable | Hashed password (null for OAuth users) |
 | `name` | VARCHAR(255) | Not Null | User's full name |
-| `role` | ENUM('STUDENT', 'COUNSELOR', 'ADMIN') | Not Null, Default: 'STUDENT' | User role for permissions |
+| `role` | ENUM('STUDENT', 'COUNSELOR', 'ADMIN') | Not Null, Default: 'STUDENT' | User role for permissions; consultant/counselor accounts are the current product priority |
 | `created_at` | TIMESTAMPTZ | Not Null, Default: NOW() | Timestamp of user creation |
 | `updated_at` | TIMESTAMPTZ | Not Null, Default: NOW() | Timestamp of last update |
 
@@ -43,17 +43,17 @@ The central table for all extracurricular opportunities.
 | `provider_id` | UUID | Foreign Key -> `providers.id` | The organizing institution |
 | `description` | TEXT | | Detailed program description |
 | `type` | ENUM('PROGRAM', 'COMPETITION') | Not Null | Type of opportunity |
-| `url` | VARCHAR(2048) | | Official program website URL |
+| `url` | VARCHAR(2048) | | Official company, school, or program website URL |
 | `logo_url` | VARCHAR(2048) | | URL for the program/provider logo |
 | `is_highly_selective` | BOOLEAN | Default: false | Whether the program is highly selective |
 | `cost_info` | TEXT | | Detailed information about costs |
 | `admission_info` | TEXT | | Information about the application process |
 | `eligibility_info` | TEXT | | Detailed eligibility criteria |
 | `experts_choice_rating` | ENUM('MOST_RECOMMENDED', 'HIGHLY_RECOMMENDED') | Nullable | Rating from education experts |
-| `impact_rating` | ENUM('MOST_HIGH_IMPACT', 'HIGH_IMPACT') | Nullable | Rating for impact on college admissions |
 | `eligible_grades` | INTEGER[] | | Array of eligible grade levels (e.g., `[9, 10, 11]`) |
 | `only_us_citizens` | BOOLEAN | Default: false | Eligibility constraint |
 | `only_us_residents` | BOOLEAN | Default: false | Eligibility constraint |
+| `next_deadline_at` | DATE | | Earliest upcoming deadline for fast sorting and display |
 | `created_at` | TIMESTAMPTZ | Not Null, Default: NOW() | Timestamp of record creation |
 | `updated_at` | TIMESTAMPTZ | Not Null, Default: NOW() | Timestamp of last update |
 
@@ -133,6 +133,16 @@ Associates programs with lists and holds unique commentary.
 | `program_id` | UUID | Foreign Key -> `programs.id` | Part of composite primary key |
 | `saved_at` | TIMESTAMPTZ | Not Null, Default: NOW() | When the program was saved |
 
+**`guest_usage`**
+Tracks anonymous preview usage before registration is required.
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `session_id` | VARCHAR(255) | Primary Key | Anonymous browser/session identifier |
+| `activity_views_count` | INTEGER | Not Null, Default: 0 | Number of detail-page views consumed by the guest |
+| `last_viewed_program_id` | UUID | Nullable | Last program detail viewed during preview mode |
+| `updated_at` | TIMESTAMPTZ | Not Null, Default: NOW() | Timestamp of last usage update |
+
 ## 3. API Design (RESTful)
 
 All endpoints will be versioned under `/api/v1/`.
@@ -140,11 +150,14 @@ All endpoints will be versioned under `/api/v1/`.
 ### Public Endpoints (No Auth Required)
 
 *   **`GET /programs`**: Search and filter programs.
-    *   **Query Params:** `search` (string), `interests` (comma-separated IDs), `type` (PROGRAM/COMPETITION), `minGrade`, `maxGrade`, `isFree` (boolean), `isSelective` (boolean), `rating` (MOST_RECOMMENDED/HIGHLY_RECOMMENDED), `page` (integer), `limit` (integer).
+    *   **Query Params:** `search` (string), `interests` (comma-separated IDs), `type` (PROGRAM/COMPETITION), `minGrade`, `maxGrade`, `isSelective` (boolean), `usStudentsOnly` (boolean), `sortBy` (`relevancy` or `deadline`), `sortOrder` (`asc` or `desc`), `page` (integer), `limit` (integer).
     *   **Response:** Paginated list of program summaries.
 
 *   **`GET /programs/:id`**: Get full details for a single program.
     *   **Response:** A single program object with all associated data (sessions, deadlines, etc.).
+
+*   **`GET /guest/usage`**: Get the anonymous preview quota state.
+    *   **Response:** `{ activityViewsCount, remainingViews, registrationRequired }`.
 
 *   **`GET /lists`**: Get all public, curated lists.
     *   **Response:** A list of list objects (title, author info, description).
@@ -160,6 +173,7 @@ All endpoints will be versioned under `/api/v1/`.
 *   **`POST /auth/register`**: Register a new user.
     *   **Body:** `{ name, email, password, role }`
     *   **Response:** `{ user, token }`
+    *   **Notes:** If registration follows a preview-limit interruption, the backend should preserve the original redirect target.
 
 *   **`POST /auth/login`**: Log in an existing user.
     *   **Body:** `{ email, password }`
@@ -192,13 +206,20 @@ All endpoints will be versioned under `/api/v1/`.
 
 *   **`PUT /me/lists/:listId/items/:itemId`**: Update the commentary or order of a program in a list.
 
+## 3.1 Product Rules
+
+*   Guests can view up to 10 activity detail pages before registration is required.
+*   Search results must surface the next relevant deadline and official website URL in both summary and detail payloads.
+*   Deadline sorting must support both ascending and descending order.
+*   Free-related filters and impact-on-admissions scoring are not part of the prioritized B2B scope.
+
 ## 4. Implementation Roadmap
 
 1.  **Project Setup:** Initialize a Node.js/Express project with TypeScript. Install Prisma and configure it for SQLite.
 2.  **Database Migration:** Define the complete schema in `schema.prisma`. Run `prisma migrate dev` to generate the initial local `dev.db` database tables.
 3.  **Seed Database:** Write a script to parse the `detailed_programs.json` file and populate the `programs`, `providers`, `interests`, and related tables with the initial 2100+ items.
 4.  **Authentication Module:** Implement the `users` model and the `/auth/register`, `/auth/login` endpoints. Set up JWT generation and a middleware for verifying tokens on protected routes.
-5.  **Public API Development:** Build the public-facing endpoints (`/programs`, `/lists`, etc.), focusing on efficient querying and data aggregation.
-6.  **Protected API Development:** Implement the user-specific endpoints (`/me/*`) that require authentication.
+5.  **Public API Development:** Build the public-facing endpoints (`/programs`, `/lists`, etc.), focusing on efficient querying, deadline ordering, and preview-limit state.
+6.  **Protected API Development:** Implement the user-specific endpoints (`/me/*`) that require authentication and persistent list management.
 7.  **Testing:** Write unit and integration tests for all API endpoints to ensure correctness and reliability.
 8.  **Deployment:** Dockerize the application and set up a CI/CD pipeline for automated deployment.

@@ -8,6 +8,7 @@ import Badge from './Badge'
 import Pill from './Pill'
 import { buildAuthRedirectPath, buildProgramDetailPath, readNavigationContext, replaceSearchParams } from '../utils/navigationContext'
 import { getProgramStarRating } from '../utils/programRating'
+import { canGuestAccessProgram } from '../utils/previewGate'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -107,6 +108,7 @@ export default function ProgramCard({ program }) {
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [addListOpen, setAddListOpen] = useState(false)
+  const [addListModalKey, setAddListModalKey] = useState(0)
   const shareRef = useRef(null)
 
   const { toggleSaveProgram, isProgramSaved, toggleCompare, compareList } = useListContext()
@@ -188,6 +190,7 @@ export default function ProgramCard({ program }) {
     }
 
     if (navigationContext.postLoginAction === 'add-to-list') {
+      setAddListModalKey((value) => value + 1)
       setAddListOpen(true)
       navigate(replaceSearchParams(routeLocation, {}, ['postLoginAction', 'actionProgramId']), { replace: true })
     }
@@ -212,6 +215,11 @@ export default function ProgramCard({ program }) {
       return
     }
 
+    if (!isAuthenticated && !canGuestAccessProgram(id)) {
+      navigate(`/auth?redirect=${encodeURIComponent(detailPath)}&reason=preview_limit`)
+      return
+    }
+
     navigate(detailPath)
   }
 
@@ -221,6 +229,7 @@ export default function ProgramCard({ program }) {
       navigate(buildAuthRedirectPath(routeLocation, { postLoginAction: 'add-to-list', actionProgramId: id }))
       return
     }
+    setAddListModalKey((value) => value + 1)
     setAddListOpen(true)
   }
 
@@ -273,6 +282,13 @@ export default function ProgramCard({ program }) {
             <Monitor size={12} />
             {deadline.label}
           </div>
+          {program.url && (
+            <div className="flex items-center gap-1.5 md:col-span-2">
+              <a href={program.url} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="text-[#011936] font-semibold underline underline-offset-2">
+                Official website
+              </a>
+            </div>
+          )}
         </div>
       </div>
 
@@ -325,6 +341,7 @@ export default function ProgramCard({ program }) {
       </div>
 
       <AddToListModal
+        key={addListModalKey}
         isOpen={addListOpen}
         onClose={() => setAddListOpen(false)}
         programId={id}

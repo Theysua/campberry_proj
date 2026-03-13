@@ -1,8 +1,10 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Star, X } from 'lucide-react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { getInterests, getPrograms } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContext'
 import {
   areArraysEqual,
@@ -10,9 +12,10 @@ import {
   parseSearchStateFromParams,
   sortToApiValue,
 } from '../utils/searchUrlState'
-import { getProgramStarRating, hasHighImpactRating } from '../utils/programRating'
+import { getProgramStarRating } from '../utils/programRating'
+import { canGuestAccessProgram, getGuestPreviewState } from '../utils/previewGate'
 
-const SORT_OPTIONS = ['Relevancy', 'Rating', 'Deadline']
+const SORT_OPTIONS = ['Relevancy', 'Selectivity', 'Deadline (Ascending)', 'Deadline (Descending)']
 
 const getLocationMeta = (program) => {
   const sessions = program.sessions || []
@@ -61,8 +64,10 @@ export default function Search() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { isAuthenticated } = useAuth()
   useScrollReveal()
 
+  const [referenceNow] = useState(() => Date.now())
   const [sortOpen, setSortOpen] = useState(false)
   const [sortBy, setSortBy] = useState('Relevancy')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
@@ -71,11 +76,9 @@ export default function Search() {
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [ratingFilter, setRatingFilter] = useState('')
-  const [impactFilter, setImpactFilter] = useState('')
   const [isSelective, setIsSelective] = useState(false)
   const [internationalFilter, setInternationalFilter] = useState(false)
   const [creditFilter, setCreditFilter] = useState(false)
-  const [oneOnOneFilter, setOneOnOneFilter] = useState(false)
   const [seasonFilter, setSeasonFilter] = useState('')
   const [gradesFilter, setGradesFilter] = useState([])
   const [interestIds, setInterestIds] = useState([])
@@ -100,11 +103,9 @@ export default function Search() {
     setSearchQuery((current) => (current === nextState.searchQuery ? current : nextState.searchQuery))
     setTypeFilter((current) => (current === nextState.typeFilter ? current : nextState.typeFilter))
     setRatingFilter((current) => (current === nextState.ratingFilter ? current : nextState.ratingFilter))
-    setImpactFilter((current) => (current === nextState.impactFilter ? current : nextState.impactFilter))
     setIsSelective((current) => (current === nextState.isSelective ? current : nextState.isSelective))
     setInternationalFilter((current) => (current === nextState.internationalFilter ? current : nextState.internationalFilter))
     setCreditFilter((current) => (current === nextState.creditFilter ? current : nextState.creditFilter))
-    setOneOnOneFilter((current) => (current === nextState.oneOnOneFilter ? current : nextState.oneOnOneFilter))
     setSeasonFilter((current) => (current === nextState.seasonFilter ? current : nextState.seasonFilter))
     setGradesFilter((current) => (areArraysEqual(current, nextState.gradesFilter) ? current : nextState.gradesFilter))
     setInterestIds((current) => (areArraysEqual(current, nextState.interestIds) ? current : nextState.interestIds))
@@ -119,11 +120,9 @@ export default function Search() {
       searchQuery,
       typeFilter,
       ratingFilter,
-      impactFilter,
       isSelective,
       internationalFilter,
       creditFilter,
-      oneOnOneFilter,
       seasonFilter,
       gradesFilter,
       interestIds,
@@ -131,7 +130,7 @@ export default function Search() {
       page,
     })
     if (nextParams.toString() !== searchParams.toString()) setSearchParams(nextParams, { replace: true })
-  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isSelective, internationalFilter, creditFilter, oneOnOneFilter, seasonFilter, gradesFilter, interestIds, sortBy, page, searchParams, setSearchParams])
+  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, isSelective, internationalFilter, creditFilter, seasonFilter, gradesFilter, interestIds, sortBy, page, searchParams, setSearchParams])
 
   useEffect(() => {
     if (!isUrlStateReady) return undefined
@@ -139,15 +138,13 @@ export default function Search() {
       search: searchQuery || undefined,
       type: typeFilter || undefined,
       rating: ratingFilter || undefined,
-      impact: impactFilter || undefined,
       isSelective: isSelective ? true : undefined,
       season: seasonFilter || undefined,
       grades: gradesFilter.length > 0 ? gradesFilter.join(',') : undefined,
       interests: interestIds.length > 0 ? interestIds.join(',') : undefined,
       international: internationalFilter ? true : undefined,
       collegeCredit: creditFilter ? true : undefined,
-      oneOnOne: oneOnOneFilter ? true : undefined,
-      sort: sortToApiValue(sortBy),
+      ...sortToApiValue(sortBy),
       limit: 10,
     }
     const requestKey = JSON.stringify(queryParams)
@@ -208,7 +205,7 @@ export default function Search() {
       })
 
     return () => controller.abort()
-  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, impactFilter, isSelective, seasonFilter, gradesFilter, interestIds, internationalFilter, creditFilter, oneOnOneFilter, sortBy, page])
+  }, [isUrlStateReady, searchQuery, typeFilter, ratingFilter, isSelective, seasonFilter, gradesFilter, interestIds, internationalFilter, creditFilter, sortBy, page])
 
   useEffect(() => {
     getInterests().then(setAllInterests).catch((error) => console.error('Failed to fetch interests', error))
@@ -227,24 +224,58 @@ export default function Search() {
     setSearchQuery('')
     setTypeFilter('')
     setRatingFilter('')
-    setImpactFilter('')
     setIsSelective(false)
     setSeasonFilter('')
     setGradesFilter([])
     setInterestIds([])
     setInternationalFilter(false)
     setCreditFilter(false)
-    setOneOnOneFilter(false)
     setSortBy('Relevancy')
     setPage(1)
+  }
+
+  const getNextDeadlineLabel = (program) => {
+    const deadline = (program.deadlines || [])
+      .map((entry) => ({ ...entry, parsedDate: new Date(entry.date) }))
+      .filter((entry) => !Number.isNaN(entry.parsedDate.getTime()))
+      .sort((left, right) => left.parsedDate.getTime() - right.parsedDate.getTime())[0]
+
+    if (!deadline) {
+      return { label: 'Deadline: TBD', tone: 'muted' }
+    }
+
+    const diffDays = Math.ceil((deadline.parsedDate.getTime() - referenceNow) / (1000 * 60 * 60 * 24))
+    const formatted = deadline.parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+    if (diffDays < 0) {
+      return { label: `Deadline passed (${formatted})`, tone: 'passed' }
+    }
+
+    if (diffDays <= 30) {
+      return { label: `Deadline soon: ${formatted}`, tone: 'soon' }
+    }
+
+    return { label: `Deadline: ${formatted}`, tone: 'normal' }
   }
 
   const renderProgramCard = (program, index) => {
     const locationMeta = getLocationMeta(program)
     const distanceLabel = typeof program.distance_miles === 'number' && !locationMeta.hasOnline ? `${program.distance_miles.toFixed(1)} mi away` : null
     const starRating = getProgramStarRating(program)
+    const deadlineMeta = getNextDeadlineLabel(program)
+    const detailPath = buildProgramDetailPath(program.id, location, { returnLabel: 'Back to Results' })
+
+    const handleOpenProgram = () => {
+      if (!canGuestAccessProgram(program.id)) {
+        navigate(`/auth?redirect=${encodeURIComponent(detailPath)}&reason=preview_limit`)
+        return
+      }
+
+      navigate(detailPath)
+    }
+
     return (
-      <div key={program.id || index} className={`card program-card ${index % 2 === 0 ? 'accent-top' : 'primary-top'}`} onClick={() => navigate(buildProgramDetailPath(program.id, location, { returnLabel: 'Back to Results' }))} style={{ cursor: 'pointer' }}>
+      <div key={program.id || index} className={`card program-card ${index % 2 === 0 ? 'accent-top' : 'primary-top'}`} onClick={handleOpenProgram} style={{ cursor: 'pointer' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
           <div style={{ display: 'flex', gap: '15px' }}>
             <div style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px', flexShrink: 0, background: program.logo_url ? '#ffffff' : 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', color: 'var(--text-secondary)', overflow: 'hidden' }}>
@@ -264,18 +295,25 @@ export default function Search() {
         </div>
 
         <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+          <span style={{ color: deadlineMeta.tone === 'soon' ? 'var(--accent)' : deadlineMeta.tone === 'normal' ? 'var(--orange)' : 'var(--text-secondary)', fontWeight: '700', textDecoration: deadlineMeta.tone === 'passed' ? 'line-through' : 'none' }}>
+            {deadlineMeta.label}
+          </span>
           <span>{locationMeta.label}</span>
           {distanceLabel && <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{distanceLabel}</span>}
         </div>
 
         <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '15px', borderTop: '1px solid var(--border-light)' }}>
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {hasHighImpactRating(program) && <span className="badge-impact">High Impact</span>}
             {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
             {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
             {program.is_highly_selective && <span className="badge-highly">Highly Selective</span>}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {program.url && (
+              <a href={program.url} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
+                Website
+              </a>
+            )}
             {starRating > 0 && (
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#d97706' }}
@@ -326,14 +364,6 @@ export default function Search() {
               </div>
 
               <div style={{ marginTop: '20px' }}>
-                <div className="filter-section-title">Impact on Admissions</div>
-                <div className="segmented-control">
-                  <button className={`segmented-btn ${impactFilter === 'MOST_HIGH_IMPACT' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: impactFilter === 'MOST_HIGH_IMPACT' ? 'white' : 'transparent', borderColor: impactFilter === 'MOST_HIGH_IMPACT' ? 'var(--border)' : 'transparent' }} onClick={() => { setImpactFilter((prev) => prev === 'MOST_HIGH_IMPACT' ? '' : 'MOST_HIGH_IMPACT'); setPage(1) }}>Most<br />High Impact</button>
-                  <button className={`segmented-btn ${impactFilter === 'HIGH_IMPACT' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: impactFilter === 'HIGH_IMPACT' ? 'white' : 'transparent', borderColor: impactFilter === 'HIGH_IMPACT' ? 'var(--border)' : 'transparent' }} onClick={() => { setImpactFilter((prev) => prev === 'HIGH_IMPACT' ? '' : 'HIGH_IMPACT'); setPage(1) }}>High<br />Impact</button>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '20px' }}>
                 <div className="filter-section-title">Type</div>
                 <div className="segmented-control">
                   <button className={`segmented-btn ${typeFilter === 'PROGRAM' ? 'active shadow-sm' : ''}`} style={{ background: typeFilter === 'PROGRAM' ? 'white' : 'transparent', borderColor: typeFilter === 'PROGRAM' ? 'var(--border)' : 'transparent' }} onClick={() => { setTypeFilter((prev) => prev === 'PROGRAM' ? '' : 'PROGRAM'); setPage(1) }}>Program</button>
@@ -375,7 +405,6 @@ export default function Search() {
                 <label className="checkbox-row"><input type="checkbox" checked={isSelective} onChange={(event) => { setIsSelective(event.target.checked); setPage(1) }} /> Highly Selective</label>
                 <label className="checkbox-row"><input type="checkbox" checked={internationalFilter} onChange={(event) => { setInternationalFilter(event.target.checked); setPage(1) }} /> Allows International Students</label>
                 <label className="checkbox-row"><input type="checkbox" checked={creditFilter} onChange={(event) => { setCreditFilter(event.target.checked); setPage(1) }} /> Offers College Credit</label>
-                <label className="checkbox-row"><input type="checkbox" checked={oneOnOneFilter} onChange={(event) => { setOneOnOneFilter(event.target.checked); setPage(1) }} /> 1-on-1 programs</label>
               </div>
             </details>
           </div>
@@ -384,6 +413,11 @@ export default function Search() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
               <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>{hasLoadedPrograms ? `${totalPrograms} Results` : 'Loading programs...'}</h2>
               <button className="mobile-filter-toggle btn-outline" onClick={() => setIsMobileFilterOpen(true)}>Filters</button>
+              {!isAuthenticated && !isProgramsLoading && (
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', padding: '8px 12px', borderRadius: '999px', background: 'var(--border-light)' }}>
+                  Guest preview remaining: {getGuestPreviewState().remaining}
+                </div>
+              )}
               <div style={{ fontSize: '14px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }} ref={sortRef}>
                 <span>Sort by:</span>
                 <button onClick={() => setSortOpen((prev) => !prev)} style={{ border: 'none', background: 'transparent', fontWeight: 'bold', color: 'var(--primary)', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: 'var(--radius-sm)' }}>{sortBy} <ChevronDown size={14} /></button>

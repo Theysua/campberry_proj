@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useState, useEffect } from 'react';
 import { getSavedLists, getSavedPrograms, saveList, saveProgram, unsaveList, unsaveProgram, getMyLists, createList as apiCreateList, addListItem } from '../services/api';
 import { useAuth } from './AuthContext';

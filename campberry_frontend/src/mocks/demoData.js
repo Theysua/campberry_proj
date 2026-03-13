@@ -259,8 +259,8 @@ const DEMO_LISTS = [
     ],
   },
   {
-    id: 'demo-list-free',
-    title: 'Campberry Demo: High-Value Programs with Low Cost',
+    id: 'demo-list-access',
+    title: 'Campberry Demo: High-Value Programs to Explore',
     description:
       'A lightweight demo list for the public Pages version. These picks show the kind of curated guidance Campberry surfaces even before the live backend is online.',
     updated_at: '2026-02-18T00:00:00.000Z',
@@ -270,8 +270,8 @@ const DEMO_LISTS = [
     feedback_summary: { averageRating: 4.7, ratingCount: 5, commentCount: 2 },
     feedback_preview: [],
     items: [
-      attachListProgram('demo-program-startup-sprint', 'Free and practical. Great option for motivated students who want visible project output.', 1),
-      attachListProgram('demo-program-arts-residency', 'Not free, but unusually strong portfolio value for the price point.', 2),
+      attachListProgram('demo-program-startup-sprint', 'Practical and output-driven. Great option for motivated students who want visible project work.', 1),
+      attachListProgram('demo-program-arts-residency', 'Strong portfolio value for students building a serious creative application narrative.', 2),
     ],
   },
 ]
@@ -369,10 +369,6 @@ export const getDemoPrograms = (params = {}) => {
     filtered = filtered.filter((program) => program.experts_choice_rating === params.rating)
   }
 
-  if (params.isFree) {
-    filtered = filtered.filter((program) => includesText(program.cost_info, 'free'))
-  }
-
   if (params.isSelective) {
     filtered = filtered.filter((program) => program.is_highly_selective)
   }
@@ -421,11 +417,22 @@ export const getDemoPrograms = (params = {}) => {
     })
   }
 
+  if (params.sort === 'selectivity') {
+    filtered.sort((left, right) => {
+      if (left.is_highly_selective !== right.is_highly_selective) {
+        return right.is_highly_selective ? 1 : -1
+      }
+
+      return getProgramRatingScore(right) - getProgramRatingScore(left)
+    })
+  }
+
   if (params.sort === 'deadline') {
     filtered.sort((left, right) => {
       const leftDate = new Date(left.deadlines?.[0]?.date || '2100-01-01').getTime()
       const rightDate = new Date(right.deadlines?.[0]?.date || '2100-01-01').getTime()
-      return leftDate - rightDate
+      const comparison = leftDate - rightDate
+      return params.sortOrder === 'desc' ? comparison * -1 : comparison
     })
   }
 

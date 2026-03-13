@@ -49,7 +49,7 @@ export default function LegalPage({ type }) {
               </section>
               <section>
                 <h2 className="text-xl font-bold mb-3">2. Use of the Platform</h2>
-                <p className="text-slate-600 leading-relaxed">Campberry is a free platform designed to help students discover extracurricular and enrichment opportunities. You agree to use the platform only for lawful purposes and in a way that does not infringe the rights of others or restrict their use and enjoyment of the platform.</p>
+                <p className="text-slate-600 leading-relaxed">Campberry is a platform designed to help students discover extracurricular and enrichment opportunities. You agree to use the platform only for lawful purposes and in a way that does not infringe the rights of others or restrict their use and enjoyment of the platform.</p>
               </section>
               <section>
                 <h2 className="text-xl font-bold mb-3">3. Account Responsibilities</h2>

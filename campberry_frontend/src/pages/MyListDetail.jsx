@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
 import { getMyListById, updateList, deleteList, removeListItem, updateListItem } from '../services/api';
@@ -21,7 +22,7 @@ export default function MyListDetail() {
   const [editingItemId, setEditingItemId] = useState(null);
   const [editCommentary, setEditCommentary] = useState('');
 
-  const fetchList = () => {
+  const fetchList = useCallback(() => {
     setLoading(true);
     getMyListById(id)
       .then((response) => {
@@ -31,11 +32,11 @@ export default function MyListDetail() {
       })
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchList();
-  }, [id]);
+  }, [fetchList]);
 
   if (loading) {
     return <div className="page" style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>;

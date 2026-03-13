@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node --import tsx --test src/**/*.test.ts",
+    "test": "tsx scripts/runTests.ts",
     "typecheck": "npx tsc --noEmit",
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",

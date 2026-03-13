@@ -7,6 +7,7 @@ import AddToListModal from '../components/AddToListModal'
 import { getProgramById } from '../services/api'
 import { buildAuthRedirectPath, getBackTarget, readNavigationContext, replaceSearchParams } from '../utils/navigationContext'
 import { getProgramStarRating, hasHighImpactRating } from '../utils/programRating'
+import { canGuestAccessProgram, recordGuestProgramView } from '../utils/previewGate'
 
 const formatDateRange = (startDate, endDate) => {
   if (!startDate) {
@@ -43,6 +44,7 @@ export default function ProgramDetail() {
   const { isProgramSaved, toggleSaveProgram } = useListContext()
   const { isAuthenticated } = useAuth()
   const [addListOpen, setAddListOpen] = useState(false)
+  const [addListModalKey, setAddListModalKey] = useState(0)
   const [program, setProgram] = useState(null)
   const [copied, setCopied] = useState(false)
 
@@ -55,6 +57,21 @@ export default function ProgramDetail() {
       console.error('Failed to copy program URL', error)
     }
   }
+
+  useEffect(() => {
+    if (!id) {
+      return
+    }
+
+    if (!isAuthenticated) {
+      if (!canGuestAccessProgram(id)) {
+        navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}&reason=preview_limit`, { replace: true })
+        return
+      }
+
+      recordGuestProgramView(id)
+    }
+  }, [id, isAuthenticated, location.pathname, location.search, navigate])
 
   useEffect(() => {
     getProgramById(id)
@@ -84,6 +101,7 @@ export default function ProgramDetail() {
     }
 
     if (context.postLoginAction === 'add-to-list') {
+      setAddListModalKey((value) => value + 1)
       setAddListOpen(true)
       navigate(replaceSearchParams(location, {}, ['postLoginAction', 'actionProgramId']), { replace: true })
     }
@@ -111,6 +129,7 @@ export default function ProgramDetail() {
       return
     }
 
+    setAddListModalKey((value) => value + 1)
     setAddListOpen(true)
   }
 
@@ -256,6 +275,7 @@ export default function ProgramDetail() {
         </div>
       </div>
       <AddToListModal
+        key={addListModalKey}
         isOpen={addListOpen}
         onClose={() => setAddListOpen(false)}
         programId={id}
