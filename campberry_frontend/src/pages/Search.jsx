@@ -120,11 +120,13 @@ const LockedSearchPanel = ({ hiddenCount, onRegister, previewPrograms }) => (
 
     <div className="card search-lock-overlay-card">
       <div className="search-lock-badge">Sign in required</div>
-      <div className="search-lock-copy">
-        <h3>{hiddenCount} more activities are locked</h3>
-        <p>You can preview the first 10. Register for free to unlock the full search and save lists for client research.</p>
+      <div className="search-lock-content">
+        <div className="search-lock-copy">
+          <h3>{hiddenCount} more activities are locked</h3>
+          <p>You can preview the first 10. Register for free to unlock the full search and save lists for client research.</p>
+        </div>
+        <button className="search-lock-button" type="button">Unlock Full Search</button>
       </div>
-      <button className="search-lock-button" type="button">Unlock Full Search</button>
     </div>
   </div>
 )

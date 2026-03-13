@@ -889,10 +889,10 @@ header {
     z-index: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: flex-start;
-    gap: 20px;
-    padding: 34px 42px;
+    gap: 16px;
+    padding: 40px 42px 34px;
     border-radius: 30px;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.38)),
@@ -917,10 +917,19 @@ header {
 }
 
 .search-lock-copy,
+.search-lock-content,
 .search-lock-button,
 .search-lock-badge {
     position: relative;
     z-index: 1;
+}
+
+.search-lock-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 24px 28px;
+    width: min(720px, 100%);
 }
 
 .search-lock-overlay-card h3 {
@@ -945,6 +954,7 @@ header {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    max-width: 520px;
 }
 
 .search-lock-badge {
@@ -964,7 +974,7 @@ header {
 
 .search-lock-button {
     position: relative;
-    align-self: flex-start;
+    align-self: end;
     min-width: 220px;
     display: inline-flex;
     align-items: center;
@@ -1003,8 +1013,18 @@ header {
         padding: 24px;
     }
 
+    .search-lock-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        width: min(500px, 100%);
+    }
+
     .search-lock-overlay-card h3 {
         font-size: 24px;
+    }
+
+    .search-lock-button {
+        align-self: flex-start;
     }
 }
 
