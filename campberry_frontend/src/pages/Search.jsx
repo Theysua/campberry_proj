@@ -117,15 +117,26 @@ const LockedSearchPanel = ({ hiddenCount, onRegister, previewPrograms }) => (
         </div>
       ))}
     </div>
+    <div className="search-lock-scrim" aria-hidden="true" />
 
-    <div className="card search-lock-overlay-card">
-      <div className="search-lock-badge">Sign in required</div>
-      <div className="search-lock-content">
-        <div className="search-lock-copy">
-          <h3>{hiddenCount} more activities are locked</h3>
-          <p>You can preview the first 10. Register for free to unlock the full search and save lists for client research.</p>
+    <div className="search-lock-shell">
+      <div className="card search-lock-content-card">
+        <div className="search-lock-value">
+          <div className="search-lock-badge">Free account required</div>
+          <div className="search-lock-copy">
+            <h3>Keep browsing Campberry with a free account.</h3>
+            <p>Save your research, unlock all results, and keep building lists for clients.</p>
+            <div className="search-lock-support">{hiddenCount} more activities unlock after sign in.</div>
+          </div>
         </div>
-        <button className="search-lock-button" type="button">Unlock Full Search</button>
+        <div className="search-lock-actions">
+          <button className="search-lock-button" type="button">
+            <span className="search-lock-google-mark" aria-hidden="true">G</span>
+            Continue with Google
+          </button>
+          <button className="search-lock-button search-lock-button-secondary" type="button">Continue with Apple or email</button>
+          <div className="search-lock-helper">Free to register. Upgrade options may come later.</div>
+        </div>
       </div>
     </div>
   </div>

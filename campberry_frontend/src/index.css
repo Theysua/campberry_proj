@@ -831,21 +831,23 @@ header {
 
 .search-lock-panel {
     position: relative;
-    min-height: 320px;
+    min-height: 360px;
     margin-top: 24px;
     isolation: isolate;
     overflow: hidden;
     border-radius: 30px;
+    border: 1px solid rgba(201, 211, 227, 0.7);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(250, 247, 243, 0.58));
 }
 
 .search-lock-panel-stack {
-    position: relative;
-    min-height: 320px;
+    position: absolute;
+    inset: 0;
     pointer-events: none;
 }
 
 .search-lock-card {
-    min-height: 280px;
+    min-height: 290px;
     position: absolute;
     overflow: hidden;
     background: none;
@@ -854,22 +856,24 @@ header {
 }
 
 .search-lock-card-1 {
-    inset: 18px 110px 18px 18px;
-    transform: rotate(-1.6deg);
-    opacity: 0.92;
+    inset: 28px 50% 28px 24px;
+    margin-right: 18px;
+    transform: rotate(-2.2deg);
+    opacity: 0.86;
 }
 
 .search-lock-card-2 {
-    inset: 26px 18px 10px 132px;
-    transform: rotate(1.8deg);
-    opacity: 0.82;
+    inset: 44px 24px 16px 50%;
+    margin-left: 18px;
+    transform: rotate(2.2deg);
+    opacity: 0.8;
 }
 
 .search-lock-card-blur {
     position: relative;
-    filter: blur(10px) saturate(0.92);
-    opacity: 0.96;
-    transform: scale(1.01);
+    filter: blur(12px) saturate(0.8);
+    opacity: 0.92;
+    transform: scale(1.025);
     pointer-events: none;
 }
 
@@ -883,103 +887,147 @@ header {
         radial-gradient(circle at top right, rgba(255, 168, 76, 0.1), transparent 28%);
 }
 
-.search-lock-overlay-card {
+.search-lock-scrim {
     position: absolute;
     inset: 0;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 40px 42px 34px;
     border-radius: 30px;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.38)),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.36), rgba(255, 247, 237, 0.26));
-    border: 1px solid rgba(255, 255, 255, 0.58);
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    box-shadow:
-        0 18px 44px rgba(15, 23, 42, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.54);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.28)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 247, 237, 0.1));
+    backdrop-filter: blur(12px) saturate(145%);
+    -webkit-backdrop-filter: blur(12px) saturate(145%);
 }
 
-.search-lock-overlay-card::before {
+.search-lock-shell {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding: 28px 30px;
+}
+
+.search-lock-content-card {
+    width: min(920px, 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 32px;
+    align-items: center;
+    padding: 30px 34px;
+    border-radius: 28px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.78)),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 237, 0.72));
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(22px) saturate(170%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    box-shadow:
+        0 22px 48px rgba(15, 23, 42, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+.search-lock-content-card::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
     background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.72), transparent 30%),
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.76), transparent 30%),
         radial-gradient(circle at bottom right, rgba(255, 122, 26, 0.14), transparent 26%);
     pointer-events: none;
 }
 
 .search-lock-copy,
-.search-lock-content,
+.search-lock-content-card,
+.search-lock-value,
 .search-lock-button,
-.search-lock-badge {
+.search-lock-badge,
+.search-lock-actions,
+.search-lock-helper {
     position: relative;
     z-index: 1;
 }
 
-.search-lock-content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 24px 28px;
-    width: min(720px, 100%);
-}
-
-.search-lock-overlay-card h3 {
-    margin: 0;
-    font-size: 34px;
-    line-height: 0.98;
-    color: var(--primary);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-    max-width: 14ch;
-}
-
-.search-lock-overlay-card p {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.65;
-    color: rgba(56, 71, 98, 0.98);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
-    max-width: 40ch;
+.search-lock-value {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
 }
 
 .search-lock-copy {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-width: 520px;
+    max-width: 420px;
+}
+
+.search-lock-content-card h3 {
+    margin: 0;
+    font-size: 42px;
+    line-height: 1.02;
+    color: var(--primary);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.search-lock-content-card p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.55;
+    color: rgba(56, 71, 98, 0.98);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.search-lock-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    justify-self: end;
 }
 
 .search-lock-badge {
     width: fit-content;
-    padding: 7px 11px;
+    padding: 6px 10px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.78);
     color: var(--accent);
     font-size: 11px;
     font-weight: 800;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     border: 1px solid rgba(137, 34, 51, 0.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
+.search-lock-support {
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 700;
+    color: rgba(137, 34, 51, 0.92);
+}
+
+.search-lock-helper {
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(82, 97, 126, 0.9);
+    text-align: center;
+}
+
 .search-lock-button {
     position: relative;
-    align-self: end;
-    min-width: 220px;
+    align-self: stretch;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 14px 22px;
+    gap: 12px;
+    width: 100%;
+    min-height: 54px;
+    padding: 14px 20px;
     border: 0;
     border-radius: 999px;
     background: linear-gradient(135deg, #ff7a1a, #ff9b45);
@@ -996,6 +1044,27 @@ header {
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
 }
 
+.search-lock-button-secondary {
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--primary) !important;
+    border: 1px solid rgba(15, 23, 42, 0.18);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+    text-shadow: none;
+}
+
+.search-lock-google-mark {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #ea4335;
+    font-weight: 900;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
 .search-lock-button:hover,
 .search-lock-button:focus-visible {
     transform: translateY(-1px);
@@ -1009,57 +1078,82 @@ header {
 }
 
 @media (max-width: 900px) {
-    .search-lock-overlay-card {
-        padding: 24px;
+    .search-lock-panel {
+        min-height: 420px;
     }
 
-    .search-lock-content {
+    .search-lock-shell {
+        padding: 20px;
+    }
+
+    .search-lock-content-card {
+        width: min(620px, 100%);
         grid-template-columns: 1fr;
-        gap: 20px;
-        width: min(500px, 100%);
+        gap: 22px;
+        padding: 24px;
+        text-align: center;
     }
 
-    .search-lock-overlay-card h3 {
-        font-size: 24px;
+    .search-lock-value {
+        align-items: center;
     }
 
-    .search-lock-button {
-        align-self: flex-start;
+    .search-lock-copy {
+        max-width: 480px;
+    }
+
+    .search-lock-content-card h3 {
+        font-size: 32px;
+    }
+
+    .search-lock-content-card p {
+        font-size: 16px;
+    }
+
+    .search-lock-actions {
+        justify-self: center;
     }
 }
 
 @media (max-width: 640px) {
     .search-lock-panel {
-        min-height: 300px;
+        min-height: 440px;
     }
 
     .search-lock-card-1,
     .search-lock-card-2 {
-        inset: 18px 0 0 0;
+        inset: 20px 0 0 0;
         transform: none;
+        margin: 0;
     }
 
     .search-lock-card-2 {
         display: none;
     }
 
-    .search-lock-overlay-card {
-        padding: 20px;
-        justify-content: center;
+    .search-lock-shell {
+        padding: 16px;
+    }
+
+    .search-lock-content-card {
+        padding: 20px 18px;
+        gap: 18px;
     }
 
     .search-lock-copy {
-        gap: 10px;
-    }
-
-    .search-lock-overlay-card h3,
-    .search-lock-overlay-card p {
         max-width: none;
     }
 
+    .search-lock-content-card h3 {
+        font-size: 27px;
+    }
+
+    .search-lock-content-card p {
+        font-size: 15px;
+    }
+
     .search-lock-button {
-        width: 100%;
-        min-width: 0;
+        min-height: 52px;
     }
 }
 
