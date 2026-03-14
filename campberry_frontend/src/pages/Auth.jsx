@@ -123,7 +123,7 @@ export default function Auth() {
     try {
       await sendEmailVerificationCode(email);
       setOtpSent(true);
-      setError('Verification code sent! Please check your email.');
+      setError('');
     } catch (err) {
       setError(err.message || 'Failed to send verification code');
     } finally {
