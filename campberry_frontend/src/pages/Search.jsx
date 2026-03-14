@@ -96,19 +96,23 @@ const LockedPreviewCard = ({ program, accentClass }) => {
         {primaryTags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
       </div>
 
-      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', marginBottom: '8px' }}>
-        {program.deadlines?.[0]?.display || 'Upcoming deadline'}
-      </div>
-      <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '18px' }}>{locationMeta.label}</div>
-
       <div className="search-card-footer">
-        <div className="search-card-badges">
-          {program.isMostRecommended && <span className="badge-most">Most Recommended</span>}
-          {program.isSelective && <span className="badge-highly-outline">Highly Selective</span>}
+        <div style={{ color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span style={{ fontSize: '15px', color: 'var(--accent)', fontWeight: '800' }}>
+            {program.deadlines?.[0]?.display || 'Upcoming deadline'}
+          </span>
+          <span style={{ fontSize: '13px' }}>{locationMeta.label}</span>
         </div>
-        <div className="search-card-links">
-          <span className="search-card-link">Website</span>
-          <span className="search-card-cta">View details</span>
+
+        <div className="search-card-actions">
+          <div className="search-card-badges" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', marginBottom: '12px' }}>
+            {program.isMostRecommended && <span className="badge-most">Most Recommended</span>}
+            {program.isSelective && <span className="badge-highly">Highly Selective</span>}
+          </div>
+          <div className="search-card-meta-actions">
+            <span className="search-card-website">Website</span>
+          </div>
+          <div className="search-card-detail-cta">View details →</div>
         </div>
       </div>
     </div>
@@ -393,25 +397,22 @@ export default function Search() {
           {program.eligible_grades && <span className="tag">Grades {program.eligible_grades}</span>}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ color: deadlineMeta.tone === 'soon' ? 'var(--accent)' : deadlineMeta.tone === 'normal' ? 'var(--orange)' : 'var(--text-secondary)', fontWeight: '700', textDecoration: deadlineMeta.tone === 'passed' ? 'line-through' : 'none' }}>
+        <div className="search-card-footer" style={{ marginTop: 'auto' }}>
+          <div style={{ color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <span style={{ fontSize: '15px', color: deadlineMeta.tone === 'soon' ? 'var(--accent)' : deadlineMeta.tone === 'normal' ? 'var(--orange)' : 'var(--text-secondary)', fontWeight: '800', textDecoration: deadlineMeta.tone === 'passed' ? 'line-through' : 'none' }}>
               {deadlineMeta.label}
             </span>
-            <span>{locationMeta.label}</span>
+            <span style={{ fontSize: '13px' }}>{locationMeta.label}</span>
             {distanceLabel && <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{distanceLabel}</span>}
           </div>
-          
-          <div className="search-card-badges" style={{ flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 0 }}>
-            {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
-            {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
-            {program.is_highly_selective && <span className="badge-highly">Highly Selective</span>}
-          </div>
-        </div>
-
-        <div className="search-card-footer">
 
           <div className="search-card-actions">
+            <div className="search-card-badges" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', marginBottom: '12px' }}>
+              {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
+              {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
+              {program.is_highly_selective && <span className="badge-highly">Highly Selective</span>}
+            </div>
+
             <div className="search-card-meta-actions">
               {program.url && (
                 <a

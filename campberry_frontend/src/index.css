@@ -770,6 +770,8 @@ header {
 .program-card {
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .search-card-footer {
