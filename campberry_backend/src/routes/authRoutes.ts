@@ -10,7 +10,9 @@ import {
   register,
   resetPassword,
   resendVerificationEmail,
+  sendVerificationCode,
   verifyEmail,
+  verifyLoginCode,
 } from '../controllers/authController';
 
 const router = Router();
@@ -23,6 +25,8 @@ router.post('/verify-email', (req: Request, res: Response) => { verifyEmail(req,
 router.post('/resend-verification', (req: Request, res: Response) => { resendVerificationEmail(req, res); });
 router.post('/forgot-password', (req: Request, res: Response) => { forgotPassword(req, res); });
 router.post('/reset-password', (req: Request, res: Response) => { resetPassword(req, res); });
+router.post('/send-code', (req: Request, res: Response) => { sendVerificationCode(req, res); });
+router.post('/verify-code', (req: Request, res: Response) => { verifyLoginCode(req, res); });
 router.post('/google', (req: Request, res: Response) => { googleAuth(req, res); });
 router.get('/dev/verification-link', (req: Request, res: Response) => { getDevVerificationLink(req, res); });
 router.get('/dev/password-reset-link', (req: Request, res: Response) => { getDevPasswordResetLink(req, res); });

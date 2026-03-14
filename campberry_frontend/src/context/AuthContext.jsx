@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { clearAuthToken, getMe, login as apiLogin, loginWithGoogle as apiLoginWithGoogle, logoutUser, setAuthToken } from '../services/api';
+import { clearAuthToken, getMe, login as apiLogin, loginWithGoogle as apiLoginWithGoogle, loginWithEmailCode as apiLoginWithEmailCode, logoutUser, setAuthToken } from '../services/api';
 import { clearGuestPreviewState } from '../utils/previewGate';
 
 const AuthContext = createContext(null);
@@ -46,6 +46,15 @@ export const AuthProvider = ({ children }) => {
         return res;
     };
 
+    const loginWithEmailCode = async (email, token) => {
+        const res = await apiLoginWithEmailCode(email, token);
+        setAuthToken(res.accessToken);
+        clearGuestPreviewState();
+        setUser(res.user);
+        setIsAuthenticated(true);
+        return res;
+    };
+
     const logout = async () => {
         try {
             await logoutUser();
@@ -58,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, loginWithGoogle, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, loginWithGoogle, loginWithEmailCode, logout }}>
             {children}
         </AuthContext.Provider>
     );

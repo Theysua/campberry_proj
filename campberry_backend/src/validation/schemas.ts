@@ -20,6 +20,7 @@ export const registerBodySchema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.email().max(255),
   password: z.string().min(8).max(128),
+  token: z.string().min(1).max(10),
 });
 
 export const loginBodySchema = z.object({
@@ -29,6 +30,11 @@ export const loginBodySchema = z.object({
 
 export const emailBodySchema = z.object({
   email: z.email().max(255),
+});
+
+export const verifyLoginCodeBodySchema = z.object({
+  email: z.email().max(255),
+  token: z.string().min(1).max(10), // E.g., a 6-digit code
 });
 
 export const resetPasswordBodySchema = z.object({

@@ -1,14 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { isDemoMode, register } from '../services/api';
+import { isDemoMode, register, sendEmailVerificationCode } from '../services/api';
 import { DEMO_TEST_ACCOUNT } from '../mocks/demoPrivateData';
 
 export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, loginWithGoogle, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, loginWithEmailCode, isAuthenticated } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [authMethod, setAuthMethod] = useState('password'); // 'password' | 'otp'
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -108,6 +112,36 @@ export default function Auth() {
     };
   }, [googleClientId, isLogin, loginWithGoogle, navigate, redirectTarget]);
 
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email address first.');
+      return;
+    }
+    setError('');
+    setIsSendingOtp(true);
+    try {
+      await sendEmailVerificationCode(email);
+      setOtpSent(true);
+      setError('Verification code sent! Please check your email.');
+    } catch (err) {
+      setError(err.message || 'Failed to send verification code');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await loginWithEmailCode(email, otp);
+      navigate(redirectTarget, { replace: true });
+    } catch (err) {
+      setError(err.message || 'Invalid code');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -116,7 +150,11 @@ export default function Auth() {
       if (isLogin) {
         await login(email, password);
       } else {
-        await register(name, email, password);
+        if (!otpSent) {
+          await handleSendOtp(e);
+          return;
+        }
+        await register(name, email, password, otp);
         await login(email, password);
       }
 
@@ -142,7 +180,7 @@ export default function Auth() {
             <h1>{isLogin ? 'Welcome back' : 'Create an account'}</h1>
             <p className="subtitle">
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
-              <a style={{ cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }} onClick={() => setIsLogin(!isLogin)}>
+              <a style={{ cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }} onClick={() => { setIsLogin(!isLogin); setOtpSent(false); setError(''); }}>
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </a>
             </p>
@@ -176,7 +214,7 @@ export default function Auth() {
 
             {error && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px' }}>{error}</div>}
 
-            {isLogin && googleClientId && !isDemoMode && (
+            {isLogin && googleClientId && !isDemoMode && authMethod === 'password' && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', margin: '0 0 20px 0' }}>
                   <div style={{ flex: '1', height: '1px', background: 'var(--border)' }}></div>
@@ -199,35 +237,58 @@ export default function Auth() {
               </>
             )}
 
-            <form onSubmit={handleSubmit}>
-              {!isLogin && (
+            <form onSubmit={authMethod === 'otp' ? (otpSent ? handleVerifyOtp : handleSendOtp) : handleSubmit}>
+              {authMethod === 'password' && !isLogin && !otpSent && (
                 <div style={{ marginBottom: '20px' }}>
                   <label className="form-label">Full Name</label>
                   <input className="form-input" placeholder="John Doe" type="text" value={name} onChange={(event) => setName(event.target.value)} required />
                 </div>
               )}
-              <div style={{ marginBottom: '20px' }}>
-                <label className="form-label">Email address</label>
-                <input className="form-input" placeholder="you@example.com" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-              </div>
-              <div style={{ marginBottom: '28px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label className="form-label" style={{ marginBottom: '0' }}>Password</label>
-                  {isLogin && (
-                    <button
-                      type="button"
-                      onClick={() => navigate('/reset-password')}
-                      style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}
-                    >
-                      Forgot password?
-                    </button>
-                  )}
+              
+              {(!otpSent || (authMethod === 'password' && isLogin)) && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label className="form-label">Email address</label>
+                  <input className="form-input" placeholder="you@example.com" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
                 </div>
-                <input className="form-input" placeholder="Enter your password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-              </div>
-              <button type="submit" className="btn" style={{ width: '100%', padding: '16px', fontSize: '16px', justifyContent: 'center', marginBottom: '16px' }}>
-                {isLogin ? 'Sign In' : 'Sign Up'}
+              )}
+
+              {authMethod === 'password' && (!otpSent || isLogin) && (
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <label className="form-label" style={{ marginBottom: '0' }}>Password</label>
+                    {isLogin && (
+                      <button type="button" onClick={() => navigate('/reset-password')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontWeight: 700, cursor: 'pointer', fontSize: '13px' }}>
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <input className="form-input" placeholder="Enter your password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                </div>
+              )}
+
+              {((authMethod === 'otp' && otpSent) || (!isLogin && otpSent)) && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label className="form-label">Verification Code</label>
+                  <input className="form-input" placeholder="6-digit code" type="text" value={otp} onChange={(event) => setOtp(event.target.value)} required />
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                    Sent to {email}. <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: 0, fontWeight: 600 }}>Change email</button>
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" className="btn" disabled={isSendingOtp} style={{ width: '100%', padding: '16px', fontSize: '16px', justifyContent: 'center', marginBottom: '16px', opacity: isSendingOtp ? 0.7 : 1 }}>
+                {authMethod === 'otp' 
+                  ? (otpSent ? 'Login' : (isSendingOtp ? 'Sending...' : 'Send Magic Code')) 
+                  : (isLogin ? 'Sign In' : (otpSent ? 'Complete Registration' : (isSendingOtp ? 'Sending...' : 'Send Verification Code')))}
               </button>
+
+              {isLogin && (
+                <div style={{ textAlign: 'center' }}>
+                  <button type="button" onClick={() => { setAuthMethod(authMethod === 'password' ? 'otp' : 'password'); setOtpSent(false); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
+                    {authMethod === 'password' ? 'Use Email Code Instead' : 'Use Password Instead'}
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         </div>

@@ -205,12 +205,28 @@ export const loginWithGoogle = (credential) =>
         body: JSON.stringify({ credential }),
       })
 
-export const register = (name, email, password) =>
+export const sendEmailVerificationCode = (email) =>
+  isDemoMode
+    ? Promise.resolve({ message: 'Demo mode: Verification sent' })
+    : apiFetch('/auth/send-code', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      })
+
+export const loginWithEmailCode = (email, token) =>
+  isDemoMode
+    ? Promise.reject(new Error('Demo mode: Email code login requires live backend.'))
+    : apiFetch('/auth/verify-code', {
+        method: 'POST',
+        body: JSON.stringify({ email, token }),
+      })
+
+export const register = (name, email, password, token) =>
   isDemoMode
     ? demoRegister(name, email, password)
     : apiFetch('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, token }),
       })
 
 export const requestPasswordReset = (email) =>

@@ -9,10 +9,10 @@ import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContex
 import { canGuestAccessProgram } from '../utils/previewGate'
 import { getProgramStarRating } from '../utils/programRating'
 import {
-    areArraysEqual,
-    buildSearchParamsFromState,
-    parseSearchStateFromParams,
-    sortToApiValue,
+  areArraysEqual,
+  buildSearchParamsFromState,
+  parseSearchStateFromParams,
+  sortToApiValue,
 } from '../utils/searchUrlState'
 
 const SORT_OPTIONS = ['Relevancy', 'Selectivity', 'Deadline (Ascending)', 'Deadline (Descending)']
@@ -366,6 +366,74 @@ export default function Search() {
     navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}&reason=preview_limit`)
   }
 
+  // --- NEW COMPONENT: Expandable Title ---
+  const ExpandableTitle = ({ title }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isTruncated, setIsTruncated] = useState(false);
+    const titleRef = useRef(null);
+
+    useEffect(() => {
+      if (titleRef.current) {
+        const { scrollHeight, clientHeight } = titleRef.current;
+        // Only mark as truncated if the scroll height is significantly larger than the clamped client height,
+        // and only update state if it's currently false (prevents continuous re-renders!)
+        if (scrollHeight > clientHeight + 5) {
+          if (!isTruncated) setIsTruncated(true);
+        } else {
+          if (isTruncated) setIsTruncated(false);
+        }
+      }
+    }, [title, isTruncated]); // Only re-run when title changes, or handle the initial check
+
+    return (
+      <div style={{ position: 'relative', marginBottom: '4px' }} onClick={(e) => e.stopPropagation()}>
+        <h3
+          ref={titleRef}
+          style={{
+            margin: '0',
+            fontSize: '17px',
+            color: 'var(--primary)',
+            fontWeight: '700',
+            display: '-webkit-box',
+            WebkitLineClamp: isExpanded ? 'unset' : 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {title}
+        </h3>
+        {isTruncated && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '0',
+              marginTop: '4px',
+              fontSize: '12px',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '2px',
+            }}
+          >
+            {isExpanded ? (
+              <>Show less <ChevronUp size={12} /></>
+            ) : (
+              <>Show more <ChevronDown size={12} /></>
+            )}
+          </button>
+        )}
+      </div>
+    );
+  };
+  // ----------------------------------------
+
   const renderProgramCard = (program, index) => {
     const locationMeta = getLocationMeta(program)
     const distanceLabel = typeof program.distance_miles === 'number' && !locationMeta.hasOnline ? `${program.distance_miles.toFixed(1)} mi away` : null
@@ -389,17 +457,12 @@ export default function Search() {
             <div style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px', flexShrink: 0, background: program.logo_url ? '#ffffff' : 'linear-gradient(135deg, #f1f5f9, #e2e8f0)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', color: 'var(--text-secondary)', overflow: 'hidden' }}>
               {program.logo_url ? <img src={program.logo_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} /> : program.type === 'COMPETITION' ? '🏆' : '🎓'}
             </div>
-            <div>
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '17px', color: 'var(--primary)', fontWeight: '700' }}>{program.name}</h3>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <ExpandableTitle title={program.name} />
               <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>{program.provider?.name || 'Unknown Provider'}</div>
             </div>
           </div>
           <span className="action-icon">☆</span>
-        </div>
-
-        <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {program.interests?.slice(0, 3).map((interest, interestIndex) => <span key={interestIndex} className="tag">{interest.interest?.name}</span>)}
-          {program.eligible_grades && <span className="tag">Grades {program.eligible_grades}</span>}
         </div>
 
         <div className="search-card-footer" style={{ marginTop: 'auto' }}>
@@ -447,8 +510,8 @@ export default function Search() {
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="page" id="page-search">

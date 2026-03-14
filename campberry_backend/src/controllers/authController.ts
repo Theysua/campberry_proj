@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
+import { Resend } from 'resend';
 import type { CookieOptions } from 'express';
 import prisma from '../db';
 import { parseOrRespond } from '../validation/parse';
@@ -13,12 +14,18 @@ import {
   registerBodySchema,
   resetPasswordBodySchema,
   verifyEmailBodySchema,
+  verifyLoginCodeBodySchema,
 } from '../validation/schemas';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'campberry_super_secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'campberry_refresh_super_secret';
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID || '';
 const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -196,7 +203,22 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { name, email, password } = parsedBody;
+    const { name, email, password, token } = parsedBody;
+
+    const tokenRecord = await prisma.verificationToken.findFirst({
+      where: { email, token },
+    });
+
+    if (!tokenRecord) {
+      res.status(401).json({ error: 'Invalid verification code' });
+      return;
+    }
+
+    if (tokenRecord.expires_at < new Date()) {
+      await prisma.verificationToken.delete({ where: { id: tokenRecord.id } });
+      res.status(401).json({ error: 'Verification code has expired' });
+      return;
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -215,28 +237,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         email,
         password_hash,
         role: 'STUDENT',
-        is_verified: false,
+        is_verified: true,
       },
     });
-
-    const verification = await createEmailVerificationToken(user.id);
-
-    if (canExposeDevEmailPreview()) {
-      console.log(`[email-dev] Verify ${user.email}: ${verification.verificationUrl}`);
-    }
+    
+    await prisma.verificationToken.deleteMany({ where: { email } });
 
     res.status(201).json({
       message: 'Registration successful',
       user: { id: user.id, email: user.email },
-      ...(canExposeDevEmailPreview()
-        ? {
-            verification: {
-              token: verification.token,
-              verificationUrl: verification.verificationUrl,
-              expiresAt: verification.expiresAt,
-            },
-          }
-        : {}),
     });
   } catch (error) {
     console.error(error);
@@ -596,6 +605,93 @@ export const getDevPasswordResetLink = async (req: Request, res: Response): Prom
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to load development password reset link' });
+  }
+};
+
+export const sendVerificationCode = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsedBody = parseOrRespond(emailBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { email } = parsedBody;
+
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Clear existing tokens
+    await prisma.verificationToken.deleteMany({
+      where: { email },
+    });
+
+    await prisma.verificationToken.create({
+      data: {
+        email,
+        token: otp,
+        expires_at: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    await resend.emails.send({
+      from: 'Campberry <onboarding@resend.dev>',
+      to: [email],
+      subject: 'Your Campberry Verification Code',
+      html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
+    });
+
+    res.status(200).json({ message: 'Verification code sent successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to send verification code' });
+  }
+};
+
+export const verifyLoginCode = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsedBody = parseOrRespond(verifyLoginCodeBodySchema, req.body, res);
+    if (!parsedBody) {
+      return;
+    }
+
+    const { email, token } = parsedBody;
+
+    const tokenRecord = await prisma.verificationToken.findFirst({
+      where: { email, token },
+    });
+
+    if (!tokenRecord) {
+      res.status(401).json({ error: 'Invalid verification code' });
+      return;
+    }
+
+    if (tokenRecord.expires_at < new Date()) {
+      await prisma.verificationToken.delete({ where: { id: tokenRecord.id } });
+      res.status(401).json({ error: 'Verification code has expired' });
+      return;
+    }
+
+    await prisma.verificationToken.deleteMany({ where: { email } });
+
+    let user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: email.split('@')[0],
+          role: 'STUDENT',
+          is_verified: true,
+        },
+      });
+    }
+
+    await issueSession(res, user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Login failed' });
   }
 };
 
