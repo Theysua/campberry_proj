@@ -29,14 +29,23 @@ const getLocationMeta = (program) => {
 }
 
 const getVisiblePageItems = (currentPage, totalPages) => {
-  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1)
-  const items = [1]
-  const start = Math.max(2, currentPage - 1)
-  const end = Math.min(totalPages - 1, currentPage + 1)
-  if (start > 2) items.push('start-ellipsis')
-  for (let pageNumber = start; pageNumber <= end; pageNumber += 1) items.push(pageNumber)
-  if (end < totalPages - 1) items.push('end-ellipsis')
-  items.push(totalPages)
+  const items = []
+  const start = Math.max(1, currentPage - 2)
+  const end = Math.min(totalPages, currentPage + 2)
+  
+  if (start > 1) {
+    items.push(1)
+    if (start > 2) items.push('start-ellipsis')
+  }
+  
+  for (let pageNumber = start; pageNumber <= end; pageNumber += 1) {
+    items.push(pageNumber)
+  }
+  
+  if (end < totalPages) {
+    items.push('end-ellipsis')
+  }
+
   return items
 }
 
@@ -343,7 +352,6 @@ export default function Search() {
   }
 
   const isGuestSearchLocked = !isAuthenticated && Boolean(resultsMeta.loginRequiredForMore)
-  const displayedResultCount = isGuestSearchLocked ? resultsMeta.totalMatches || totalPrograms : totalPrograms
   const hiddenGuestResultCount = Math.max(0, resultsMeta.hiddenCount || 0)
   const handleRegisterForSearchAccess = () => {
     navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}&reason=preview_limit`)
@@ -512,7 +520,7 @@ export default function Search() {
 
           <div style={{ flex: '1' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>{hasLoadedPrograms ? `${displayedResultCount} Results` : 'Loading programs...'}</h2>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>{hasLoadedPrograms ? 'Results' : 'Loading programs...'}</h2>
               <button className="mobile-filter-toggle btn-outline" onClick={() => setIsMobileFilterOpen(true)}>Filters</button>
               {isGuestSearchLocked && !isProgramsLoading && (
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', padding: '8px 12px', borderRadius: '999px', background: 'var(--border-light)' }}>
