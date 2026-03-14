@@ -124,7 +124,7 @@ const LockedSearchPanel = ({ hiddenCount, onRegister }) => (
           Continue with Google
         </button>
         <button className="search-lock-button search-lock-button-secondary" type="button">
-          Continue with Apple or email
+          Continue with email
         </button>
       </div>
       
