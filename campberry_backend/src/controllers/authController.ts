@@ -25,7 +25,7 @@ const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_to_prevent_startup_crash');
 
 const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID || '';
 const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:5173';
