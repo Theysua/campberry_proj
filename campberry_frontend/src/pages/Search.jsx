@@ -393,20 +393,23 @@ export default function Search() {
           {program.eligible_grades && <span className="tag">Grades {program.eligible_grades}</span>}
         </div>
 
-        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-          <span style={{ color: deadlineMeta.tone === 'soon' ? 'var(--accent)' : deadlineMeta.tone === 'normal' ? 'var(--orange)' : 'var(--text-secondary)', fontWeight: '700', textDecoration: deadlineMeta.tone === 'passed' ? 'line-through' : 'none' }}>
-            {deadlineMeta.label}
-          </span>
-          <span>{locationMeta.label}</span>
-          {distanceLabel && <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{distanceLabel}</span>}
-        </div>
-
-        <div className="search-card-footer">
-          <div className="search-card-badges">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <span style={{ color: deadlineMeta.tone === 'soon' ? 'var(--accent)' : deadlineMeta.tone === 'normal' ? 'var(--orange)' : 'var(--text-secondary)', fontWeight: '700', textDecoration: deadlineMeta.tone === 'passed' ? 'line-through' : 'none' }}>
+              {deadlineMeta.label}
+            </span>
+            <span>{locationMeta.label}</span>
+            {distanceLabel && <span style={{ color: 'var(--accent)', fontWeight: '700' }}>{distanceLabel}</span>}
+          </div>
+          
+          <div className="search-card-badges" style={{ flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: 0 }}>
             {program.experts_choice_rating === 'MOST_RECOMMENDED' && <span className="badge-most">Most Recommended</span>}
             {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">Highly Recommended</span>}
             {program.is_highly_selective && <span className="badge-highly">Highly Selective</span>}
           </div>
+        </div>
+
+        <div className="search-card-footer">
 
           <div className="search-card-actions">
             <div className="search-card-meta-actions">
