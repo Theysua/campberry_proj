@@ -831,235 +831,158 @@ header {
 
 .search-lock-panel {
     position: relative;
-    min-height: 360px;
-    margin-top: 24px;
-    isolation: isolate;
-    overflow: hidden;
-    border-radius: 30px;
-    border: 1px solid rgba(201, 211, 227, 0.7);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(250, 247, 243, 0.58));
-}
-
-.search-lock-panel-stack {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-
-.search-lock-card {
-    min-height: 290px;
-    position: absolute;
-    overflow: hidden;
-    background: none;
-    border: none;
-    box-shadow: none;
-}
-
-.search-lock-card-1 {
-    inset: 28px 50% 28px 24px;
-    margin-right: 18px;
-    transform: rotate(-2.2deg);
-    opacity: 0.86;
-}
-
-.search-lock-card-2 {
-    inset: 44px 24px 16px 50%;
-    margin-left: 18px;
-    transform: rotate(2.2deg);
-    opacity: 0.8;
-}
-
-.search-lock-card-blur {
-    position: relative;
-    filter: blur(12px) saturate(0.8);
-    opacity: 0.92;
-    transform: scale(1.025);
-    pointer-events: none;
-}
-
-.search-lock-card-blur::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius-lg);
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08)),
-        radial-gradient(circle at top right, rgba(255, 168, 76, 0.1), transparent 28%);
-}
-
-.search-lock-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    border-radius: 30px;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.28)),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 247, 237, 0.1));
-    backdrop-filter: blur(12px) saturate(145%);
-    -webkit-backdrop-filter: blur(12px) saturate(145%);
-}
-
-.search-lock-shell {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: grid;
-    place-items: center;
-    padding: 28px 30px;
-}
-
-.search-lock-content-card {
-    width: min(920px, 100%);
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-    gap: 32px;
-    align-items: center;
-    padding: 30px 34px;
-    border-radius: 28px;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.78)),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 237, 0.72));
-    border: 1px solid rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(22px) saturate(170%);
-    -webkit-backdrop-filter: blur(22px) saturate(170%);
-    box-shadow:
-        0 22px 48px rgba(15, 23, 42, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.62);
-}
-
-.search-lock-content-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background:
-        radial-gradient(circle at top left, rgba(255, 255, 255, 0.76), transparent 30%),
-        radial-gradient(circle at bottom right, rgba(255, 122, 26, 0.14), transparent 26%);
-    pointer-events: none;
-}
-
-.search-lock-copy,
-.search-lock-content-card,
-.search-lock-value,
-.search-lock-button,
-.search-lock-badge,
-.search-lock-actions,
-.search-lock-helper {
-    position: relative;
-    z-index: 1;
-}
-
-.search-lock-value {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    min-width: 0;
-}
-
-.search-lock-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 420px;
-}
-
-.search-lock-content-card h3 {
-    margin: 0;
-    font-size: 42px;
-    line-height: 1.02;
-    color: var(--primary);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-
-.search-lock-content-card p {
-    margin: 0;
-    font-size: 17px;
-    line-height: 1.55;
-    color: rgba(56, 71, 98, 0.98);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
-}
-
-.search-lock-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
     width: 100%;
-    max-width: 360px;
-    justify-self: end;
+    margin-top: -120px; /* Overlap the items above */
+    padding-top: 140px; /* Space for the overlay fade */
+    padding-bottom: 40px;
+    display: flex;
+    justify-content: center;
+    z-index: 10;
+}
+
+.search-lock-fade-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Create a frosted glass gradient that fades from transparent at top to solid at bottom */
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 1) 100%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    /* mask the blur so it only applies where the background is opaque */
+    mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
+    z-index: 1;
+}
+
+.search-lock-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    background: linear-gradient(160deg, #ffffff 0%, #fff9f5 50%, #fff0e6 100%);
+    border: 1px solid rgba(255, 117, 31, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(255, 117, 31, 0.08), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+    padding: 32px 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.search-lock-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff7a1a, #892233);
+}
+
+.search-lock-content::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 122, 26, 0.08) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.search-lock-text-column {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 .search-lock-badge {
-    width: fit-content;
-    padding: 6px 10px;
+    padding: 4px 12px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.78);
+    background: rgba(137, 34, 51, 0.06);
     color: var(--accent);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     border: 1px solid rgba(137, 34, 51, 0.12);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 4px;
+}
+
+.search-lock-title {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.15;
+    color: var(--primary);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    max-width: 600px;
+}
+
+.search-lock-desc {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    max-width: 500px;
 }
 
 .search-lock-support {
     font-size: 14px;
-    line-height: 1.5;
     font-weight: 700;
-    color: rgba(137, 34, 51, 0.92);
+    color: var(--accent);
+    margin-top: 2px;
 }
 
-.search-lock-helper {
-    font-size: 12px;
-    line-height: 1.45;
-    color: rgba(82, 97, 126, 0.9);
-    text-align: center;
+.search-lock-action-column {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .search-lock-button {
     position: relative;
-    align-self: stretch;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
     width: 100%;
-    min-height: 54px;
-    padding: 14px 20px;
+    min-height: 52px;
+    padding: 12px 20px;
     border: 0;
     border-radius: 999px;
     background: linear-gradient(135deg, #ff7a1a, #ff9b45);
     color: #fff !important;
     font-size: 15px;
     font-weight: 800;
-    letter-spacing: 0.01em;
-    box-shadow:
-        0 14px 28px rgba(255, 122, 26, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    box-shadow: 0 8px 20px rgba(255, 122, 26, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     cursor: pointer;
-    opacity: 1;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 .search-lock-button-secondary {
-    background: rgba(255, 255, 255, 0.82);
+    background: #ffffff;
     color: var(--primary) !important;
-    border: 1px solid rgba(15, 23, 42, 0.18);
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-    text-shadow: none;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
 .search-lock-google-mark {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.96);
+    background: #ffffff;
     color: #ea4335;
     font-weight: 900;
     box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
@@ -1068,8 +991,13 @@ header {
 .search-lock-button:hover,
 .search-lock-button:focus-visible {
     transform: translateY(-1px);
-    box-shadow: 0 18px 34px rgba(255, 122, 26, 0.3);
+    box-shadow: 0 12px 24px rgba(255, 122, 26, 0.3);
     filter: saturate(1.05);
+}
+
+.search-lock-button-secondary:hover {
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.06);
+    border-color: #cbd5e1;
 }
 
 .search-lock-button:focus-visible {
@@ -1077,83 +1005,76 @@ header {
     outline-offset: 3px;
 }
 
+.search-lock-helper {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 4px;
+}
+
+.search-lock-signin {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.search-lock-signin-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: inherit;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s ease, opacity 0.2s ease;
+}
+
+.search-lock-signin-link:hover,
+.search-lock-signin-link:focus-visible {
+    text-decoration-color: var(--accent);
+    outline: none;
+}
+
 @media (max-width: 900px) {
-    .search-lock-panel {
-        min-height: 420px;
+    .search-lock-content {
+        padding: 36px 32px;
+        gap: 28px;
     }
 
-    .search-lock-shell {
-        padding: 20px;
-    }
-
-    .search-lock-content-card {
-        width: min(620px, 100%);
-        grid-template-columns: 1fr;
-        gap: 22px;
-        padding: 24px;
-        text-align: center;
-    }
-
-    .search-lock-value {
-        align-items: center;
-    }
-
-    .search-lock-copy {
-        max-width: 480px;
-    }
-
-    .search-lock-content-card h3 {
-        font-size: 32px;
-    }
-
-    .search-lock-content-card p {
-        font-size: 16px;
-    }
-
-    .search-lock-actions {
-        justify-self: center;
+    .search-lock-title {
+        font-size: 28px;
     }
 }
 
 @media (max-width: 640px) {
+    .search-lock-fade-overlay {
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 20%, rgba(255, 255, 255, 1) 100%);
+        mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+    }
+
     .search-lock-panel {
-        min-height: 440px;
+        margin-top: -80px;
+        padding-top: 100px;
+    }
+    
+    .search-lock-content {
+        padding: 28px 20px;
+        border-radius: 20px;
+        gap: 24px;
+        width: calc(100% - 32px);
     }
 
-    .search-lock-card-1,
-    .search-lock-card-2 {
-        inset: 20px 0 0 0;
-        transform: none;
-        margin: 0;
-    }
-
-    .search-lock-card-2 {
-        display: none;
-    }
-
-    .search-lock-shell {
-        padding: 16px;
-    }
-
-    .search-lock-content-card {
-        padding: 20px 18px;
-        gap: 18px;
-    }
-
-    .search-lock-copy {
-        max-width: none;
-    }
-
-    .search-lock-content-card h3 {
-        font-size: 27px;
-    }
-
-    .search-lock-content-card p {
-        font-size: 15px;
+    .search-lock-title {
+        font-size: 24px;
     }
 
     .search-lock-button {
-        min-height: 52px;
+        min-height: 48px;
     }
 }
 

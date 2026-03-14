@@ -1,19 +1,19 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown, Star, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import useScrollReveal from '../hooks/useScrollReveal'
 import { getInterests, getPrograms } from '../services/api'
-import { useAuth } from '../context/AuthContext'
 import { buildProgramDetailPath, getBackTarget } from '../utils/navigationContext'
-import {
-  areArraysEqual,
-  buildSearchParamsFromState,
-  parseSearchStateFromParams,
-  sortToApiValue,
-} from '../utils/searchUrlState'
-import { getProgramStarRating } from '../utils/programRating'
 import { canGuestAccessProgram } from '../utils/previewGate'
+import { getProgramStarRating } from '../utils/programRating'
+import {
+    areArraysEqual,
+    buildSearchParamsFromState,
+    parseSearchStateFromParams,
+    sortToApiValue,
+} from '../utils/searchUrlState'
 
 const SORT_OPTIONS = ['Relevancy', 'Selectivity', 'Deadline (Ascending)', 'Deadline (Descending)']
 const GUEST_LOCK_PREVIEW_CARDS = 2
@@ -106,37 +106,36 @@ const LockedPreviewCard = ({ program, accentClass }) => {
   )
 }
 
-const LockedSearchPanel = ({ hiddenCount, onRegister, previewPrograms }) => (
+const LockedSearchPanel = ({ hiddenCount, onRegister }) => (
   <div className="search-lock-panel" onClick={onRegister} role="button" tabIndex={0} onKeyDown={(event) => event.key === 'Enter' && onRegister()} style={{ cursor: 'pointer' }}>
-    <div className="search-lock-panel-stack" aria-hidden="true">
-      {(previewPrograms.length > 0 ? previewPrograms : [null, null]).slice(0, 2).map((program, index) => (
-        <div key={program?.id || `placeholder-${index}`} className={`search-lock-card search-lock-card-${index + 1}`}>
-          <div className="search-lock-card-blur">
-            <LockedPreviewCard program={program} accentClass={index === 0 ? 'accent-top' : 'primary-top'} />
-          </div>
-        </div>
-      ))}
-    </div>
-    <div className="search-lock-scrim" aria-hidden="true" />
-
-    <div className="search-lock-shell">
-      <div className="card search-lock-content-card">
-        <div className="search-lock-value">
-          <div className="search-lock-badge">Free account required</div>
-          <div className="search-lock-copy">
-            <h3>Keep browsing Campberry with a free account.</h3>
-            <p>Save your research, unlock all results, and keep building lists for clients.</p>
-            <div className="search-lock-support">{hiddenCount} more activities unlock after sign in.</div>
-          </div>
-        </div>
-        <div className="search-lock-actions">
-          <button className="search-lock-button" type="button">
-            <span className="search-lock-google-mark" aria-hidden="true">G</span>
-            Continue with Google
-          </button>
-          <button className="search-lock-button search-lock-button-secondary" type="button">Continue with Apple or email</button>
-          <div className="search-lock-helper">Free to register. Upgrade options may come later.</div>
-        </div>
+    <div className="search-lock-fade-overlay" aria-hidden="true" />
+    
+    <div className="search-lock-content">
+      <div className="search-lock-text-column">
+        <h3 className="search-lock-title">Keep browsing Campberry with a free account.</h3>
+        <p className="search-lock-desc">
+          Save your research, unlock all results, and keep building lists.
+        </p>
+      </div>
+      
+      <div className="search-lock-action-column">
+        <button className="search-lock-button" type="button">
+          <span className="search-lock-google-mark" aria-hidden="true">G</span>
+          Continue with Google
+        </button>
+        <button className="search-lock-button search-lock-button-secondary" type="button">
+          Continue with Apple or email
+        </button>
+      </div>
+      
+      <div className="search-lock-signin">
+        Have an existing Campberry account?{' '}
+        <button className="search-lock-signin-link" onClick={(e) => {
+          e.stopPropagation();
+          onRegister();
+        }} type="button">
+          Sign in here
+        </button>
       </div>
     </div>
   </div>
