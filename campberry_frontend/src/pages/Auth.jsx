@@ -49,7 +49,7 @@ export default function Auth() {
         }
 
         const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
+        script.src = 'https://accounts.google.com/gsi/client?hl=en';
         script.async = true;
         script.defer = true;
         script.dataset.googleGsi = 'true';
@@ -82,6 +82,7 @@ export default function Auth() {
         shape: 'pill',
         width: 320,
         text: 'signin_with',
+        locale: 'en',
       });
       setGoogleState('ready');
       return true;
