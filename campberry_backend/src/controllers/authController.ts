@@ -25,7 +25,7 @@ const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID || '';
 const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -633,17 +633,21 @@ export const sendVerificationCode = async (req: Request, res: Response): Promise
       },
     });
 
-    const { error: sendError } = await resend.emails.send({
-      from: 'Campberry <onboarding@resend.dev>',
-      to: [email],
-      subject: 'Your Campberry Verification Code',
-      html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
-    });
+    if (resend) {
+      const { error: sendError } = await resend.emails.send({
+        from: 'Campberry <onboarding@resend.dev>',
+        to: [email],
+        subject: 'Your Campberry Verification Code',
+        html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
+      });
 
-    if (sendError) {
-      console.error('[Resend Error]', sendError);
-      res.status(400).json({ error: sendError.message });
-      return;
+      if (sendError) {
+        console.error('[Resend Error]', sendError);
+        res.status(400).json({ error: sendError.message });
+        return;
+      }
+    } else {
+      console.log(`[Development] Verification code for ${email} is: ${otp}`);
     }
 
     res.status(200).json({ message: 'Verification code sent successfully' });
