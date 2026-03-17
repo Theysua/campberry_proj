@@ -669,7 +669,10 @@ export const getPrograms = async (req: Request, res: Response) => {
       whereClause.experts_choice_rating = String(rating);
     }
 
-    if (impact) {
+    if (impact === 'HIGH_IMPACT') {
+      whereClause.experts_choice_rating = 'MOST_RECOMMENDED';
+      whereClause.is_highly_selective = true;
+    } else if (impact) {
       whereClause.impact_rating = String(impact);
     }
 

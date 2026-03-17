@@ -537,7 +537,7 @@ export default function Search() {
               <summary className="accordion-header" style={{ borderTop: 'none', marginTop: '0', paddingTop: '0' }}>Quick filters <span className="chevron">+</span></summary>
 
               <div style={{ marginTop: '15px' }}>
-                <div className="filter-section-title">Expert&apos;s Review</div>
+                <div className="filter-section-title">Campberry&apos;s Pick</div>
                 <div className="segmented-control">
                   <button className={`segmented-btn ${ratingFilter === 'MOST_RECOMMENDED' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: ratingFilter === 'MOST_RECOMMENDED' ? 'white' : 'transparent', borderColor: ratingFilter === 'MOST_RECOMMENDED' ? 'var(--border)' : 'transparent' }} onClick={() => { setRatingFilter((prev) => prev === 'MOST_RECOMMENDED' ? '' : 'MOST_RECOMMENDED'); setPage(1) }}>Most<br />Recommended</button>
                   <button className={`segmented-btn ${ratingFilter === 'HIGHLY_RECOMMENDED' ? 'active shadow-sm' : ''}`} style={{ flexDirection: 'column', background: ratingFilter === 'HIGHLY_RECOMMENDED' ? 'white' : 'transparent', borderColor: ratingFilter === 'HIGHLY_RECOMMENDED' ? 'var(--border)' : 'transparent' }} onClick={() => { setRatingFilter((prev) => prev === 'HIGHLY_RECOMMENDED' ? '' : 'HIGHLY_RECOMMENDED'); setPage(1) }}>Highly<br />Recommended</button>
