@@ -217,13 +217,13 @@ export default function Home() {
               onClick={() => navigateToSearch({ rating: 'MOST_RECOMMENDED' })}
               style={{ textAlign: 'left', width: '100%', cursor: 'pointer' }}
             >
-              <h4>Experts&apos; Choice</h4>
+              <h4>Campberry&apos;s Pick</h4>
               <div className="desc">Top-tier programs selected by consultants.</div>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
                 <span className="badge-most">MOST RECOMMENDED</span>
                 <span className="badge-highly">HIGHLY RECOMMENDED</span>
               </div>
-              <div className="link">Explore Experts&apos; Choice &rarr;</div>
+              <div className="link">Explore Campberry&apos;s Pick &rarr;</div>
             </button>
             <button
               type="button"
