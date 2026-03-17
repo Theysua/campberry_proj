@@ -42,7 +42,7 @@ export default function Navbar() {
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <img src={logo} alt="Campberry Logo" style={{ height: '32px' }} />
+          <img src={logo} alt="Campberry Logo" style={{ height: '48px', margin: '-8px 0' }} />
         </div>
         <div className="nav-links">
           <button onClick={() => navigate(buildSearchPath({}, location))} onMouseEnter={handleWarmFind} onFocus={handleWarmFind}>Find</button>
