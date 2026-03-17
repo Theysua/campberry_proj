@@ -38,7 +38,7 @@ const getOptionalViewer = (req: Request) => {
   try {
     return jwt.verify(token, JWT_SECRET) as { id: string; role: string };
   } catch {
-    return null;
+    throw new Error('UNAUTHORIZED_TOKEN');
   }
 };
 
@@ -896,7 +896,11 @@ export const getPrograms = async (req: Request, res: Response) => {
 
     setCachedResponse(cacheKey, payload, PROGRAMS_CACHE_TTL_MS);
     sendCachedJson(res, payload, 60, 'MISS');
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.message === 'UNAUTHORIZED_TOKEN') {
+      res.status(401).json({ error: 'Token expired or invalid' });
+      return;
+    }
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch programs' });
   }
