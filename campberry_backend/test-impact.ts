@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { const data = await prisma.program.findMany({ select: { impact_rating: true }, distinct: ['impact_rating'] }); console.log(data); } main().finally(() => prisma.());

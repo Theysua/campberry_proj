@@ -321,7 +321,19 @@ export default function Search() {
   }, [])
 
   const resetFilters = () => {
-    setSearchParams(new URLSearchParams(), { replace: true })
+    setSearchInput('')
+    setSearchQuery('')
+    setTypeFilter('')
+    setRatingFilter('')
+    setImpactFilter('')
+    setIsSelective(false)
+    setSeasonFilter('')
+    setGradesFilter([])
+    setInterestIds([])
+    setInternationalFilter(false)
+    setCreditFilter(false)
+    setSortBy('Relevancy')
+    setPage(1)
   }
 
   const getNextDeadlineLabel = (program) => {
@@ -534,7 +546,7 @@ export default function Search() {
 
               <div style={{ marginTop: '20px' }}>
                 <div className="filter-section-title">Impact on Admissions</div>
-                <div className="segmented-control" style={{ padding: '4px' }}>
+                <div className="segmented-control">
                   <button className={`segmented-btn ${impactFilter === 'HIGH_IMPACT' ? 'active shadow-sm' : ''}`} style={{ width: '100%', flexDirection: 'column', background: impactFilter === 'HIGH_IMPACT' ? 'white' : 'transparent', borderColor: impactFilter === 'HIGH_IMPACT' ? 'var(--border)' : 'transparent' }} onClick={() => { setImpactFilter((prev) => prev === 'HIGH_IMPACT' ? '' : 'HIGH_IMPACT'); setPage(1) }}>High Impact</button>
                 </div>
               </div>
