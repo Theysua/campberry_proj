@@ -236,6 +236,11 @@ export default function ProgramDetail() {
                   <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>No deadline information available.</div>
                 )}
 
+                <div style={{ fontSize: '14px', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-light)' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--text)' }}>Accepts International students?</span>
+                  <span>{program.allows_international ? 'Yes' : 'No'}</span>
+                </div>
+
                 {program.sessions && program.sessions.length > 0 && (
                   <h4 style={{ margin: '24px 0 16px 0', color: 'var(--primary)', fontSize: '16px', fontWeight: '700' }}>Sessions</h4>
                 )}

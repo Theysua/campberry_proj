@@ -65,7 +65,7 @@ export default function LegalPage({ type }) {
               </section>
               <section>
                 <h2 className="text-xl font-bold mb-3">6. Disclaimer of Warranties</h2>
-                <p className="text-slate-600 leading-relaxed">Campberry is provided "as is" without warranties of any kind. We strive to maintain accurate and up-to-date program information, but we cannot guarantee the accuracy, completeness, or timeliness of any program listings.</p>
+                <p className="text-slate-600 leading-relaxed">Campberry is provided “as is” without warranties of any kind. We strive to maintain accurate and up-to-date program information, but we cannot guarantee the accuracy, completeness, or timeliness of any program listings.</p>
               </section>
               <section>
                 <h2 className="text-xl font-bold mb-3">7. Changes to Terms</h2>
