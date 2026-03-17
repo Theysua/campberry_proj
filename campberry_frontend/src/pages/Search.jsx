@@ -321,19 +321,7 @@ export default function Search() {
   }, [])
 
   const resetFilters = () => {
-    setSearchInput('')
-    setSearchQuery('')
-    setTypeFilter('')
-    setRatingFilter('')
-    setImpactFilter('')
-    setIsSelective(false)
-    setSeasonFilter('')
-    setGradesFilter([])
-    setInterestIds([])
-    setInternationalFilter(false)
-    setCreditFilter(false)
-    setSortBy('Relevancy')
-    setPage(1)
+    setSearchParams(new URLSearchParams(), { replace: true })
   }
 
   const getNextDeadlineLabel = (program) => {
