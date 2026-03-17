@@ -493,6 +493,7 @@ export default function Search() {
                   Website
                 </a>
               )}
+              {/* Temporarily hiding star rating as comments/reviews haven't been implemented yet.
               {starRating > 0 && (
                 <div
                   className="search-card-score"
@@ -504,6 +505,7 @@ export default function Search() {
                   ))}
                 </div>
               )}
+              */}
             </div>
 
             <div className="search-card-detail-cta">View details →</div>

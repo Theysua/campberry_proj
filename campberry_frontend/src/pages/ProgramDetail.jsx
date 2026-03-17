@@ -177,7 +177,9 @@ export default function ProgramDetail() {
                 {program.experts_choice_rating === 'HIGHLY_RECOMMENDED' && <span className="badge-highly">HIGHLY RECOMMENDED</span>}
                 {hasHighImpactRating(program) && <span className="badge-impact">HIGH IMPACT</span>}
                 {program.is_highly_selective && <span className="badge-highly">HIGHLY SELECTIVE</span>}
+                {/* Temporarily hiding star rating as comments/reviews haven't been implemented yet.
                 {starRating > 0 && <span className="tag">Campberry Score: {starRating}</span>}
+                */}
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {program.interests?.map((interest, index) => (

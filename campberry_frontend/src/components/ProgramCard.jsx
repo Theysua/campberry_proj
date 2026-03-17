@@ -333,7 +333,9 @@ export default function ProgramCard({ program }) {
           {recommendedBadge && <Badge type={recommendedBadge} />}
           {impactBadge && <Badge type={impactBadge} />}
           {isHighlySelective && <span className="badge-highly">HIGHLY SELECTIVE</span>}
+          {/* Temporarily hiding star rating as comments/reviews haven't been implemented yet.
           {starRating > 0 && <span className="tag">Campberry Score: {starRating}</span>}
+          */}
           <button onClick={handleSaveProgram} className={`flex items-center gap-1 text-[10px] font-bold transition-colors uppercase tracking-wider ${isSaved ? 'text-[#ff751f]' : 'text-slate-500 hover:text-[#ff751f]'}`}>
             <Star size={12} fill={isSaved ? 'currentColor' : 'none'} /> {isSaved ? 'Saved' : 'Save'}
           </button>
