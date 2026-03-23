@@ -427,6 +427,166 @@ test('public lists can be saved and appear in saved lists for an authenticated u
   }
 });
 
+test('list editing, unsave flows, and duplicate actions behave consistently', async () => {
+  const studentEmail = uniqueEmail('list-edit-student');
+  const counselorEmail = uniqueEmail('list-edit-counselor');
+
+  try {
+    const studentLogin = await registerAndLogin(studentEmail);
+    const counselor = await prisma.user.create({
+      data: {
+        email: counselorEmail,
+        name: 'List Editor Counselor',
+        role: 'COUNSELOR',
+        is_verified: true,
+        password_hash: await bcrypt.hash('password123', 10),
+      },
+    });
+
+    const program = await prisma.program.findFirst({
+      select: { id: true },
+    });
+    assert.ok(program?.id, 'Expected at least one program in the database');
+
+    const createPrivateList = await request(app)
+      .post('/api/v1/me/lists')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({
+        title: 'Editable Private List',
+        description: 'Initial description',
+        isPublic: false,
+      })
+      .expect(201);
+
+    const listId = createPrivateList.body.id as string;
+
+    const saveProgramFirst = await request(app)
+      .post('/api/v1/me/saved-programs')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ programId: program!.id })
+      .expect(201);
+
+    const saveProgramSecond = await request(app)
+      .post('/api/v1/me/saved-programs')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ programId: program!.id })
+      .expect(200);
+
+    assert.equal(saveProgramSecond.body.user_id, saveProgramFirst.body.user_id);
+
+    await request(app)
+      .delete(`/api/v1/me/saved-programs/${program!.id}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    const savedProgramsAfterUnsave = await request(app)
+      .get('/api/v1/me/saved-programs')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    assert.ok(savedProgramsAfterUnsave.body.every((item: any) => item.program.id !== program!.id));
+
+    const addItemFirst = await request(app)
+      .post(`/api/v1/me/lists/${listId}/items`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ programId: program!.id, commentary: 'Original note' })
+      .expect(201);
+
+    const addItemSecond = await request(app)
+      .post(`/api/v1/me/lists/${listId}/items`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ programId: program!.id, commentary: 'Duplicate note' })
+      .expect(200);
+
+    assert.equal(addItemSecond.body.id, addItemFirst.body.id);
+
+    const itemId = addItemFirst.body.id as string;
+
+    const updateItemResponse = await request(app)
+      .put(`/api/v1/me/lists/${listId}/items/${itemId}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ commentary: 'Updated note', displayOrder: 3 })
+      .expect(200);
+
+    assert.equal(updateItemResponse.body.author_commentary, 'Updated note');
+    assert.equal(updateItemResponse.body.display_order, 3);
+
+    const updateListResponse = await request(app)
+      .put(`/api/v1/me/lists/${listId}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ title: 'Updated Private List', description: 'Updated description', isPublic: false })
+      .expect(200);
+
+    assert.equal(updateListResponse.body.title, 'Updated Private List');
+
+    await request(app)
+      .post(`/api/v1/me/lists/${listId}/feedback`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ rating: 3, comment: 'Should fail for private list' })
+      .expect(404);
+
+    const counselorPublicList = await prisma.list.create({
+      data: {
+        title: 'Counselor Public List For Unsave',
+        description: 'Public list to save and unsave',
+        author_id: counselor.id,
+        is_public: true,
+      },
+    });
+
+    const saveListFirst = await request(app)
+      .post('/api/v1/me/saved-lists')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ listId: counselorPublicList.id })
+      .expect(201);
+
+    const saveListSecond = await request(app)
+      .post('/api/v1/me/saved-lists')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .send({ listId: counselorPublicList.id })
+      .expect(200);
+
+    assert.equal(saveListSecond.body.user_id, saveListFirst.body.user_id);
+
+    await request(app)
+      .delete(`/api/v1/me/saved-lists/${counselorPublicList.id}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    const savedListsAfterUnsave = await request(app)
+      .get('/api/v1/me/saved-lists')
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    assert.ok(savedListsAfterUnsave.body.every((item: any) => item.list.id !== counselorPublicList.id));
+
+    await request(app)
+      .delete(`/api/v1/me/lists/${listId}/items/${itemId}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    const listAfterRemoval = await request(app)
+      .get(`/api/v1/me/lists/${listId}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    assert.equal(listAfterRemoval.body.items.length, 0);
+
+    await request(app)
+      .delete(`/api/v1/me/lists/${listId}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(200);
+
+    await request(app)
+      .get(`/api/v1/me/lists/${listId}`)
+      .set('Authorization', `Bearer ${studentLogin.accessToken}`)
+      .expect(404);
+  } finally {
+    await cleanupUserByEmail(studentEmail);
+    await cleanupUserByEmail(counselorEmail);
+  }
+});
+
 test('google auth exchanges a verified Google credential for a Campberry session', async () => {
   const email = uniqueEmail('google-auth');
   const originalClientId = process.env.GOOGLE_CLIENT_ID;

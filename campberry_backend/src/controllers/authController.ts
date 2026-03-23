@@ -35,6 +35,14 @@ const getResendFromEmail = () => process.env.RESEND_FROM_EMAIL || 'noreply@campb
 const getResendFromName = () => process.env.RESEND_FROM_NAME || 'Campberry';
 const getResendFromAddress = () => `${getResendFromName()} <${getResendFromEmail()}>`;
 
+const buildFrontendHashUrl = (path: string, params: Record<string, string>) => {
+  const baseUrl = getFrontendBaseUrl().replace(/\/$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const query = new URLSearchParams(params).toString();
+
+  return `${baseUrl}/#${normalizedPath}${query ? `?${query}` : ''}`;
+};
+
 const sendTransactionalEmail = async (payload: {
   to: string;
   subject: string;
@@ -118,10 +126,10 @@ const issueSession = async (
 };
 
 const buildVerificationUrl = (token: string) =>
-  `${getFrontendBaseUrl().replace(/\/$/, '')}/verify-email?token=${encodeURIComponent(token)}`;
+  buildFrontendHashUrl('/verify-email', { token });
 
 const buildPasswordResetUrl = (token: string) =>
-  `${getFrontendBaseUrl().replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+  buildFrontendHashUrl('/reset-password', { token });
 
 const createEmailVerificationToken = async (userId: string) => {
   const token = crypto.randomBytes(24).toString('hex');
