@@ -31,6 +31,30 @@ const getGoogleClientId = () => process.env.GOOGLE_CLIENT_ID || '';
 const getFrontendBaseUrl = () => process.env.FRONTEND_URL || 'http://localhost:5173';
 const canExposeDevEmailPreview = () => process.env.NODE_ENV !== 'production';
 const isProduction = () => process.env.NODE_ENV === 'production';
+const getResendFromEmail = () => process.env.RESEND_FROM_EMAIL || 'noreply@campberry.ai';
+const getResendFromName = () => process.env.RESEND_FROM_NAME || 'Campberry';
+const getResendFromAddress = () => `${getResendFromName()} <${getResendFromEmail()}>`;
+
+const sendTransactionalEmail = async (payload: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}) => {
+  if (!resend) {
+    return null;
+  }
+
+  const { error } = await resend.emails.send({
+    from: getResendFromAddress(),
+    to: [payload.to],
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text,
+  });
+
+  return error;
+};
 
 const getCookieOptions = (): CookieOptions => {
   const requestedSameSite = String(process.env.COOKIE_SAME_SITE || (isProduction() ? 'none' : 'lax')).toLowerCase();
@@ -418,6 +442,19 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
       console.log(`[email-dev] Verify ${preview.user.email}: ${verification.verificationUrl}`);
     }
 
+    const sendError = await sendTransactionalEmail({
+      to: preview.user.email,
+      subject: 'Verify your Campberry email',
+      html: `<p>Verify your Campberry email by clicking the link below.</p><p><a href="${verification.verificationUrl}">Verify email</a></p><p>This link expires in 24 hours.</p>`,
+      text: `Verify your Campberry email: ${verification.verificationUrl}\n\nThis link expires in 24 hours.`,
+    });
+
+    if (sendError) {
+      console.error('[Resend Error]', sendError);
+      res.status(400).json({ error: sendError.message });
+      return;
+    }
+
     res.status(200).json({
       message: 'Verification email re-issued',
       ...(canExposeDevEmailPreview()
@@ -457,6 +494,19 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
 
     if (canExposeDevEmailPreview()) {
       console.log(`[password-reset-dev] Reset ${user.email}: ${reset.resetUrl}`);
+    }
+
+    const sendError = await sendTransactionalEmail({
+      to: user.email,
+      subject: 'Reset your Campberry password',
+      html: `<p>We received a request to reset your Campberry password.</p><p><a href="${reset.resetUrl}">Reset password</a></p><p>This link expires in 1 hour.</p>`,
+      text: `Reset your Campberry password: ${reset.resetUrl}\n\nThis link expires in 1 hour.`,
+    });
+
+    if (sendError) {
+      console.error('[Resend Error]', sendError);
+      res.status(400).json({ error: sendError.message });
+      return;
     }
 
     res.status(200).json({
@@ -634,11 +684,11 @@ export const sendVerificationCode = async (req: Request, res: Response): Promise
     });
 
     if (resend) {
-      const { error: sendError } = await resend.emails.send({
-        from: 'Campberry <onboarding@resend.dev>',
-        to: [email],
+      const sendError = await sendTransactionalEmail({
+        to: email,
         subject: 'Your Campberry Verification Code',
         html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
+        text: `Your Campberry verification code is: ${otp}\n\nThis code will expire in 10 minutes.`,
       });
 
       if (sendError) {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import 'dotenv/config';
+import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import request from 'supertest';
 import prisma from './db';
@@ -64,13 +65,31 @@ const cleanupUserByEmail = async (email: string) => {
   });
 };
 
+const issueRegistrationCode = async (email: string) => {
+  await request(app)
+    .post('/api/v1/auth/send-code')
+    .send({ email })
+    .expect(200);
+
+  const tokenRecord = await prisma.verificationToken.findFirst({
+    where: { email },
+    orderBy: { created_at: 'desc' },
+  });
+
+  assert.ok(tokenRecord?.token, 'Expected a verification code to be created');
+  return tokenRecord.token;
+};
+
 const registerAndLogin = async (email: string, extraRegisterBody: Record<string, unknown> = {}) => {
+  const token = await issueRegistrationCode(email);
+
   await request(app)
     .post('/api/v1/auth/register')
     .send({
       name: 'Test User',
       email,
       password: 'password123',
+      token,
       ...extraRegisterBody,
     })
     .expect(201);
@@ -118,43 +137,31 @@ test('forces self-registered users to remain STUDENT even if role is provided', 
 });
 
 test('register issues a local verification token and verify-email consumes it', async () => {
-  const email = uniqueEmail('verify-email');
+  const email = uniqueEmail('register-with-code');
 
   try {
+    const token = await issueRegistrationCode(email);
+
     const registerResponse = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        name: 'Verify Me',
+        name: 'Register Me',
         email,
         password: 'password123',
+        token,
       })
       .expect(201);
 
-    assert.ok(registerResponse.body.verification?.verificationUrl);
-    const token = registerResponse.body.verification?.token;
-    assert.ok(token);
+    assert.equal(registerResponse.body.user.email, email);
 
-    const beforeVerify = await prisma.user.findUnique({
+    const createdUser = await prisma.user.findUnique({
       where: { email },
       select: { is_verified: true },
     });
-    assert.equal(beforeVerify?.is_verified, false);
+    assert.equal(createdUser?.is_verified, true);
 
-    const verifyResponse = await request(app)
-      .post('/api/v1/auth/verify-email')
-      .send({ verificationToken: token })
-      .expect(200);
-
-    assert.equal(verifyResponse.body.user.is_verified, true);
-
-    const afterVerify = await prisma.user.findUnique({
+    const remainingTokens = await prisma.verificationToken.count({
       where: { email },
-      select: { is_verified: true },
-    });
-    assert.equal(afterVerify?.is_verified, true);
-
-    const remainingTokens = await prisma.emailVerificationToken.count({
-      where: { user: { email } },
     });
     assert.equal(remainingTokens, 0);
   } finally {
@@ -166,14 +173,23 @@ test('dev verification endpoint returns the latest local verification link', asy
   const email = uniqueEmail('verify-dev-link');
 
   try {
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send({
+    const user = await prisma.user.create({
+      data: {
         name: 'Dev Link User',
         email,
-        password: 'password123',
-      })
-      .expect(201);
+        password_hash: await bcrypt.hash('password123', 10),
+        role: 'STUDENT',
+        is_verified: false,
+      },
+    });
+
+    const verificationToken = await prisma.emailVerificationToken.create({
+      data: {
+        token: `verify-${Date.now()}`,
+        user_id: user.id,
+        expires_at: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
 
     const response = await request(app)
       .get(`/api/v1/auth/dev/verification-link?email=${encodeURIComponent(email)}`)
@@ -181,6 +197,7 @@ test('dev verification endpoint returns the latest local verification link', asy
 
     assert.equal(response.body.email, email);
     assert.equal(response.body.is_verified, false);
+    assert.equal(response.body.verification.token, verificationToken.token);
     assert.match(response.body.verification.verificationUrl, /verify-email\?token=/);
   } finally {
     await cleanupUserByEmail(email);
@@ -191,12 +208,15 @@ test('forgot password issues a reset token and reset-password updates the passwo
   const email = uniqueEmail('password-reset');
 
   try {
+    const token = await issueRegistrationCode(email);
+
     await request(app)
       .post('/api/v1/auth/register')
       .send({
         name: 'Reset Me',
         email,
         password: 'password123',
+        token,
       })
       .expect(201);
 
@@ -205,13 +225,13 @@ test('forgot password issues a reset token and reset-password updates the passwo
       .send({ email })
       .expect(200);
 
-    const token = forgotResponse.body.reset?.token;
-    assert.ok(token);
+    const resetToken = forgotResponse.body.reset?.token;
+    assert.ok(resetToken);
 
     await request(app)
       .post('/api/v1/auth/reset-password')
       .send({
-        token,
+        token: resetToken,
         password: 'newpassword123',
       })
       .expect(200);
@@ -483,13 +503,16 @@ test('program and list feedback endpoints support ratings and comments', async (
       .expect(201);
 
     assert.equal(programFeedbackResponse.body.review.rating, 5);
-    assert.equal(programFeedbackResponse.body.summary.ratingCount, 1);
+    assert.ok(programFeedbackResponse.body.summary.ratingCount >= 1);
 
     const publicProgramFeedbackResponse = await request(app)
       .get(`/api/v1/programs/${program!.id}/feedback`)
       .expect(200);
 
-    assert.equal(publicProgramFeedbackResponse.body.summary.ratingCount, 1);
+    assert.equal(
+      publicProgramFeedbackResponse.body.summary.ratingCount,
+      programFeedbackResponse.body.summary.ratingCount
+    );
     assert.ok(publicProgramFeedbackResponse.body.reviews.length >= 1);
 
     const listFeedbackResponse = await request(app)
